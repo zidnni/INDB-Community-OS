@@ -18,7 +18,7 @@ export default async function RegisterPage({
   return (
     <div className="mx-auto max-w-md space-y-4">
       <div className="flex justify-center">
-        <Logo variant="full" size="md" priority />
+        <Logo variant="full" size="lg" priority className="w-36 sm:w-44" />
       </div>
       <Card>
         <CardHeader>

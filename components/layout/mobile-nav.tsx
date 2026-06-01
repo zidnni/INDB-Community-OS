@@ -47,7 +47,7 @@ export function MobileNav() {
                     : "text-muted-foreground hover:bg-muted",
                 )}
               >
-                {item.href === "/" ? <Logo variant="icon" size="sm" /> : Icon ? <Icon size={15} /> : null}
+                {item.href === "/" ? <Logo variant="icon" size="sm" className="w-16" /> : Icon ? <Icon size={15} /> : null}
                 <span className="mt-1">{t(`items.${item.key}.short`)}</span>
               </Link>
             </li>

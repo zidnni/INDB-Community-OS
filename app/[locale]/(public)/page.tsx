@@ -38,7 +38,7 @@ export default async function LandingPage({
       <section className="relative overflow-hidden rounded-3xl border border-border/80 bg-card/95 p-6 shadow-[0_18px_40px_rgba(8,33,56,0.09)] md:p-9">
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(13,68,102,0.16)_0%,rgba(34,158,170,0.13)_48%,rgba(13,68,102,0.06)_100%)]" />
         <div className="relative space-y-4">
-          <Logo variant="full" size="lg" priority className="w-fit" />
+          <Logo variant="full" size="lg" priority className="mx-auto w-fit md:mx-0" />
           <p className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
             <Sparkles size={14} />
             {t("tagline")}
