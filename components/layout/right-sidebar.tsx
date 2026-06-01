@@ -1,4 +1,4 @@
-﻿import {CalendarClock, Flame, History, ListChecks} from "lucide-react";
+import {CalendarClock, Flame, History, ListChecks} from "lucide-react";
 import {getTranslations} from "next-intl/server";
 
 import {Badge} from "@/components/ui/badge";
@@ -18,9 +18,14 @@ export async function RightSidebar() {
             {t("trendingTopics")}
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
+        <CardContent className="flex flex-wrap gap-2.5">
           {trendingTopics.map((topic) => (
-            <Badge key={topic}>{topic}</Badge>
+            <Badge
+              key={topic}
+              className="rounded-2xl border-primary/15 bg-primary/8 px-3 py-1.5 text-[11px] font-medium tracking-wide"
+            >
+              {topic}
+            </Badge>
           ))}
         </CardContent>
       </Card>
@@ -51,9 +56,7 @@ export async function RightSidebar() {
         </CardHeader>
         <CardContent className="space-y-2">
           <p className="text-sm font-medium">{activePoll.question}</p>
-          <p className="text-xs text-muted-foreground">
-            {t("votes", {count: activePoll.totalVotes})}
-          </p>
+          <p className="text-xs text-muted-foreground">{t("votes", {count: activePoll.totalVotes})}</p>
         </CardContent>
       </Card>
 
@@ -78,4 +81,3 @@ export async function RightSidebar() {
     </div>
   );
 }
-

@@ -1,9 +1,10 @@
-﻿import {MapPin} from "lucide-react";
+import {MapPin, UserRound} from "lucide-react";
 import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
 
 import {PostCard} from "@/components/feed/post-card";
 import {UserProfileCard} from "@/components/layout/user-profile-card";
+import {EmptyState} from "@/components/shared/empty-state";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {commentsByPost, memories, posts} from "@/lib/constants/mock-data";
@@ -31,6 +32,7 @@ export default async function ProfilePage({
 }) {
   const {locale} = await params;
   const t = await getTranslations({locale, namespace: "Profile"});
+  const empty = await getTranslations({locale, namespace: "EmptyStates.profile"});
 
   return (
     <div className="space-y-4">
@@ -64,9 +66,11 @@ export default async function ProfilePage({
               <p className="text-xs text-muted-foreground">{t("stats.ideas")}</p>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button>{t("editProfile")}</Button>
-            <Button variant="outline">{t("shareProfile")}</Button>
+          <div className="flex flex-wrap gap-2">
+            <Button className="min-h-11">{t("editProfile")}</Button>
+            <Button variant="outline" className="min-h-11">
+              {t("shareProfile")}
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -75,9 +79,9 @@ export default async function ProfilePage({
         <CardHeader>
           <CardTitle>{t("tabsTitle")}</CardTitle>
         </CardHeader>
-        <CardContent className="flex gap-2">
+        <CardContent className="flex flex-wrap gap-2">
           {tabs.map((tab) => (
-            <Button key={tab} variant={tab === "posts" ? "default" : "outline"}>
+            <Button key={tab} variant={tab === "posts" ? "default" : "outline"} className="min-h-11">
               {t(`tabs.${tab}`)}
             </Button>
           ))}
@@ -85,10 +89,20 @@ export default async function ProfilePage({
       </Card>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
-        <section className="space-y-4">
-          {posts.slice(0, 2).map((post) => (
-            <PostCard key={post.id} post={post} comments={commentsByPost[post.id] ?? []} />
-          ))}
+        <section className="space-y-3 sm:space-y-4">
+          {posts.length > 0 ? (
+            posts.slice(0, 2).map((post) => (
+              <PostCard key={post.id} post={post} comments={commentsByPost[post.id] ?? []} />
+            ))
+          ) : (
+            <EmptyState
+              icon={UserRound}
+              title={empty("title")}
+              description={empty("description")}
+              ctaLabel={empty("cta")}
+              ctaHref="/feed"
+            />
+          )}
         </section>
         <section className="space-y-4">
           <UserProfileCard />
@@ -110,4 +124,3 @@ export default async function ProfilePage({
     </div>
   );
 }
-

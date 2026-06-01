@@ -1,7 +1,9 @@
-﻿import type {Metadata} from "next";
+import {Archive} from "lucide-react";
+import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
 
 import {MemoryGrid} from "@/components/memory/memory-grid";
+import {EmptyState} from "@/components/shared/empty-state";
 import {Button} from "@/components/ui/button";
 import {memories} from "@/lib/constants/mock-data";
 import {Link} from "@/lib/i18n/routing";
@@ -27,20 +29,33 @@ export default async function MemoryPage({
 }) {
   const {locale} = await params;
   const t = await getTranslations({locale, namespace: "Memory"});
+  const empty = await getTranslations({locale, namespace: "EmptyStates.memories"});
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-border/70 bg-card p-4">
+      <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-[0_14px_34px_rgba(8,33,56,0.08)]">
         <h1 className="text-xl font-semibold">{t("title")}</h1>
         <p className="text-sm text-muted-foreground">{t("description")}</p>
         <div className="mt-3">
           <Link href="/timeline">
-            <Button variant="outline">{t("openTimeline")}</Button>
+            <Button variant="outline" className="min-h-11">
+              {t("openTimeline")}
+            </Button>
           </Link>
         </div>
       </div>
-      <MemoryGrid items={memories} />
+
+      {memories.length > 0 ? (
+        <MemoryGrid items={memories} />
+      ) : (
+        <EmptyState
+          icon={Archive}
+          title={empty("title")}
+          description={empty("description")}
+          ctaLabel={empty("cta")}
+          ctaHref="/memory/submit"
+        />
+      )}
     </div>
   );
 }
-

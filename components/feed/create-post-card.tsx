@@ -1,51 +1,54 @@
-﻿"use client";
+"use client";
 
 import {motion} from "framer-motion";
-import {ImagePlus, MessageSquareText, Sparkles} from "lucide-react";
+import {CalendarDays, ImagePlus, Images, Lightbulb} from "lucide-react";
 import {useTranslations} from "next-intl";
 
-import {Button} from "@/components/ui/button";
-import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {Input} from "@/components/ui/input";
+import {UserAvatar} from "@/components/layout/user-avatar";
+import {Card, CardContent} from "@/components/ui/card";
 
 const quickActions = [
-  {key: "text", icon: MessageSquareText},
-  {key: "image", icon: ImagePlus},
-  {key: "event", icon: Sparkles},
+  {key: "photo", icon: ImagePlus},
+  {key: "event", icon: CalendarDays},
+  {key: "memory", icon: Images},
+  {key: "idea", icon: Lightbulb},
 ] as const;
 
 export function CreatePostCard() {
   const t = useTranslations("FeedComposer");
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">{t("title")}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <Input
-          readOnly
-          className="h-12 rounded-2xl border-border/80 bg-muted/40"
-          placeholder={t("placeholder")}
-          aria-label={t("placeholder")}
-        />
-        <div className="grid grid-cols-3 gap-2">
+    <Card id="create-post" className="border-border/70">
+      <CardContent className="space-y-4 p-4 sm:p-5">
+        <div className="flex items-start gap-3">
+          <UserAvatar label={t("title")} className="h-11 w-11 shrink-0" />
+          <button
+            type="button"
+            className="min-h-24 w-full rounded-2xl border border-border/80 bg-muted/35 px-4 py-3 text-start text-sm text-muted-foreground transition hover:border-primary/40 hover:bg-muted/55"
+            aria-label={t("socialPrompt")}
+          >
+            {t("socialPrompt")}
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {quickActions.map((action, index) => (
-            <motion.div
+            <motion.button
               key={action.key}
+              type="button"
               initial={{opacity: 0, y: 10}}
               animate={{opacity: 1, y: 0}}
               transition={{delay: index * 0.05, duration: 0.2}}
+              whileHover={{y: -2}}
+              whileTap={{scale: 0.98}}
+              className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border/80 bg-card px-3 text-sm font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
             >
-              <Button variant="outline" className="w-full justify-center gap-1.5">
-                <action.icon size={15} />
-                {t(`quickActions.${action.key}`)}
-              </Button>
-            </motion.div>
+              <action.icon size={16} />
+              {t(`quickActions.${action.key}`)}
+            </motion.button>
           ))}
         </div>
       </CardContent>
     </Card>
   );
 }
-

@@ -1,7 +1,9 @@
-﻿import type {Metadata} from "next";
+import {CalendarDays} from "lucide-react";
+import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
 
 import {EventCard} from "@/components/events/event-card";
+import {EmptyState} from "@/components/shared/empty-state";
 import {events} from "@/lib/constants/mock-data";
 
 export async function generateMetadata({
@@ -25,6 +27,7 @@ export default async function EventsPage({
 }) {
   const {locale} = await params;
   const t = await getTranslations({locale, namespace: "Events"});
+  const empty = await getTranslations({locale, namespace: "EmptyStates.events"});
 
   return (
     <div className="space-y-4">
@@ -32,12 +35,22 @@ export default async function EventsPage({
         <h1 className="text-xl font-semibold">{t("title")}</h1>
         <p className="text-sm text-muted-foreground">{t("description")}</p>
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        {events.map((event) => (
-          <EventCard key={event.id} event={event} />
-        ))}
-      </div>
+
+      {events.length > 0 ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          {events.map((event) => (
+            <EventCard key={event.id} event={event} />
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          icon={CalendarDays}
+          title={empty("title")}
+          description={empty("description")}
+          ctaLabel={empty("cta")}
+          ctaHref="/feed"
+        />
+      )}
     </div>
   );
 }
-

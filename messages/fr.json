@@ -141,7 +141,18 @@
     "ago": "plus tôt",
     "save": "Enregistrer",
     "share": "Partager",
-    "all": "Tous"
+    "all": "Tous",
+    "categories": {
+      "community": "Communaut?",
+      "events": "Événements",
+      "memory": "Archives",
+      "ideas": "Idées"
+    },
+    "actionCounts": {
+      "likes": "{count} J'aime",
+      "comments": "{count} Commentaires",
+      "saves": "{count} Enregistrements"
+    }
   },
   "FeedComposer": {
     "title": "Créer une publication",
@@ -149,7 +160,10 @@
     "quickActions": {
       "text": "Texte",
       "image": "Image",
-      "event": "Événement"
+      "event": "Événement",
+      "photo": "Photo",
+      "memory": "Archive",
+      "idea": "Idée"
     },
     "composerTitle": "Partagez une mise à jour avec votre communauté",
     "form": {
@@ -158,7 +172,8 @@
       "mediaUrl": "URL média facultative",
       "selectCategory": "Sélectionner une catégorie",
       "publish": "Publier"
-    }
+    },
+    "socialPrompt": "Que se passe-t-il à Nouadhibou ?"
   },
   "Memory": {
     "title": "Archives",
@@ -340,5 +355,32 @@
     "seeOriginal": "Voir l’original",
     "translating": "Traduction...",
     "translationUnavailable": "Traduction indisponible"
+  },
+  "EmptyStates": {
+    "posts": {
+      "title": "Aucune publication pour le moment",
+      "description": "Soyez la premi?re personne ? partager quelque chose avec la communaut?.",
+      "cta": "Cr?er une publication"
+    },
+    "memories": {
+      "title": "Aucune archive pour le moment",
+      "description": "Aidez ? pr?server le patrimoine local en partageant le premier souvenir communautaire.",
+      "cta": "Soumettre un souvenir"
+    },
+    "ideas": {
+      "title": "Aucune id?e pour le moment",
+      "description": "Lancez la discussion avec une id?e concr?te pour Nouadhibou.",
+      "cta": "Soumettre une id?e"
+    },
+    "events": {
+      "title": "Aucun ?v?nement pour le moment",
+      "description": "Créez le premier événement et rassemblez la communauté autour d’une action locale.",
+      "cta": "Explorer le fil"
+    },
+    "profile": {
+      "title": "Aucune publication sur ce profil",
+      "description": "Partagez une première mise à jour pour développer votre présence communautaire.",
+      "cta": "Partager une mise ? jour"
+    }
   }
 }

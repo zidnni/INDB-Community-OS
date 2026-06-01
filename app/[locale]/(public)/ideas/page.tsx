@@ -1,7 +1,9 @@
-﻿import type {Metadata} from "next";
+import {Lightbulb} from "lucide-react";
+import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
 
 import {IdeaCard} from "@/components/ideas/idea-card";
+import {EmptyState} from "@/components/shared/empty-state";
 import {ideas} from "@/lib/constants/mock-data";
 
 export async function generateMetadata({
@@ -25,6 +27,7 @@ export default async function IdeasPage({
 }) {
   const {locale} = await params;
   const t = await getTranslations({locale, namespace: "Ideas"});
+  const empty = await getTranslations({locale, namespace: "EmptyStates.ideas"});
 
   return (
     <div className="space-y-4">
@@ -33,12 +36,21 @@ export default async function IdeasPage({
         <p className="text-sm text-muted-foreground">{t("description")}</p>
       </div>
 
-      <div className="space-y-4">
-        {ideas.map((idea) => (
-          <IdeaCard key={idea.id} idea={idea} />
-        ))}
-      </div>
+      {ideas.length > 0 ? (
+        <div className="space-y-3 sm:space-y-4">
+          {ideas.map((idea) => (
+            <IdeaCard key={idea.id} idea={idea} />
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          icon={Lightbulb}
+          title={empty("title")}
+          description={empty("description")}
+          ctaLabel={empty("cta")}
+          ctaHref="/ideas/submit"
+        />
+      )}
     </div>
   );
 }
-

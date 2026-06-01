@@ -1,9 +1,10 @@
-﻿import {MapPin, UserRound} from "lucide-react";
+import {MapPin, UserRound} from "lucide-react";
 import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
 import {notFound} from "next/navigation";
 
 import {MemoryCard} from "@/components/memory/memory-card";
+import {Badge} from "@/components/ui/badge";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {memories} from "@/lib/constants/mock-data";
 
@@ -38,21 +39,23 @@ export default async function MemoryDetailsPage({
   const related = memories.filter((item) => item.slug !== memory.slug).slice(0, 2);
 
   return (
-    <div className="space-y-4">
-      <Card className="overflow-hidden">
-        <img src={memory.image} alt={memory.title} className="h-72 w-full object-cover" />
-        <CardHeader>
-          <p className="text-xs font-semibold uppercase tracking-wide text-primary">{memory.year}</p>
-          <CardTitle className="text-2xl">{memory.title}</CardTitle>
+    <div className="space-y-5">
+      <Card className="overflow-hidden border-border/70 shadow-[0_16px_38px_rgba(8,33,56,0.12)]">
+        <img src={memory.image} alt={memory.title} className="h-80 w-full object-cover" />
+        <CardHeader className="space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge className="bg-brand-primary-soft text-brand-primary">{memory.year}</Badge>
+            <Badge className="rounded-lg border-primary/15 bg-primary/8 text-primary">
+              <MapPin size={12} className="me-1" />
+              {memory.location}
+            </Badge>
+          </div>
+          <CardTitle className="text-3xl leading-tight">{memory.title}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">{memory.story}</p>
-          <p className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin size={13} />
-            {memory.location}
-          </p>
-          <p className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-            <UserRound size={13} />
+        <CardContent className="space-y-4">
+          <p className="text-base leading-7 text-foreground/90">{memory.story}</p>
+          <p className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+            <UserRound size={14} />
             {t("contributedBy", {name: memory.contributor})}
           </p>
         </CardContent>
@@ -69,4 +72,3 @@ export default async function MemoryDetailsPage({
     </div>
   );
 }
-

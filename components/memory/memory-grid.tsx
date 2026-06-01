@@ -1,15 +1,12 @@
-﻿import type {MemoryItem} from "@/lib/constants/mock-data";
+import type {MemoryItem} from "@/lib/constants/mock-data";
 import {MemoryCard} from "@/components/memory/memory-card";
 
 export function MemoryGrid({items}: {items: MemoryItem[]}) {
   return (
-    <section className="columns-1 gap-4 space-y-4 md:columns-2 xl:columns-3">
+    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {items.map((memory) => (
-        <div key={memory.slug} className="break-inside-avoid">
-          <MemoryCard memory={memory} />
-        </div>
+        <MemoryCard key={memory.slug} memory={memory} />
       ))}
     </section>
   );
 }
-
