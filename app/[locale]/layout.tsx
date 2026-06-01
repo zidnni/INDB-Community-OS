@@ -72,16 +72,16 @@ export default async function LocaleLayout({
         <div
           dir={isRtl ? "rtl" : "ltr"}
           className={cn(
-            "min-h-screen pb-20 text-start lg:pb-0",
+            "min-h-screen overflow-x-clip pb-[calc(5rem+var(--safe-bottom))] text-start lg:pb-0",
             isRtl ? "font-[var(--font-arabic)]" : "font-[var(--font-latin)]",
           )}
         >
           <Navbar />
-          <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[250px_minmax(0,1fr)] xl:grid-cols-[250px_minmax(0,1fr)_310px]">
+          <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-4 px-3 py-4 sm:gap-5 sm:px-4 sm:py-5 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-6 lg:py-6 xl:grid-cols-[250px_minmax(0,1fr)_310px]">
             <aside className="hidden lg:block">
               <Sidebar />
             </aside>
-            <main>
+            <main className="min-w-0">
               <PageTransition>{children}</PageTransition>
             </main>
             <aside className="hidden xl:block">

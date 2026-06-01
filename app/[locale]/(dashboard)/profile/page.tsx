@@ -35,34 +35,34 @@ export default async function ProfilePage({
   const empty = await getTranslations({locale, namespace: "EmptyStates.profile"});
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       <Card className="overflow-hidden">
-        <div className="h-44 bg-gradient-to-r from-primary/95 via-accent/75 to-primary/70" />
-        <CardContent className="-mt-12 space-y-3">
-          <div className="h-24 w-24 rounded-2xl border-4 border-card bg-muted p-1">
+        <div className="h-36 bg-gradient-to-r from-primary/95 via-accent/75 to-primary/70 sm:h-44" />
+        <CardContent className="-mt-10 space-y-3 sm:-mt-12">
+          <div className="h-20 w-20 rounded-2xl border-4 border-card bg-muted p-1 sm:h-24 sm:w-24">
             <div className="flex h-full w-full items-center justify-center rounded-xl bg-card text-2xl font-semibold">
               AS
             </div>
           </div>
           <div>
-            <h1 className="text-2xl font-semibold">Ahmed Salem</h1>
+            <h1 className="text-xl font-semibold sm:text-2xl">Ahmed Salem</h1>
             <p className="text-sm text-muted-foreground">{t("bio")}</p>
             <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
               <MapPin size={13} />
               {t("location")}
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="rounded-xl bg-muted/50 p-3 text-center">
-              <p className="text-lg font-semibold">56</p>
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+            <div className="rounded-xl bg-muted/50 p-2.5 text-center sm:p-3">
+              <p className="text-base font-semibold sm:text-lg">56</p>
               <p className="text-xs text-muted-foreground">{t("stats.posts")}</p>
             </div>
-            <div className="rounded-xl bg-muted/50 p-3 text-center">
-              <p className="text-lg font-semibold">18</p>
+            <div className="rounded-xl bg-muted/50 p-2.5 text-center sm:p-3">
+              <p className="text-base font-semibold sm:text-lg">18</p>
               <p className="text-xs text-muted-foreground">{t("stats.memories")}</p>
             </div>
-            <div className="rounded-xl bg-muted/50 p-3 text-center">
-              <p className="text-lg font-semibold">11</p>
+            <div className="rounded-xl bg-muted/50 p-2.5 text-center sm:p-3">
+              <p className="text-base font-semibold sm:text-lg">11</p>
               <p className="text-xs text-muted-foreground">{t("stats.ideas")}</p>
             </div>
           </div>

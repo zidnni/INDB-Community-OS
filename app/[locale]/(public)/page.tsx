@@ -34,16 +34,16 @@ export default async function LandingPage({
   const t = await getTranslations({locale, namespace: "Landing"});
 
   return (
-    <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border border-border/80 bg-card/95 p-6 shadow-[0_18px_40px_rgba(8,33,56,0.09)] md:p-9">
+    <div className="space-y-4 sm:space-y-6">
+      <section className="relative overflow-hidden rounded-3xl border border-border/80 bg-card/95 p-4 shadow-[0_18px_40px_rgba(8,33,56,0.09)] sm:p-6 md:p-9">
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(13,68,102,0.16)_0%,rgba(34,158,170,0.13)_48%,rgba(13,68,102,0.06)_100%)]" />
-        <div className="relative space-y-4">
+        <div className="relative space-y-3 sm:space-y-4">
           <Logo variant="full" size="lg" priority className="mx-auto w-fit md:mx-0" />
           <p className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
             <Sparkles size={14} />
             {t("tagline")}
           </p>
-          <h1 className="max-w-3xl text-3xl font-semibold leading-tight md:text-5xl">{t("heroTitle")}</h1>
+          <h1 className="max-w-3xl text-2xl font-semibold leading-tight sm:text-3xl md:text-5xl">{t("heroTitle")}</h1>
           <p className="max-w-2xl text-sm text-muted-foreground md:text-base">{t("heroDescription")}</p>
           <p className="text-sm font-medium">{t("mottoPrimary")}</p>
           <p className="text-xs text-muted-foreground">{t("mottoSecondary")}</p>

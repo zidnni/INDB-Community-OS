@@ -21,8 +21,9 @@ export function NotificationDropdown() {
         size="sm"
         aria-label={t("button")}
         onClick={() => setOpen((prev) => !prev)}
+        className="min-h-11 min-w-11 rounded-full p-0"
       >
-        <Bell size={17} />
+        <Bell size={18} />
       </Button>
 
       <AnimatePresence>
@@ -32,7 +33,7 @@ export function NotificationDropdown() {
             animate={{opacity: 1, y: 0}}
             exit={{opacity: 0, y: 8}}
             transition={{duration: 0.2}}
-            className="absolute end-0 top-12 z-40 w-[290px]"
+            className="absolute end-0 top-12 z-40 w-[min(90vw,290px)]"
           >
             <Card className="border-border/80 bg-card">
               <CardHeader>

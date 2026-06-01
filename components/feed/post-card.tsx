@@ -106,24 +106,24 @@ export function PostCard({
       className="rounded-2xl"
     >
       <Card className="overflow-hidden border-border/70 shadow-[0_12px_32px_rgba(8,33,56,0.08)]">
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-2.5 sm:pb-3">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3">
               <UserAvatar label={post.author} className="h-11 w-11 shrink-0" />
               <div className="space-y-1">
-                <CardTitle className="text-base leading-none">{post.author}</CardTitle>
-                <p className="text-xs text-muted-foreground">
+                <CardTitle className="text-[15px] leading-none sm:text-base">{post.author}</CardTitle>
+                <p className="text-[11px] text-muted-foreground sm:text-xs">
                   {post.role} | {post.timeAgo} {t("ago")}
                 </p>
               </div>
             </div>
-            <Badge className="bg-brand-primary-soft text-brand-primary">{t(`categories.${category}`)}</Badge>
+            <Badge className="bg-brand-primary-soft px-2 py-1 text-[10px] text-brand-primary sm:text-xs">{t(`categories.${category}`)}</Badge>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-4 pt-0">
+        <CardContent className="space-y-3.5 pt-0 sm:space-y-4">
           <div className="space-y-1.5">
-            <p className="text-[15px] leading-7 text-foreground/95">{visibleContent}</p>
+            <p className="text-sm leading-6 text-foreground/95 sm:text-[15px] sm:leading-7">{visibleContent}</p>
 
             {canTranslate ? (
               <div className="space-y-1">
@@ -152,32 +152,32 @@ export function PostCard({
               <img
                 src={post.image}
                 alt={post.content}
-                className="h-72 w-full object-cover transition duration-300 hover:scale-[1.02]"
+                className="h-56 w-full object-cover transition duration-300 hover:scale-[1.02] sm:h-72"
               />
             </div>
           ) : null}
 
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
             <Button
               variant="ghost"
               className={cn(
-                "min-h-11 justify-start gap-2 rounded-xl px-3 text-sm",
+                "min-h-11 justify-center gap-1.5 rounded-xl px-2 text-xs sm:justify-start sm:gap-2 sm:px-3 sm:text-sm",
                 liked ? "text-primary" : "text-muted-foreground",
               )}
               onClick={() => setLiked((value) => !value)}
             >
-              <Heart size={16} className={cn(liked ? "fill-primary" : "")} />
+              <Heart size={16} className={cn("shrink-0", liked ? "fill-primary" : "")} />
               <span>{t("actionCounts.likes", {count: likeCount})}</span>
             </Button>
-            <Button variant="ghost" className="min-h-11 justify-start gap-2 rounded-xl px-3 text-sm text-muted-foreground">
+            <Button variant="ghost" className="min-h-11 justify-center gap-1.5 rounded-xl px-2 text-xs text-muted-foreground sm:justify-start sm:gap-2 sm:px-3 sm:text-sm">
               <MessageCircle size={16} />
               <span>{t("actionCounts.comments", {count: post.comments})}</span>
             </Button>
-            <Button variant="ghost" className="min-h-11 justify-start gap-2 rounded-xl px-3 text-sm text-muted-foreground">
+            <Button variant="ghost" className="min-h-11 justify-center gap-1.5 rounded-xl px-2 text-xs text-muted-foreground sm:justify-start sm:gap-2 sm:px-3 sm:text-sm">
               <Bookmark size={16} />
               <span>{t("actionCounts.saves", {count: saveCount})}</span>
             </Button>
-            <Button variant="ghost" className="min-h-11 justify-start gap-2 rounded-xl px-3 text-sm text-muted-foreground">
+            <Button variant="ghost" className="min-h-11 justify-center gap-1.5 rounded-xl px-2 text-xs text-muted-foreground sm:justify-start sm:gap-2 sm:px-3 sm:text-sm">
               <Share2 size={16} />
               <span>{t("share")}</span>
             </Button>

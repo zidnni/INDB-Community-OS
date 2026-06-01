@@ -19,11 +19,11 @@ export function EventCard({event}: {event: EventItem}) {
       transition={{duration: 0.25, ease: "easeOut"}}
     >
       <Card className="overflow-hidden border-border/70">
-        <img src={event.image} alt={event.title} className="h-44 w-full object-cover" />
-        <CardHeader>
-          <CardTitle className="text-base">{event.title}</CardTitle>
+        <img src={event.image} alt={event.title} className="h-40 w-full object-cover sm:h-44" />
+        <CardHeader className="pb-2.5">
+          <CardTitle className="text-[15px] sm:text-base">{event.title}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-2 pt-0">
           <p className="inline-flex items-center gap-1 text-xs text-muted-foreground">
             <CalendarDays size={13} />
             {event.date}

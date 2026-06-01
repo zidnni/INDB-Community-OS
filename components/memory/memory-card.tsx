@@ -18,17 +18,17 @@ export function MemoryCard({memory}: {memory: MemoryItem}) {
     >
       <Link href={`/memory/${memory.slug}` as never} className="block">
         <div className="relative">
-          <img src={memory.image} alt={memory.title} className="h-56 w-full object-cover" />
+          <img src={memory.image} alt={memory.title} className="h-52 w-full object-cover sm:h-56" />
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/55 to-transparent p-3">
             <Badge className="bg-card/85 text-foreground">{memory.year}</Badge>
           </div>
         </div>
 
-        <div className="space-y-3 p-4">
-          <h3 className="text-lg font-semibold leading-tight">{memory.title}</h3>
+        <div className="space-y-2.5 p-4">
+          <h3 className="text-base font-semibold leading-tight sm:text-lg">{memory.title}</h3>
           <p className="text-sm text-muted-foreground">{memory.summary}</p>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <Badge className="rounded-lg border-primary/15 bg-primary/8 px-2 py-1 text-[11px] font-medium">
               <MapPin size={12} className="me-1" />
               {memory.location}

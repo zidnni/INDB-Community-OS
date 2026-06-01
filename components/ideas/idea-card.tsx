@@ -16,16 +16,16 @@ export function IdeaCard({idea}: {idea: IdeaItem}) {
       transition={{duration: 0.28, ease: "easeOut"}}
     >
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-2.5">
           <div className="flex items-start justify-between gap-2">
-            <CardTitle className="inline-flex items-center gap-2 text-base">
+            <CardTitle className="inline-flex items-center gap-2 text-[15px] sm:text-base">
               <Lightbulb size={16} />
               {idea.title}
             </CardTitle>
             <IdeaStatusBadge status={idea.status} />
           </div>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-2.5 pt-0 sm:space-y-3">
           <p className="text-sm text-muted-foreground">{idea.description}</p>
           <VoteButton votes={idea.votes} />
         </CardContent>

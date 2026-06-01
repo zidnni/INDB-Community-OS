@@ -26,14 +26,14 @@ export function ProjectCard({project}: {project: ProjectItem}) {
       transition={{duration: 0.25, ease: "easeOut"}}
     >
       <Card className="overflow-hidden border-border/70">
-        <img src={project.image} alt={project.title} className="h-44 w-full object-cover" />
-        <CardHeader>
+        <img src={project.image} alt={project.title} className="h-40 w-full object-cover sm:h-44" />
+        <CardHeader className="pb-2.5">
           <div className="flex items-start justify-between gap-2">
-            <CardTitle className="text-base">{project.title}</CardTitle>
+            <CardTitle className="text-[15px] sm:text-base">{project.title}</CardTitle>
             <Badge>{t(`status.${statusKey}`)}</Badge>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-2.5 pt-0 sm:space-y-3">
           <div>
             <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
               <p>{t("progress")}</p>

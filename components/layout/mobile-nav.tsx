@@ -1,9 +1,8 @@
 ﻿"use client";
 
-import {Images, Lightbulb, Newspaper, UserRound} from "lucide-react";
+import {Home, Images, Lightbulb, Newspaper, UserRound} from "lucide-react";
 import {useTranslations} from "next-intl";
 
-import {Logo} from "@/components/layout/Logo";
 import {Link, usePathname} from "@/lib/i18n/routing";
 import {cn} from "@/lib/utils/cn";
 
@@ -16,6 +15,7 @@ const bottomItems = [
 ] as const;
 
 const iconMap = {
+  "/": Home,
   "/feed": Newspaper,
   "/memory": Images,
   "/ideas": Lightbulb,
@@ -27,8 +27,8 @@ export function MobileNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-card/95 px-2 pb-2 pt-1 backdrop-blur lg:hidden">
-      <ul className="grid grid-cols-5 gap-1">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/80 bg-card/95 pb-[calc(var(--safe-bottom)+0.35rem)] ps-[calc(var(--safe-left)+0.5rem)] pe-[calc(var(--safe-right)+0.5rem)] pt-1.5 shadow-[0_-10px_25px_rgba(7,31,54,0.12)] backdrop-blur lg:hidden">
+      <ul className="grid grid-cols-5 gap-0.5">
         {bottomItems.map((item) => {
           const Icon = iconMap[item.href as keyof typeof iconMap];
           const active =
@@ -41,14 +41,21 @@ export function MobileNav() {
               <Link
                 href={item.href as never}
                 className={cn(
-                  "flex min-h-11 flex-col items-center justify-center rounded-xl px-2 py-1.5 text-[11px] font-medium",
+                  "group flex min-h-14 flex-1 flex-col items-center justify-center rounded-xl px-1 py-1 text-[11px] font-medium transition",
                   active
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted",
+                    ? "text-primary"
+                    : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
                 )}
               >
-                {item.href === "/" ? <Logo variant="icon" size="sm" className="w-16" /> : Icon ? <Icon size={15} /> : null}
-                <span className="mt-1">{t(`items.${item.key}.short`)}</span>
+                {Icon ? <Icon size={18} className={cn("transition", active ? "scale-105" : "group-hover:scale-105")} /> : null}
+                <span className="mt-1 w-full truncate text-center leading-none">{t(`items.${item.key}.short`)}</span>
+                <span
+                  aria-hidden
+                  className={cn(
+                    "mt-1 h-1 w-6 rounded-full transition",
+                    active ? "bg-primary opacity-100" : "bg-transparent opacity-0",
+                  )}
+                />
               </Link>
             </li>
           );
