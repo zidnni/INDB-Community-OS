@@ -5,10 +5,11 @@ import {getTranslations} from "next-intl/server";
 import {IdeaCard} from "@/components/ideas/idea-card";
 import {Logo} from "@/components/layout/Logo";
 import {MemoryCard} from "@/components/memory/memory-card";
-import {PollCard} from "@/components/polls/poll-card";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {ideas, memories, polls, posts} from "@/lib/constants/mock-data";
+import {getApprovedMemories} from "@/lib/data/memories";
+import {getIdeas} from "@/lib/data/ideas";
+import {getPosts} from "@/lib/data/posts";
 import {Link} from "@/lib/i18n/routing";
 
 export async function generateMetadata({
@@ -32,6 +33,12 @@ export default async function LandingPage({
 }) {
   const {locale} = await params;
   const t = await getTranslations({locale, namespace: "Landing"});
+
+  const [latestPosts, featuredMemories, communityIdeas] = await Promise.all([
+    getPosts(),
+    getApprovedMemories(),
+    getIdeas(),
+  ]);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -62,36 +69,25 @@ export default async function LandingPage({
         </div>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("latestPosts")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {posts.slice(0, 3).map((post) => (
-              <div key={post.id} className="rounded-xl bg-muted/50 p-3">
-                <p className="text-sm font-semibold">{post.author}</p>
-                <p className="text-sm text-muted-foreground">{post.content}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("pollPreview")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <PollCard poll={polls[0]} />
-          </CardContent>
-        </Card>
-      </section>
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("latestPosts")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {latestPosts.slice(0, 3).map((post) => (
+            <div key={post.id} className="rounded-xl bg-muted/50 p-3">
+              <p className="text-sm font-semibold">{post.author?.full_name ?? post.author?.username ?? "Community"}</p>
+              <p className="text-sm text-muted-foreground">{post.content}</p>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
 
       <section>
         <h2 className="mb-3 text-xl font-semibold">{t("featuredMemories")}</h2>
         <div className="grid gap-4 md:grid-cols-2">
-          {memories.slice(0, 2).map((memory) => (
-            <MemoryCard key={memory.slug} memory={memory} />
+          {featuredMemories.slice(0, 2).map((memory) => (
+            <MemoryCard key={memory.id} memory={memory} />
           ))}
         </div>
       </section>
@@ -99,7 +95,7 @@ export default async function LandingPage({
       <section>
         <h2 className="mb-3 text-xl font-semibold">{t("communityIdeas")}</h2>
         <div className="grid gap-4 md:grid-cols-2">
-          {ideas.slice(0, 2).map((idea) => (
+          {communityIdeas.slice(0, 2).map((idea) => (
             <IdeaCard key={idea.id} idea={idea} />
           ))}
         </div>

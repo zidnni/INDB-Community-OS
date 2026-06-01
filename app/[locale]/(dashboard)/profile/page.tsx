@@ -7,9 +7,21 @@ import {UserProfileCard} from "@/components/layout/user-profile-card";
 import {EmptyState} from "@/components/shared/empty-state";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {commentsByPost, memories, posts} from "@/lib/constants/mock-data";
+import {getCommentsByPost} from "@/lib/data/comments";
+import {getUserPosts} from "@/lib/data/posts";
+import {getCurrentProfile} from "@/lib/data/profile";
+import {getUserMemories} from "@/lib/data/memories";
+import {getUserIdeas} from "@/lib/data/ideas";
+import {redirect} from "@/lib/i18n/routing";
 
 const tabs = ["posts", "memories", "ideas"] as const;
+
+function getInitials(name: string | null | undefined): string {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return parts[0].substring(0, 2).toUpperCase();
+}
 
 export async function generateMetadata({
   params,
@@ -31,8 +43,22 @@ export default async function ProfilePage({
   params: Promise<{locale: string}>;
 }) {
   const {locale} = await params;
+  const profile = await getCurrentProfile();
+
+  if (!profile) {
+    redirect({href: "/login", locale});
+    return;
+  }
+
   const t = await getTranslations({locale, namespace: "Profile"});
   const empty = await getTranslations({locale, namespace: "EmptyStates.profile"});
+
+  const posts = await getUserPosts(profile.id);
+  const memories = await getUserMemories(profile.id);
+  const ideas = await getUserIdeas(profile.id);
+
+  const displayName = profile.full_name ?? profile.username ?? t("anonymous");
+  const initials = getInitials(displayName);
 
   return (
     <div className="space-y-3 sm:space-y-4">
@@ -41,28 +67,30 @@ export default async function ProfilePage({
         <CardContent className="-mt-10 space-y-3 sm:-mt-12">
           <div className="h-20 w-20 rounded-2xl border-4 border-card bg-muted p-1 sm:h-24 sm:w-24">
             <div className="flex h-full w-full items-center justify-center rounded-xl bg-card text-2xl font-semibold">
-              AS
+              {initials}
             </div>
           </div>
           <div>
-            <h1 className="text-xl font-semibold sm:text-2xl">Ahmed Salem</h1>
-            <p className="text-sm text-muted-foreground">{t("bio")}</p>
-            <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
-              <MapPin size={13} />
-              {t("location")}
-            </p>
+            <h1 className="text-xl font-semibold sm:text-2xl">{displayName}</h1>
+            <p className="text-sm text-muted-foreground">{profile.bio ?? t("bio")}</p>
+            {profile.city ? (
+              <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin size={13} />
+                {profile.city}
+              </p>
+            ) : null}
           </div>
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
             <div className="rounded-xl bg-muted/50 p-2.5 text-center sm:p-3">
-              <p className="text-base font-semibold sm:text-lg">56</p>
+              <p className="text-base font-semibold sm:text-lg">{posts.length}</p>
               <p className="text-xs text-muted-foreground">{t("stats.posts")}</p>
             </div>
             <div className="rounded-xl bg-muted/50 p-2.5 text-center sm:p-3">
-              <p className="text-base font-semibold sm:text-lg">18</p>
+              <p className="text-base font-semibold sm:text-lg">{memories.length}</p>
               <p className="text-xs text-muted-foreground">{t("stats.memories")}</p>
             </div>
             <div className="rounded-xl bg-muted/50 p-2.5 text-center sm:p-3">
-              <p className="text-base font-semibold sm:text-lg">11</p>
+              <p className="text-base font-semibold sm:text-lg">{ideas.length}</p>
               <p className="text-xs text-muted-foreground">{t("stats.ideas")}</p>
             </div>
           </div>
@@ -91,9 +119,12 @@ export default async function ProfilePage({
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
         <section className="space-y-3 sm:space-y-4">
           {posts.length > 0 ? (
-            posts.slice(0, 2).map((post) => (
-              <PostCard key={post.id} post={post} comments={commentsByPost[post.id] ?? []} />
-            ))
+            await Promise.all(
+              posts.slice(0, 2).map(async (post) => {
+                const comments = await getCommentsByPost(post.id);
+                return <PostCard key={post.id} post={post} comments={comments} />;
+              }),
+            )
           ) : (
             <EmptyState
               icon={UserRound}
@@ -112,9 +143,9 @@ export default async function ProfilePage({
             </CardHeader>
             <CardContent className="space-y-2">
               {memories.slice(0, 3).map((memory) => (
-                <div key={memory.slug} className="rounded-xl bg-muted/60 p-2 text-sm">
+                <div key={memory.id} className="rounded-xl bg-muted/60 p-2 text-sm">
                   <p className="font-semibold">{memory.title}</p>
-                  <p className="text-xs text-muted-foreground">{memory.year}</p>
+                  <p className="text-xs text-muted-foreground">{memory.decade ?? memory.year ?? "?"}</p>
                 </div>
               ))}
             </CardContent>

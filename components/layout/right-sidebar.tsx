@@ -1,13 +1,21 @@
-import {CalendarClock, Flame, History, ListChecks} from "lucide-react";
+import {CalendarClock, Flame, History} from "lucide-react";
 import {getTranslations} from "next-intl/server";
 
 import {Badge} from "@/components/ui/badge";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {featuredMemories, polls, trendingTopics} from "@/lib/constants/mock-data";
+import {getApprovedMemories} from "@/lib/data/memories";
+
+const trendingTopics = [
+  "#Nouadhibou",
+  "#BeachCleanup",
+  "#RailwayStories",
+  "#YouthCoding",
+  "#PublicLibrary",
+] as const;
 
 export async function RightSidebar() {
   const t = await getTranslations("RightSidebar");
-  const activePoll = polls[0];
+  const featuredMemories = await getApprovedMemories();
 
   return (
     <div className="sticky top-22 space-y-4">
@@ -38,25 +46,12 @@ export async function RightSidebar() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          {featuredMemories.map((memory) => (
-            <div key={memory.title} className="rounded-xl bg-muted/60 p-2">
+          {featuredMemories.slice(0, 3).map((memory) => (
+            <div key={memory.id} className="rounded-xl bg-muted/60 p-2">
               <p className="text-sm font-semibold">{memory.title}</p>
-              <p className="text-xs text-muted-foreground">{memory.year}</p>
+              <p className="text-xs text-muted-foreground">{memory.year ?? memory.decade ?? "?"}</p>
             </div>
           ))}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="inline-flex items-center gap-2 text-base">
-            <ListChecks size={16} />
-            {t("activePoll")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <p className="text-sm font-medium">{activePoll.question}</p>
-          <p className="text-xs text-muted-foreground">{t("votes", {count: activePoll.totalVotes})}</p>
         </CardContent>
       </Card>
 

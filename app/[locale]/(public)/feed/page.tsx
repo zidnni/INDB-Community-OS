@@ -5,7 +5,8 @@ import {getTranslations} from "next-intl/server";
 import {CreatePostCard} from "@/components/feed/create-post-card";
 import {PostCard} from "@/components/feed/post-card";
 import {EmptyState} from "@/components/shared/empty-state";
-import {commentsByPost, posts} from "@/lib/constants/mock-data";
+import {getCommentsByPost} from "@/lib/data/comments";
+import {getPosts} from "@/lib/data/posts";
 
 export async function generateMetadata({
   params,
@@ -28,6 +29,7 @@ export default async function FeedPage({
 }) {
   const {locale} = await params;
   const empty = await getTranslations({locale, namespace: "EmptyStates.posts"});
+  const posts = await getPosts();
 
   return (
     <div className="space-y-3 sm:space-y-4">
@@ -35,9 +37,12 @@ export default async function FeedPage({
 
       {posts.length > 0 ? (
         <div className="space-y-3 sm:space-y-4">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} comments={commentsByPost[post.id] ?? []} />
-          ))}
+          {await Promise.all(
+            posts.map(async (post) => {
+              const comments = await getCommentsByPost(post.id);
+              return <PostCard key={post.id} post={post} comments={comments} />;
+            }),
+          )}
         </div>
       ) : (
         <EmptyState

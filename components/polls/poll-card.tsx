@@ -2,7 +2,7 @@
 
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import type {PollItem} from "@/lib/constants/mock-data";
+import type {PollItem} from "@/types/community";
 
 export async function PollCard({poll}: {poll: PollItem}) {
   const t = await getTranslations("Polls");

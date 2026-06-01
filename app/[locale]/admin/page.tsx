@@ -3,23 +3,10 @@ import {getTranslations} from "next-intl/server";
 
 import {AdminStatsCard} from "@/components/admin/admin-stats-card";
 import {ModerationQueue} from "@/components/admin/moderation-queue";
-
-const queue = [
-  {
-    id: "m-1",
-    target_type: "memory",
-    reasonKey: "yearConfirmation",
-    status: "pending",
-    created_at: "2026-06-01",
-  },
-  {
-    id: "m-2",
-    target_type: "post",
-    reasonKey: "respectfulTone",
-    status: "pending",
-    created_at: "2026-06-01",
-  },
-] as const;
+import {getPostsTodayCount} from "@/lib/data/posts";
+import {getPendingMemoriesCount} from "@/lib/data/memories";
+import {getIdeasCount} from "@/lib/data/ideas";
+import {getReportsCount, getPendingReports} from "@/lib/data/reports";
 
 export async function generateMetadata({
   params,
@@ -43,18 +30,29 @@ export default async function AdminPage({
   const {locale} = await params;
   const t = await getTranslations({locale, namespace: "Admin"});
 
+  const [postsToday, pendingMemories, openIdeas, reportsCount, pendingReports] = await Promise.all([
+    getPostsTodayCount(),
+    getPendingMemoriesCount(),
+    getIdeasCount(),
+    getReportsCount(),
+    getPendingReports(),
+  ]);
+
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <AdminStatsCard label={t("stats.postsToday")} value={38} />
-        <AdminStatsCard label={t("stats.pendingMemories")} value={9} />
-        <AdminStatsCard label={t("stats.openIdeas")} value={17} />
-        <AdminStatsCard label={t("stats.reportsQueue")} value={2} />
+        <AdminStatsCard label={t("stats.postsToday")} value={postsToday} />
+        <AdminStatsCard label={t("stats.pendingMemories")} value={pendingMemories} />
+        <AdminStatsCard label={t("stats.openIdeas")} value={openIdeas} />
+        <AdminStatsCard label={t("stats.reportsQueue")} value={reportsCount} />
       </div>
       <ModerationQueue
-        items={queue.map((item) => ({
-          ...item,
-          reason: t(`reasons.${item.reasonKey}`),
+        items={pendingReports.map((report) => ({
+          id: report.id,
+          target_type: report.target_type,
+          reason: report.reason,
+          status: report.status,
+          created_at: report.created_at,
         }))}
       />
     </div>

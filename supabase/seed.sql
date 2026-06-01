@@ -1,109 +1,133 @@
-insert into public.categories (slug, name, description)
+-- ============================================================
+-- CATEGORIES
+-- ============================================================
+insert into public.categories (slug, name_en, name_fr, name_ar, icon, color)
 values
-  ('history', 'History', 'Stories and archives of Nouadhibou'),
-  ('local-news', 'Local News', 'Community updates and local developments'),
-  ('education', 'Education', 'Schools, training and knowledge sharing'),
-  ('health', 'Health', 'Public health information and initiatives'),
-  ('environment', 'Environment', 'Coastal protection and sustainability'),
-  ('fishing', 'Fishing', 'Fishing sector and livelihoods'),
-  ('port', 'Port', 'Port activities and maritime economy'),
-  ('railway', 'Railway', 'Railway history and current relevance'),
-  ('sports', 'Sports', 'Community sports activities'),
-  ('culture', 'Culture', 'Traditions, arts and cultural life'),
-  ('jobs', 'Jobs', 'Employment and opportunities'),
-  ('youth', 'Youth', 'Youth initiatives and leadership'),
-  ('diaspora', 'Diaspora', 'Connections with Nouadhibou abroad')
+  ('local-news',    'Local News',    'Actualités Locales',    'أخبار محلية',    'newspaper',    '#3B82F6'),
+  ('history',       'History',       'Histoire',              'تاريخ',           'history',      '#8B5CF6'),
+  ('education',     'Education',     'Éducation',             'تعليم',           'graduation-cap', '#10B981'),
+  ('health',        'Health',        'Santé',                 'صحة',             'heart-pulse',  '#EF4444'),
+  ('environment',   'Environment',   'Environnement',         'بيئة',            'leaf',         '#22C55E'),
+  ('fishing',       'Fishing',       'Pêche',                 'صيد السمك',       'fish',         '#0EA5E9'),
+  ('port',          'Port',          'Port',                  'ميناء',           'anchor',       '#F59E0B'),
+  ('railway',       'Railway',       'Chemin de Fer',         'سكة حديد',        'train',        '#6366F1'),
+  ('sports',        'Sports',        'Sports',                'رياضة',           'trophy',       '#F97316'),
+  ('culture',       'Culture',       'Culture',               'ثقافة',           'palette',      '#EC4899'),
+  ('jobs',          'Jobs',          'Emplois',               'وظائف',           'briefcase',    '#6B7280'),
+  ('youth',         'Youth',         'Jeunesse',              'شباب',            'sparkles',     '#14B8A6'),
+  ('diaspora',      'Diaspora',      'Diaspora',              'مغتربون',         'globe',        '#7C3AED'),
+  ('events',        'Events',        'Événements',            'فعاليات',         'calendar',     '#E11D48')
 on conflict (slug) do update set
-  name = excluded.name,
-  description = excluded.description;
+  name_en = excluded.name_en,
+  name_fr = excluded.name_fr,
+  name_ar = excluded.name_ar,
+  icon = excluded.icon,
+  color = excluded.color;
 
-insert into public.posts (title, content, category_id)
+-- ============================================================
+-- DEMO POSTS (tied to categories, no author initially)
+-- ============================================================
+insert into public.posts (title, content, category_id, type, status)
 values
   (
     'Beach cleanup campaign',
     'Volunteers organized a cleanup around the public beach this weekend. Let us schedule monthly cleanups and add school participation.',
-    (select id from public.categories where slug = 'environment')
+    (select id from public.categories where slug = 'environment'),
+    'community', 'published'
   ),
   (
     'Youth AI workshop',
     'A youth coding workshop introduced AI basics and practical tools for students. We need mentors and donated laptops.',
-    (select id from public.categories where slug = 'youth')
+    (select id from public.categories where slug = 'youth'),
+    'community', 'published'
   ),
   (
     'Fishing port update',
     'Local fishers shared safety and logistics concerns. A community feedback session is proposed to prioritize improvements.',
-    (select id from public.categories where slug = 'fishing')
+    (select id from public.categories where slug = 'fishing'),
+    'community', 'published'
   ),
   (
     'Historical railway photo',
     'Residents shared a restored photo from the railway station era and asked for a public memory exhibit.',
-    (select id from public.categories where slug = 'railway')
+    (select id from public.categories where slug = 'railway'),
+    'community', 'published'
   ),
   (
     'Community library idea',
     'Families requested a shared reading space near schools. Let us map spaces and partners to launch a pilot library.',
-    (select id from public.categories where slug = 'education')
+    (select id from public.categories where slug = 'education'),
+    'community', 'published'
   );
 
-insert into public.memories (title, story, era_label, location, status, category_id)
+-- ============================================================
+-- DEMO MEMORIES
+-- ============================================================
+insert into public.memories (title, description, decade, year, location, verification_status, tags)
 values
   (
-    'Old railway station',
-    'Residents remember the station as a key meeting point where many families welcomed relatives and shared news.',
-    '1970s-1990s',
-    'Railway district',
-    'approved',
-    (select id from public.categories where slug = 'railway')
+    'Old Railway Station',
+    'A gathering place where families welcomed arrivals from the interior. For decades, the railway station served as a social heart.',
+    '1970s', 1978, 'Nouadhibou Railway District', 'approved',
+    array['railway', 'station', '1970s']
   ),
   (
-    'Fishing port in the 1980s',
-    'Elders recall the rhythm of boats, ice supply, and neighborhood cooperation that sustained port life.',
-    '1980s',
-    'Fishing port',
-    'approved',
-    (select id from public.categories where slug = 'fishing')
+    'Fishing Port in the 1980s',
+    'The port was full of life before sunrise. Nets, ice, and teamwork powered daily livelihoods, creating shared routines across neighborhoods.',
+    '1980s', 1984, 'Port Artisanal', 'approved',
+    array['fishing', 'port', '1980s']
   ),
   (
-    'School memories',
-    'Former students shared stories of teachers who inspired civic responsibility and community pride.',
-    '1990s',
-    'Public schools',
-    'approved',
-    (select id from public.categories where slug = 'education')
+    'School Memories',
+    'Students remember teachers who emphasized discipline, service, and hope. Many community leaders still credit those lessons.',
+    '1990s', 1992, 'Central Nouadhibou', 'approved',
+    array['education', 'school', '1990s']
   ),
   (
-    'Old market photos',
-    'Traders documented old market scenes to preserve local economic memory and family histories.',
-    '1980s-2000s',
-    'Old market',
-    'approved',
-    (select id from public.categories where slug = 'culture')
+    'Old Market Photos',
+    'Vendors and families turned the market into a social map of the city. These photos preserve faces, rhythms, and small acts of trust.',
+    '1990s', 1999, 'Old Market', 'approved',
+    array['market', 'culture', '1990s']
+  ),
+  (
+    'Cansado Neighborhood Stories',
+    'Residents recall the early days of Cansado, the sense of community, and the small shops that brought everyone together.',
+    '1980s', 1985, 'Cansado', 'approved',
+    array['neighborhood', 'community', '1980s']
   );
 
+-- ============================================================
+-- DEMO IDEAS
+-- ============================================================
 insert into public.ideas (title, description, status, category_id)
 values
   (
-    'Public library',
-    'Create a community-led public library with youth volunteer programs and digital literacy corners.',
-    'open',
+    'Public Library and Study Hub',
+    'Create a community reading space with internet access, mentorship hours, and volunteer-led tutoring for students of all ages.',
+    'submitted',
     (select id from public.categories where slug = 'education')
   ),
   (
-    'Beach cleanup',
-    'Launch a monthly shoreline cleanup calendar with neighborhood teams and school ambassadors.',
-    'open',
+    'Monthly Beach Cleanup Program',
+    'Coordinate schools, youth clubs, and local businesses for recurring cleanup actions with clearly assigned zones and schedules.',
+    'under_review',
     (select id from public.categories where slug = 'environment')
   ),
   (
-    'Youth coding club',
-    'Host a recurring coding club with local mentors and beginner-friendly workshops for teenagers.',
-    'open',
+    'Youth Coding Club',
+    'Weekly coding sessions focused on practical problem solving, civic app development, and digital literacy for teenagers.',
+    'accepted',
     (select id from public.categories where slug = 'youth')
   ),
   (
-    'Historical archive campaign',
-    'Collect oral histories, photographs and documents to build a shared city archive for future generations.',
-    'open',
+    'Community Historical Archive Campaign',
+    'Collect oral histories, photographs and documents to build a shared digital city archive accessible to future generations.',
+    'in_progress',
     (select id from public.categories where slug = 'history')
+  ),
+  (
+    'Diaspora Mentorship Network',
+    'Connect Nouadhibou professionals abroad with local youth for career guidance, skill-sharing, and remote volunteering opportunities.',
+    'submitted',
+    (select id from public.categories where slug = 'diaspora')
   );
-

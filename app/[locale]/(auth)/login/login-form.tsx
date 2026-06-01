@@ -1,30 +1,30 @@
-﻿"use client";
+"use client";
 
-import {useState} from "react";
 import {useTranslations} from "next-intl";
+import {useFormStatus} from "react-dom";
 
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
+import {loginAction} from "@/app/[locale]/server-actions";
 
-export function LoginForm() {
-  const t = useTranslations("Auth.login");
-  const [done, setDone] = useState(false);
-
+function SubmitButton({label, loading}: {label: string; loading: string}) {
+  const {pending} = useFormStatus();
   return (
-    <form
-      className="space-y-3"
-      onSubmit={(event) => {
-        event.preventDefault();
-        setDone(true);
-      }}
-    >
-      {done ? <p className="rounded-xl bg-primary/10 p-2 text-xs text-primary">{t("done")}</p> : null}
-      <Input type="email" placeholder={t("email")} required />
-      <Input type="password" placeholder={t("password")} required />
-      <Button type="submit" className="w-full">
-        {t("submit")}
-      </Button>
-    </form>
+    <Button type="submit" className="w-full" disabled={pending}>
+      {pending ? loading : label}
+    </Button>
   );
 }
 
+export function LoginForm({locale}: {locale: string}) {
+  const t = useTranslations("Auth.login");
+
+  return (
+    <form action={loginAction} className="space-y-3">
+      <input type="hidden" name="locale" value={locale} />
+      <Input type="email" name="email" placeholder={t("email")} required />
+      <Input type="password" name="password" placeholder={t("password")} required />
+      <SubmitButton label={t("submit")} loading={t("submitting")} />
+    </form>
+  );
+}

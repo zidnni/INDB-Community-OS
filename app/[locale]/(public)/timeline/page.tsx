@@ -3,7 +3,7 @@ import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
 
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {memories} from "@/lib/constants/mock-data";
+import {getApprovedMemories} from "@/lib/data/memories";
 
 export async function generateMetadata({
   params,
@@ -26,7 +26,8 @@ export default async function TimelinePage({
 }) {
   const {locale} = await params;
   const t = await getTranslations({locale, namespace: "Timeline"});
-  const ordered = [...memories].sort((a, b) => Number(a.year) - Number(b.year));
+  const memories = await getApprovedMemories();
+  const ordered = [...memories].sort((a, b) => (a.year ?? 0) - (b.year ?? 0));
 
   return (
     <Card>
@@ -37,15 +38,19 @@ export default async function TimelinePage({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ul className="space-y-2">
-          {ordered.map((memory) => (
-            <li key={memory.slug} className="rounded-xl bg-muted/50 p-3">
-              <p className="text-sm font-semibold">{memory.year}</p>
-              <p className="text-sm">{memory.title}</p>
-              <p className="text-xs text-muted-foreground">{memory.location}</p>
-            </li>
-          ))}
-        </ul>
+        {ordered.length > 0 ? (
+          <ul className="space-y-2">
+            {ordered.map((memory) => (
+              <li key={memory.id} className="rounded-xl bg-muted/50 p-3">
+                <p className="text-sm font-semibold">{memory.year ?? memory.decade ?? "?"}</p>
+                <p className="text-sm">{memory.title}</p>
+                <p className="text-xs text-muted-foreground">{memory.location ?? "\u00a0"}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground">{t("empty")}</p>
+        )}
       </CardContent>
     </Card>
   );

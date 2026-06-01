@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {motion} from "framer-motion";
 import {Lightbulb} from "lucide-react";
@@ -6,9 +6,9 @@ import {Lightbulb} from "lucide-react";
 import {IdeaStatusBadge} from "@/components/ideas/idea-status-badge";
 import {VoteButton} from "@/components/ideas/vote-button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import type {IdeaItem} from "@/lib/constants/mock-data";
+import type {IdeaWithAuthor} from "@/types/database";
 
-export function IdeaCard({idea}: {idea: IdeaItem}) {
+export function IdeaCard({idea}: {idea: IdeaWithAuthor}) {
   return (
     <motion.article
       initial={{opacity: 0, y: 14}}
@@ -27,10 +27,9 @@ export function IdeaCard({idea}: {idea: IdeaItem}) {
         </CardHeader>
         <CardContent className="space-y-2.5 pt-0 sm:space-y-3">
           <p className="text-sm text-muted-foreground">{idea.description}</p>
-          <VoteButton votes={idea.votes} />
+          <VoteButton ideaId={idea.id} votes={idea.votes_count} />
         </CardContent>
       </Card>
     </motion.article>
   );
 }
-

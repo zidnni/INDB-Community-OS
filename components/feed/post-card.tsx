@@ -10,35 +10,46 @@ import {UserAvatar} from "@/components/layout/user-avatar";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import type {CommentItem, PostItem} from "@/lib/constants/mock-data";
+import type {PostWithAuthor, CommentWithAuthor} from "@/types/database";
 import {detectContentLanguage, type ContentLanguage} from "@/lib/i18n/detectContentLanguage";
 import {translateContent} from "@/lib/i18n/translateContent";
 import {cn} from "@/lib/utils/cn";
 
-function getPostCategory(post: PostItem): "events" | "memory" | "ideas" | "community" {
-  const content = post.content.toLowerCase();
+function timeAgo(dateStr: string, locale: string): string {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diffSec = Math.floor((now - then) / 1000);
 
-  if (content.includes("cleanup") || content.includes("workshop") || content.includes("meetup")) {
-    return "events";
+  if (diffSec < 60) return locale === "ar" ? "الآن" : "now";
+  if (diffSec < 3600) {
+    const m = Math.floor(diffSec / 60);
+    return `${m}${locale === "ar" ? "د" : "m"}`;
   }
-
-  if (content.includes("memory") || content.includes("historical") || content.includes("photos")) {
-    return "memory";
+  if (diffSec < 86400) {
+    const h = Math.floor(diffSec / 3600);
+    return `${h}${locale === "ar" ? "س" : "h"}`;
   }
+  const d = Math.floor(diffSec / 86400);
+  return `${d}${locale === "ar" ? "ي" : "d"}`;
+}
 
-  if (content.includes("idea") || content.includes("mentor") || content.includes("library")) {
-    return "ideas";
-  }
+function getCategorySlug(
+  post: PostWithAuthor,
+  locale: string,
+): string {
+  if (!post.category) return "community";
 
-  return "community";
+  if (locale === "ar") return post.category.name_ar;
+  if (locale === "fr") return post.category.name_fr;
+  return post.category.name_en;
 }
 
 export function PostCard({
   post,
-  comments,
+  comments: postComments,
 }: {
-  post: PostItem;
-  comments: CommentItem[];
+  post: PostWithAuthor;
+  comments: CommentWithAuthor[];
 }) {
   const t = useTranslations("Feed");
   const common = useTranslations("Common");
@@ -46,7 +57,6 @@ export function PostCard({
   const uiLanguage: ContentLanguage = locale === "ar" || locale === "fr" ? locale : "en";
   const contentLanguage = useMemo(() => detectContentLanguage(post.content), [post.content]);
   const canTranslate = contentLanguage !== uiLanguage;
-  const category = getPostCategory(post);
 
   const [isTranslated, setIsTranslated] = useState(false);
   const [translatedText, setTranslatedText] = useState<string | null>(null);
@@ -54,8 +64,10 @@ export function PostCard({
   const [translationError, setTranslationError] = useState(false);
   const [liked, setLiked] = useState(false);
 
-  const saveCount = Math.max(1, Math.round(post.likes / 3));
-  const likeCount = liked ? post.likes + 1 : post.likes;
+  const authorName = post.author?.full_name ?? post.author?.username ?? t("unknownAuthor");
+  const authorRole = post.author?.username ?? t("member");
+  const postTime = timeAgo(post.created_at, locale);
+  const likeCount = liked ? post.likes_count + 1 : post.likes_count;
   const visibleContent = isTranslated && translatedText ? translatedText : post.content;
 
   useEffect(() => {
@@ -109,15 +121,17 @@ export function PostCard({
         <CardHeader className="pb-2.5 sm:pb-3">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3">
-              <UserAvatar label={post.author} className="h-11 w-11 shrink-0" />
+              <UserAvatar label={authorName} className="h-11 w-11 shrink-0" />
               <div className="space-y-1">
-                <CardTitle className="text-[15px] leading-none sm:text-base">{post.author}</CardTitle>
+                <CardTitle className="text-[15px] leading-none sm:text-base">{authorName}</CardTitle>
                 <p className="text-[11px] text-muted-foreground sm:text-xs">
-                  {post.role} | {post.timeAgo} {t("ago")}
+                  {authorRole} | {postTime} {t("ago")}
                 </p>
               </div>
             </div>
-            <Badge className="bg-brand-primary-soft px-2 py-1 text-[10px] text-brand-primary sm:text-xs">{t(`categories.${category}`)}</Badge>
+            <Badge className="bg-brand-primary-soft px-2 py-1 text-[10px] text-brand-primary sm:text-xs">
+              {getCategorySlug(post, locale)}
+            </Badge>
           </div>
         </CardHeader>
 
@@ -147,10 +161,10 @@ export function PostCard({
             ) : null}
           </div>
 
-          {post.image ? (
+          {post.image_url ? (
             <div className="overflow-hidden rounded-2xl border border-border/70">
               <img
-                src={post.image}
+                src={post.image_url}
                 alt={post.content}
                 className="h-56 w-full object-cover transition duration-300 hover:scale-[1.02] sm:h-72"
               />
@@ -171,11 +185,11 @@ export function PostCard({
             </Button>
             <Button variant="ghost" className="min-h-11 justify-center gap-1.5 rounded-xl px-2 text-xs text-muted-foreground sm:justify-start sm:gap-2 sm:px-3 sm:text-sm">
               <MessageCircle size={16} />
-              <span>{t("actionCounts.comments", {count: post.comments})}</span>
+              <span>{t("actionCounts.comments", {count: post.comments_count})}</span>
             </Button>
             <Button variant="ghost" className="min-h-11 justify-center gap-1.5 rounded-xl px-2 text-xs text-muted-foreground sm:justify-start sm:gap-2 sm:px-3 sm:text-sm">
               <Bookmark size={16} />
-              <span>{t("actionCounts.saves", {count: saveCount})}</span>
+              <span>{t("actionCounts.saves", {count: Math.max(1, post.saves_count)})}</span>
             </Button>
             <Button variant="ghost" className="min-h-11 justify-center gap-1.5 rounded-xl px-2 text-xs text-muted-foreground sm:justify-start sm:gap-2 sm:px-3 sm:text-sm">
               <Share2 size={16} />
@@ -183,14 +197,14 @@ export function PostCard({
             </Button>
           </div>
 
-          {comments.length > 0 ? (
+          {postComments.length > 0 ? (
             <div className="space-y-2 border-t border-border/60 pt-2">
-              {comments.slice(0, 2).map((comment) => (
+              {postComments.slice(0, 2).map((comment) => (
                 <CommentCard
                   key={comment.id}
-                  author={comment.author}
+                  author={comment.author?.full_name ?? comment.author?.username ?? t("unknownAuthor")}
                   content={comment.content}
-                  timeAgo={comment.timeAgo}
+                  timeAgo={timeAgo(comment.created_at, locale)}
                 />
               ))}
             </div>

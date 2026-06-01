@@ -5,7 +5,7 @@ import {getTranslations} from "next-intl/server";
 import {MemoryGrid} from "@/components/memory/memory-grid";
 import {EmptyState} from "@/components/shared/empty-state";
 import {Button} from "@/components/ui/button";
-import {memories} from "@/lib/constants/mock-data";
+import {getApprovedMemories} from "@/lib/data/memories";
 import {Link} from "@/lib/i18n/routing";
 
 export async function generateMetadata({
@@ -30,6 +30,7 @@ export default async function MemoryPage({
   const {locale} = await params;
   const t = await getTranslations({locale, namespace: "Memory"});
   const empty = await getTranslations({locale, namespace: "EmptyStates.memories"});
+  const memories = await getApprovedMemories();
 
   return (
     <div className="space-y-3 sm:space-y-4">

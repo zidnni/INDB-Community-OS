@@ -2,9 +2,7 @@ import {CalendarDays} from "lucide-react";
 import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
 
-import {EventCard} from "@/components/events/event-card";
 import {EmptyState} from "@/components/shared/empty-state";
-import {events} from "@/lib/constants/mock-data";
 
 export async function generateMetadata({
   params,
@@ -36,21 +34,13 @@ export default async function EventsPage({
         <p className="text-sm text-muted-foreground">{t("description")}</p>
       </div>
 
-      {events.length > 0 ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          {events.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
-        </div>
-      ) : (
-        <EmptyState
-          icon={CalendarDays}
-          title={empty("title")}
-          description={empty("description")}
-          ctaLabel={empty("cta")}
-          ctaHref="/feed"
-        />
-      )}
+      <EmptyState
+        icon={CalendarDays}
+        title={empty("title")}
+        description={empty("description")}
+        ctaLabel={empty("cta")}
+        ctaHref="/feed"
+      />
     </div>
   );
 }

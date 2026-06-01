@@ -6,7 +6,7 @@ import {useTranslations} from "next-intl";
 
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import type {EventItem} from "@/lib/constants/mock-data";
+import type {EventItem} from "@/types/community";
 
 export function EventCard({event}: {event: EventItem}) {
   const t = useTranslations("Events");

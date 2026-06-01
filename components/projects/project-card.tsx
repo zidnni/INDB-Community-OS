@@ -6,7 +6,7 @@ import {useTranslations} from "next-intl";
 
 import {Badge} from "@/components/ui/badge";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import type {ProjectItem} from "@/lib/constants/mock-data";
+import type {ProjectItem} from "@/types/community";
 
 const statusKeyByValue: Record<string, string> = {
   Planning: "planning",

@@ -1,4 +1,4 @@
-﻿import {getTranslations} from "next-intl/server";
+import {getTranslations} from "next-intl/server";
 
 import {RegisterForm} from "@/app/[locale]/(auth)/register/register-form";
 import {Logo} from "@/components/layout/Logo";
@@ -25,11 +25,10 @@ export default async function RegisterPage({
           <CardTitle>{t("title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {error ? <p className="rounded-xl bg-primary/10 p-2 text-xs text-primary">{error}</p> : null}
-          <RegisterForm />
+          {error ? <p className="rounded-xl bg-destructive/10 p-2 text-xs text-destructive">{error}</p> : null}
+          <RegisterForm locale={locale} />
         </CardContent>
       </Card>
     </div>
   );
 }
-
