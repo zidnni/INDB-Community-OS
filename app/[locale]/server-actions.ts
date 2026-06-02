@@ -161,9 +161,10 @@ export async function createPostAction(formData: FormData) {
     redirect(toPath(locale, `/login?next=${next}`));
   }
 
+  const categoryIdRaw = formData.get("categoryId");
   const parsed = createPostSchema.safeParse({
     content: formData.get("content"),
-    categoryId: formData.get("categoryId"),
+    categoryId: categoryIdRaw || undefined,
   });
 
   if (!parsed.success) {
