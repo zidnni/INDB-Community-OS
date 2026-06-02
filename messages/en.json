@@ -135,6 +135,7 @@
     "ago": "ago",
     "save": "Save",
     "share": "Share",
+    "linkCopied": "Post link copied",
     "deleting": "Deleting...",
     "sending": "Sending...",
     "commentPlaceholder": "Write a comment...",
@@ -171,6 +172,9 @@
       "selectCategory": "Select a category",
       "publish": "Publish"
     },
+    "cancel": "Cancel",
+    "post": "Post",
+    "posting": "Posting...",
     "socialPrompt": "What's happening in Nouadhibou?"
   },
   "Memory": {
@@ -205,8 +209,10 @@
     "status": {
       "submitted": "Submitted",
       "underReview": "Under Review",
+      "accepted": "Accepted",
       "inProgress": "In Progress",
-      "completed": "Completed"
+      "completed": "Completed",
+      "rejected": "Rejected"
     }
   },
   "IdeaForm": {
@@ -378,6 +384,20 @@
       "backToLogin": "Back to login"
     }
   },
+  "Toasts": {
+    "postCreated": "Post created",
+    "commentAdded": "Comment added",
+    "commentDeleted": "Comment deleted",
+    "postDeleted": "Post deleted",
+    "postSaved": "Post saved",
+    "memorySubmitted": "Memory submitted",
+    "ideaSubmitted": "Idea submitted",
+    "voteAdded": "Vote added",
+    "updated": "Profile updated",
+    "linkCopied": "Post link copied",
+    "emailSent": "Check your email for the reset link",
+    "comingSoon": "Coming soon"
+  },
   "Errors": {
     "invalidInput": "Invalid input",
     "invalidPost": "Invalid post",
@@ -426,6 +446,11 @@
     "polls": {
       "title": "No polls yet",
       "description": "Create the first poll to gather community input.",
+      "cta": "Explore feed"
+    },
+    "projects": {
+      "title": "No projects yet",
+      "description": "Start a citizen project and bring the community together around local action.",
       "cta": "Explore feed"
     }
   }

@@ -5,6 +5,7 @@ import {motion} from "framer-motion";
 import {Bookmark, Heart, MessageCircle, Send, Share2, Trash2} from "lucide-react";
 import {useLocale, useTranslations} from "next-intl";
 import {useFormStatus} from "react-dom";
+import {toast} from "sonner";
 
 import {CommentCard} from "@/components/feed/comment-card";
 import {UserAvatar} from "@/components/layout/user-avatar";
@@ -19,6 +20,7 @@ import {
   addCommentAction,
   deletePostAction,
   toggleLikeAction,
+  toggleSaveAction,
 } from "@/app/[locale]/server-actions";
 
 function timeAgo(dateStr: string, locale: string): string {
@@ -101,6 +103,20 @@ export function PostCard({
     setIsTranslating(false);
     setTranslationError(false);
   }, [post.content, uiLanguage]);
+
+  async function handleShare() {
+    const url = window.location.origin + "/" + locale + "/feed";
+    if (navigator.share) {
+      try {
+        await navigator.share({title: authorName, text: post.content, url});
+      } catch {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success(t("linkCopied") || "Post link copied");
+      } catch {}
+    }
+  }
 
   async function onToggleTranslation() {
     if (isTranslated) {
@@ -228,11 +244,24 @@ export function PostCard({
               <MessageCircle size={16} />
               <span>{t("actionCounts.comments", {count: post.comments_count})}</span>
             </Button>
-            <Button variant="ghost" className="min-h-11 justify-center gap-1.5 rounded-xl px-2 text-xs text-muted-foreground sm:justify-start sm:gap-2 sm:px-3 sm:text-sm">
-              <Bookmark size={16} />
-              <span>{t("actionCounts.saves", {count: post.saves_count})}</span>
-            </Button>
-            <Button variant="ghost" className="min-h-11 justify-center gap-1.5 rounded-xl px-2 text-xs text-muted-foreground sm:justify-start sm:gap-2 sm:px-3 sm:text-sm">
+            <form action={toggleSaveAction} className="contents">
+              <input type="hidden" name="locale" value={locale} />
+              <input type="hidden" name="postId" value={post.id} />
+              <Button
+                type="submit"
+                variant="ghost"
+                className="min-h-11 justify-center gap-1.5 rounded-xl px-2 text-xs text-muted-foreground sm:justify-start sm:gap-2 sm:px-3 sm:text-sm"
+              >
+                <Bookmark size={16} />
+                <span>{t("actionCounts.saves", {count: post.saves_count})}</span>
+              </Button>
+            </form>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleShare}
+              className="min-h-11 justify-center gap-1.5 rounded-xl px-2 text-xs text-muted-foreground sm:justify-start sm:gap-2 sm:px-3 sm:text-sm"
+            >
               <Share2 size={16} />
               <span>{t("share")}</span>
             </Button>

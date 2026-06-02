@@ -1,6 +1,7 @@
 export type CommunityRole = "member" | "contributor" | "historian" | "moderator" | "admin";
 
 export type PostType = "community" | "news" | "memory" | "event" | "idea" | "project";
+export type ProjectStatus = "planning" | "in_progress" | "recruiting" | "completed";
 export type PostStatus = "published" | "hidden" | "archived";
 export type CommentStatus = "published" | "hidden";
 export type MemoryVerificationStatus = "pending" | "approved" | "rejected" | "needs_more_info";
@@ -110,6 +111,7 @@ export interface IdeaRow {
   category_id: number | null;
   status: IdeaStatus;
   votes_count: number;
+  image_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -142,6 +144,55 @@ export interface NotificationRow {
   created_at: string;
 }
 
+export interface EventRow {
+  id: string;
+  title: string;
+  description: string | null;
+  date: string | null;
+  location: string | null;
+  image_url: string | null;
+  creator_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProjectRow {
+  id: string;
+  title: string;
+  description: string | null;
+  status: ProjectStatus;
+  volunteers_count: number;
+  progress: number;
+  image_url: string | null;
+  creator_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PollRow {
+  id: string;
+  question: string;
+  creator_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PollOptionRow {
+  id: string;
+  poll_id: string;
+  label: string;
+  votes_count: number;
+  created_at: string;
+}
+
+export interface PollVoteRow {
+  id: string;
+  poll_id: string;
+  option_id: string;
+  user_id: string;
+  created_at: string;
+}
+
 // ---- Joined types (used by UI) ----
 
 export interface PostWithAuthor extends PostRow {
@@ -167,4 +218,16 @@ export interface ProfileWithCounts extends ProfileRow {
   memories_count: number;
   ideas_count: number;
   comments_count: number;
+}
+
+export interface EventWithCreator extends EventRow {
+  creator: Pick<ProfileRow, "id" | "username" | "full_name" | "avatar_url"> | null;
+}
+
+export interface ProjectWithCreator extends ProjectRow {
+  creator: Pick<ProfileRow, "id" | "username" | "full_name" | "avatar_url"> | null;
+}
+
+export interface PollWithOptions extends PollRow {
+  options: PollOptionRow[];
 }

@@ -25,6 +25,7 @@ export function CreatePostCard() {
   const t = useTranslations("FeedComposer");
   const locale = useLocale();
   const [showForm, setShowForm] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   if (!showForm) {
     return (
@@ -78,7 +79,7 @@ export function CreatePostCard() {
             <X size={18} />
           </button>
         </div>
-        <form action={createPostAction} className="space-y-3">
+        <form action={createPostAction} className="space-y-3" encType="multipart/form-data">
           <input type="hidden" name="locale" value={locale} />
           <Textarea name="content" placeholder={t("socialPrompt")} required />
           <div className="flex items-center gap-2">
@@ -87,20 +88,44 @@ export function CreatePostCard() {
               className="h-10 rounded-xl border border-border bg-card px-3 text-sm"
               defaultValue="community"
             >
-              <option value="community">Community update</option>
+              <option value="community">{t("quickActions.text")}</option>
               <option value="news">Local news</option>
-              <option value="memory">Memory</option>
-              <option value="idea">Idea</option>
-              <option value="event">Event</option>
+              <option value="memory">{t("quickActions.memory")}</option>
+              <option value="idea">{t("quickActions.idea")}</option>
+              <option value="event">{t("quickActions.event")}</option>
               <option value="project">Project</option>
             </select>
-            <input
-              name="imageUrl"
-              type="url"
-              placeholder="Image URL (optional)"
-              className="h-10 flex-1 rounded-xl border border-border bg-card px-3 text-sm"
-            />
+            <label className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-3 text-sm text-muted-foreground hover:text-foreground">
+              <ImagePlus size={16} />
+              {t("quickActions.image")}
+              <input
+                name="imageFile"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) setImagePreview(URL.createObjectURL(file));
+                }}
+              />
+            </label>
           </div>
+          {imagePreview ? (
+            <div className="relative overflow-hidden rounded-xl bg-muted">
+              <img src={imagePreview} alt="" className="max-h-48 w-full object-contain" />
+              <button
+                type="button"
+                onClick={() => {
+                  setImagePreview(null);
+                  const input = document.querySelector<HTMLInputElement>('input[name="imageFile"]');
+                  if (input) input.value = "";
+                }}
+                className="absolute right-2 top-2 rounded-full bg-background/80 p-1 text-foreground hover:bg-background"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ) : null}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="min-h-11">
               {t("cancel")}

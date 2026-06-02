@@ -16,6 +16,9 @@ export function IdeaCard({idea}: {idea: IdeaWithAuthor}) {
       transition={{duration: 0.28, ease: "easeOut"}}
     >
       <Card>
+        {idea.image_url ? (
+          <img src={idea.image_url} alt={idea.title} className="h-48 w-full rounded-t-2xl object-cover" />
+        ) : null}
         <CardHeader className="pb-2.5">
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="inline-flex items-center gap-2 text-[15px] sm:text-base">

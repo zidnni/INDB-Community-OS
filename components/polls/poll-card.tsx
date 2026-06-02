@@ -1,11 +1,16 @@
-﻿import {getTranslations} from "next-intl/server";
+"use client";
+
+import {useTranslations} from "next-intl";
+import {toast} from "sonner";
 
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import type {PollItem} from "@/types/community";
+import type {PollWithOptions} from "@/types/database";
 
-export async function PollCard({poll}: {poll: PollItem}) {
-  const t = await getTranslations("Polls");
+export function PollCard({poll}: {poll: PollWithOptions}) {
+  const t = useTranslations("Polls");
+  const common = useTranslations("Toasts");
+  const totalVotes = poll.options.reduce((sum, o) => sum + o.votes_count, 0);
 
   return (
     <Card>
@@ -14,7 +19,7 @@ export async function PollCard({poll}: {poll: PollItem}) {
       </CardHeader>
       <CardContent className="space-y-3">
         {poll.options.map((option) => {
-          const percent = Math.round((option.votes / poll.totalVotes) * 100);
+          const percent = totalVotes > 0 ? Math.round((option.votes_count / totalVotes) * 100) : 0;
 
           return (
             <div key={option.id} className="space-y-1.5">
@@ -29,11 +34,10 @@ export async function PollCard({poll}: {poll: PollItem}) {
           );
         })}
         <div className="flex items-center justify-between pt-2">
-          <p className="text-xs text-muted-foreground">{t("totalVotes", {count: poll.totalVotes})}</p>
-          <Button size="sm">{t("voteButton")}</Button>
+          <p className="text-xs text-muted-foreground">{t("totalVotes", {count: totalVotes})}</p>
+          <Button size="sm" onClick={() => toast.success(common("comingSoon"))}>{t("voteButton")}</Button>
         </div>
       </CardContent>
     </Card>
   );
 }
-

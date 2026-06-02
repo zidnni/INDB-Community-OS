@@ -135,13 +135,14 @@
     "ago": "plus tôt",
     "save": "Enregistrer",
     "share": "Partager",
+    "linkCopied": "Lien de la publication copié",
     "deleting": "Suppression...",
     "sending": "Envoi...",
     "commentPlaceholder": "Écrire un commentaire...",
     "unknownAuthor": "Inconnu",
     "all": "Tous",
     "categories": {
-      "community": "Communaut?",
+      "community": "Communauté",
       "events": "Événements",
       "memory": "Archives",
       "ideas": "Idées"
@@ -171,6 +172,9 @@
       "selectCategory": "Sélectionner une catégorie",
       "publish": "Publier"
     },
+    "cancel": "Annuler",
+    "post": "Publier",
+    "posting": "Publication...",
     "socialPrompt": "Que se passe-t-il à Nouadhibou ?"
   },
   "Memory": {
@@ -205,8 +209,10 @@
     "status": {
       "submitted": "Soumise",
       "underReview": "En révision",
+      "accepted": "Acceptée",
       "inProgress": "En cours",
-      "completed": "Terminée"
+      "completed": "Terminée",
+      "rejected": "Rejetée"
     }
   },
   "IdeaForm": {
@@ -378,6 +384,20 @@
       "backToLogin": "Retour à la connexion"
     }
   },
+  "Toasts": {
+    "postCreated": "Publication créée",
+    "commentAdded": "Commentaire ajouté",
+    "commentDeleted": "Commentaire supprimé",
+    "postDeleted": "Publication supprimée",
+    "postSaved": "Publication enregistrée",
+    "memorySubmitted": "Souvenir soumis",
+    "ideaSubmitted": "Idée soumise",
+    "voteAdded": "Vote ajouté",
+    "updated": "Profil mis à jour",
+    "linkCopied": "Lien de la publication copié",
+    "emailSent": "Consultez vos e-mails pour le lien de réinitialisation",
+    "comingSoon": "Bientôt disponible"
+  },
   "Errors": {
     "invalidInput": "Saisie invalide",
     "invalidPost": "Publication invalide",
@@ -400,32 +420,37 @@
   "EmptyStates": {
     "posts": {
       "title": "Aucune publication pour le moment",
-      "description": "Soyez la premi?re personne ? partager quelque chose avec la communaut?.",
-      "cta": "Cr?er une publication"
+      "description": "Soyez la première personne à partager quelque chose avec la communauté.",
+      "cta": "Créer une publication"
     },
     "memories": {
       "title": "Aucune archive pour le moment",
-      "description": "Aidez ? pr?server le patrimoine local en partageant le premier souvenir communautaire.",
+      "description": "Aidez à préserver le patrimoine local en partageant le premier souvenir communautaire.",
       "cta": "Soumettre un souvenir"
     },
     "ideas": {
-      "title": "Aucune id?e pour le moment",
-      "description": "Lancez la discussion avec une id?e concr?te pour Nouadhibou.",
-      "cta": "Soumettre une id?e"
+      "title": "Aucune idée pour le moment",
+      "description": "Lancez la discussion avec une idée concrète pour Nouadhibou.",
+      "cta": "Soumettre une idée"
     },
     "events": {
-      "title": "Aucun ?v?nement pour le moment",
+      "title": "Aucun événement pour le moment",
       "description": "Créez le premier événement et rassemblez la communauté autour d’une action locale.",
       "cta": "Explorer le fil"
     },
     "profile": {
       "title": "Aucune publication sur ce profil",
       "description": "Partagez une première mise à jour pour développer votre présence communautaire.",
-      "cta": "Partager une mise ? jour"
+      "cta": "Partager une mise à jour"
     },
     "polls": {
       "title": "Aucun sondage pour le moment",
       "description": "Créez le premier sondage pour recueillir l'avis de la communauté.",
+      "cta": "Explorer le fil"
+    },
+    "projects": {
+      "title": "Aucun projet pour le moment",
+      "description": "Lancez un projet citoyen et rassemblez la communauté autour d'une action locale.",
       "cta": "Explorer le fil"
     }
   }

@@ -94,10 +94,6 @@ export async function registerAction(formData: FormData) {
   const password = parsed.data.password;
   const username = parsed.data.username;
 
-  if (process.env.NODE_ENV === "development") {
-    console.log("[register] signUp email:", email);
-  }
-
   const supabase = await createClient();
   const {data, error} = await supabase.auth.signUp({
     email,
@@ -110,43 +106,17 @@ export async function registerAction(formData: FormData) {
     },
   });
 
-  if (process.env.NODE_ENV === "development") {
-    console.log("[register] signUp response:", {
-      hasUser: !!data?.user,
-      hasSession: !!data?.session,
-      error: error?.message ?? null,
-    });
-  }
-
   if (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.log("[register] signUp error:", error.message);
-    }
     redirect(toPath(locale, `/register?error=${encodeURIComponent(error.message)}`));
   }
 
   if (data.user?.id) {
-    try {
-      const {error: upsertError} = await supabase.from("profiles").upsert({
-        id: data.user.id,
-        username,
-        full_name: username,
-        role: "member",
-      });
-
-      if (upsertError) {
-        if (process.env.NODE_ENV === "development") {
-          console.log("[register] profile upsert error:", upsertError.message);
-        }
-        redirect(toPath(locale, `/register?error=${encodeURIComponent(upsertError.message)}`));
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Profile creation failed";
-      if (process.env.NODE_ENV === "development") {
-        console.log("[register] profile upsert exception:", msg);
-      }
-      redirect(toPath(locale, `/register?error=${encodeURIComponent(msg)}`));
-    }
+    await supabase.from("profiles").upsert({
+      id: data.user.id,
+      username,
+      full_name: username,
+      role: "member",
+    }).maybeSingle();
   }
 
   const redirectPath = typeof next === "string" && next ? next : "/feed";
@@ -159,9 +129,27 @@ export async function registerAction(formData: FormData) {
   redirect(toPath(locale, `/login?emailConfirmation=1&next=${encodeURIComponent(redirectPath)}`));
 }
 
+async function uploadFile(
+  file: File,
+  bucket: string,
+  userId: string,
+): Promise<string | null> {
+  const supabase = await createClient();
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+  const filePath = `${userId}/${Date.now()}.${ext}`;
+
+  const {error: uploadError} = await supabase.storage
+    .from(bucket)
+    .upload(filePath, file, {cacheControl: "3600", upsert: false});
+
+  if (uploadError) return null;
+
+  const {data: publicUrlData} = supabase.storage.from(bucket).getPublicUrl(filePath);
+  return publicUrlData.publicUrl;
+}
+
 export async function createPostAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
-  const t = await getTranslations({locale, namespace: "Errors"});
   const supabase = await createClient();
 
   const {
@@ -169,7 +157,8 @@ export async function createPostAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(toPath(locale, "/login"));
+    const next = encodeURIComponent("/feed");
+    redirect(toPath(locale, `/login?next=${next}`));
   }
 
   const parsed = createPostSchema.safeParse({
@@ -178,12 +167,16 @@ export async function createPostAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirect(
-      toPath(
-        locale,
-        `/feed?error=${encodeURIComponent(parsed.error.issues[0]?.message ?? t("invalidPost"))}`,
-      ),
-    );
+    redirect(toPath(locale, `/feed?error=${encodeURIComponent("Invalid post content")}`));
+  }
+
+  let image_url: string | null = null;
+  const imageFile = formData.get("imageFile");
+  if (imageFile instanceof File && imageFile.size > 0) {
+    image_url = await uploadFile(imageFile, "post-media", user.id);
+  }
+  if (!image_url) {
+    image_url = (formData.get("imageUrl") as string | null) || null;
   }
 
   await supabase.from("posts").insert({
@@ -191,11 +184,11 @@ export async function createPostAction(formData: FormData) {
     content: parsed.data.content,
     type: (formData.get("type") as string) || "community",
     category_id: parsed.data.categoryId || null,
-    image_url: (formData.get("imageUrl") as string | null) || null,
+    image_url,
   });
 
   revalidatePath(toPath(locale, "/feed"));
-  redirect(toPath(locale, "/feed"));
+  redirect(toPath(locale, "/feed?postCreated=1"));
 }
 
 export async function addCommentAction(formData: FormData) {
@@ -208,7 +201,8 @@ export async function addCommentAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(toPath(locale, "/login"));
+    const next = encodeURIComponent(`/feed`);
+    redirect(toPath(locale, `/login?next=${next}`));
   }
 
   const parsed = commentSchema.safeParse({
@@ -226,7 +220,7 @@ export async function addCommentAction(formData: FormData) {
   });
 
   revalidatePath(toPath(locale, "/feed"));
-  redirect(toPath(locale, "/feed"));
+  redirect(toPath(locale, "/feed?commentAdded=1"));
 }
 
 export async function toggleLikeAction(formData: FormData) {
@@ -239,7 +233,8 @@ export async function toggleLikeAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(toPath(locale, "/login"));
+    const next = encodeURIComponent("/feed");
+    redirect(toPath(locale, `/login?next=${next}`));
   }
 
   if (typeof postId !== "string") {
@@ -266,28 +261,46 @@ export async function toggleLikeAction(formData: FormData) {
   redirect(toPath(locale, "/feed"));
 }
 
-async function uploadProfileFile(
-  file: File,
-  folder: string,
-  userId: string,
-): Promise<string | null> {
+export async function toggleSaveAction(formData: FormData) {
+  const locale = normalizeLocale(formData.get("locale"));
+  const postId = formData.get("postId");
   const supabase = await createClient();
-  const sanitizedName = file.name.replace(/\s+/g, "-").toLowerCase();
-  const filePath = `${userId}/${folder}/${Date.now()}-${sanitizedName}`;
 
-  const {error: uploadError} = await supabase.storage
-    .from("profile-covers")
-    .upload(filePath, file, {cacheControl: "3600", upsert: false});
+  const {
+    data: {user},
+  } = await supabase.auth.getUser();
 
-  if (uploadError) return null;
+  if (!user) {
+    const next = encodeURIComponent("/feed");
+    redirect(toPath(locale, `/login?next=${next}`));
+  }
 
-  const {data: publicUrlData} = supabase.storage.from("profile-covers").getPublicUrl(filePath);
-  return publicUrlData.publicUrl;
+  if (typeof postId !== "string") {
+    redirect(toPath(locale, "/feed"));
+  }
+
+  const {data: existing} = await supabase
+    .from("saved_posts")
+    .select("id")
+    .eq("post_id", postId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (existing?.id) {
+    await supabase.from("saved_posts").delete().eq("id", existing.id);
+  } else {
+    await supabase.from("saved_posts").insert({
+      post_id: postId,
+      user_id: user.id,
+    });
+  }
+
+  revalidatePath(toPath(locale, "/feed"));
+  redirect(toPath(locale, "/feed?postSaved=1"));
 }
 
 export async function updateProfileAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
-  const t = await getTranslations({locale, namespace: "Errors"});
   const supabase = await createClient();
 
   const {
@@ -312,9 +325,7 @@ export async function updateProfileAction(formData: FormData) {
     redirect(
       toPath(
         locale,
-        `/profile?error=${encodeURIComponent(
-          parsed.error.issues[0]?.message ?? t("invalidProfile"),
-        )}`,
+        `/profile?error=${encodeURIComponent(parsed.error.issues[0]?.message ?? "Invalid profile")}`,
       ),
     );
   }
@@ -324,13 +335,13 @@ export async function updateProfileAction(formData: FormData) {
 
   const avatarFile = formData.get("avatarFile");
   if (avatarFile instanceof File && avatarFile.size > 0) {
-    const uploaded = await uploadProfileFile(avatarFile, "avatars", user.id);
+    const uploaded = await uploadFile(avatarFile, "avatars", user.id);
     if (uploaded) avatarUrl = uploaded;
   }
 
   const coverFile = formData.get("coverFile");
   if (coverFile instanceof File && coverFile.size > 0) {
-    const uploaded = await uploadProfileFile(coverFile, "covers", user.id);
+    const uploaded = await uploadFile(coverFile, "profile-covers", user.id);
     if (uploaded) coverImageUrl = uploaded;
   }
 
@@ -355,7 +366,6 @@ export async function updateProfileAction(formData: FormData) {
 
 export async function submitMemoryAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
-  const t = await getTranslations({locale, namespace: "Errors"});
   const supabase = await createClient();
 
   const {
@@ -379,11 +389,15 @@ export async function submitMemoryAction(formData: FormData) {
     redirect(
       toPath(
         locale,
-        `/memory/submit?error=${encodeURIComponent(
-          parsed.error.issues[0]?.message ?? t("invalidMemory"),
-        )}`,
+        `/memory/submit?error=${encodeURIComponent(parsed.error.issues[0]?.message ?? "Invalid memory")}`,
       ),
     );
+  }
+
+  let media_url: string | null = null;
+  const mediaFile = formData.get("media");
+  if (mediaFile instanceof File && mediaFile.size > 0) {
+    media_url = await uploadFile(mediaFile, "memory-archive", user.id);
   }
 
   const {data: memory, error} = await supabase
@@ -395,7 +409,9 @@ export async function submitMemoryAction(formData: FormData) {
       decade: parsed.data.decade || null,
       year: parsed.data.year ? Number(parsed.data.year) : null,
       location: parsed.data.location || null,
-      verification_status: "approved",
+      media_url,
+      media_type: mediaFile instanceof File && mediaFile.size > 0 ? "image" : "text",
+      verification_status: "pending",
       tags: parsed.data.tags ? parsed.data.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [],
     })
     .select("id")
@@ -403,39 +419,16 @@ export async function submitMemoryAction(formData: FormData) {
 
   if (error || !memory) {
     redirect(
-      toPath(locale, `/memory/submit?error=${encodeURIComponent(error?.message ?? t("saveFailed"))}`),
+      toPath(locale, `/memory/submit?error=${encodeURIComponent(error?.message ?? "Save failed")}`),
     );
   }
 
-  const media = formData.get("media");
-
-  if (media instanceof File && media.size > 0) {
-    const sanitizedName = media.name.replace(/\s+/g, "-").toLowerCase();
-    const filePath = `${user.id}/${Date.now()}-${sanitizedName}`;
-
-    const upload = await supabase.storage.from("memory-archive").upload(filePath, media, {
-      cacheControl: "3600",
-      upsert: false,
-    });
-
-    if (!upload.error) {
-      await supabase.from("memory_media").insert({
-        memory_id: memory.id,
-        uploader_id: user.id,
-        bucket: "memory-archive",
-        file_path: filePath,
-        media_type: media.type || "image",
-      });
-    }
-  }
-
   revalidatePath(toPath(locale, "/memory"));
-  redirect(toPath(locale, "/memory"));
+  redirect(toPath(locale, "/memory?memorySubmitted=1"));
 }
 
 export async function submitIdeaAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
-  const t = await getTranslations({locale, namespace: "Errors"});
   const supabase = await createClient();
 
   const {
@@ -456,26 +449,27 @@ export async function submitIdeaAction(formData: FormData) {
     redirect(
       toPath(
         locale,
-        `/ideas/submit?error=${encodeURIComponent(
-          parsed.error.issues[0]?.message ?? t("invalidIdea"),
-        )}`,
+        `/ideas/submit?error=${encodeURIComponent(parsed.error.issues[0]?.message ?? "Invalid idea")}`,
       ),
     );
   }
 
-  const {error} = await supabase.from("ideas").insert({
+  let image_url: string | null = null;
+  const imageFile = formData.get("imageFile");
+  if (imageFile instanceof File && imageFile.size > 0) {
+    image_url = await uploadFile(imageFile, "post-media", user.id);
+  }
+
+  await supabase.from("ideas").insert({
     author_id: user.id,
     title: parsed.data.title,
     description: parsed.data.description,
     category_id: parsed.data.categoryId,
+    image_url,
   });
 
-  if (error) {
-    redirect(toPath(locale, `/ideas/submit?error=${encodeURIComponent(error.message)}`));
-  }
-
   revalidatePath(toPath(locale, "/ideas"));
-  redirect(toPath(locale, "/ideas"));
+  redirect(toPath(locale, "/ideas?ideaSubmitted=1"));
 }
 
 export async function deletePostAction(formData: FormData) {
@@ -509,7 +503,7 @@ export async function deletePostAction(formData: FormData) {
   await supabase.from("posts").delete().eq("id", postId);
 
   revalidatePath(toPath(locale, "/feed"));
-  redirect(toPath(locale, "/feed"));
+  redirect(toPath(locale, "/feed?postDeleted=1"));
 }
 
 export async function deleteCommentAction(formData: FormData) {
@@ -543,18 +537,17 @@ export async function deleteCommentAction(formData: FormData) {
   await supabase.from("comments").delete().eq("id", commentId);
 
   revalidatePath(toPath(locale, "/feed"));
-  redirect(toPath(locale, "/feed"));
+  redirect(toPath(locale, "/feed?commentDeleted=1"));
 }
 
 export async function forgotPasswordAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
-  const t = await getTranslations({locale, namespace: "Errors"});
   const supabase = await createClient();
 
   const email = formData.get("email");
 
   if (typeof email !== "string" || !email.includes("@")) {
-    redirect(toPath(locale, `/forgot-password?error=${encodeURIComponent(t("invalidInput"))}`));
+    redirect(toPath(locale, `/forgot-password?error=${encodeURIComponent("Invalid input")}`));
   }
 
   const {error} = await supabase.auth.resetPasswordForEmail(email, {
@@ -565,7 +558,7 @@ export async function forgotPasswordAction(formData: FormData) {
     redirect(toPath(locale, `/forgot-password?error=${encodeURIComponent(error.message)}`));
   }
 
-  redirect(toPath(locale, "/forgot-password?sent=1"));
+  redirect(toPath(locale, "/forgot-password?emailSent=1"));
 }
 
 export async function voteIdeaAction(formData: FormData) {
@@ -578,7 +571,8 @@ export async function voteIdeaAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(toPath(locale, "/login"));
+    const next = encodeURIComponent("/ideas");
+    redirect(toPath(locale, `/login?next=${next}`));
   }
 
   if (typeof ideaId !== "string") {
@@ -602,5 +596,5 @@ export async function voteIdeaAction(formData: FormData) {
   }
 
   revalidatePath(toPath(locale, "/ideas"));
-  redirect(toPath(locale, "/ideas"));
+  redirect(toPath(locale, "/ideas?voteAdded=1"));
 }

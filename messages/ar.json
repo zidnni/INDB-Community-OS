@@ -135,6 +135,7 @@
     "ago": "منذ",
     "save": "حفظ",
     "share": "مشاركة",
+    "linkCopied": "تم نسخ رابط المنشور",
     "deleting": "جارٍ الحذف...",
     "sending": "جارٍ الإرسال...",
     "commentPlaceholder": "اكتب تعليقًا...",
@@ -171,6 +172,9 @@
       "selectCategory": "اختر تصنيفًا",
       "publish": "نشر"
     },
+    "cancel": "إلغاء",
+    "post": "نشر",
+    "posting": "جارٍ النشر...",
     "socialPrompt": "ماذا يحدث في نواذيبو؟"
   },
   "Memory": {
@@ -205,8 +209,10 @@
     "status": {
       "submitted": "مقدمة",
       "underReview": "قيد المراجعة",
+      "accepted": "مقبولة",
       "inProgress": "قيد التنفيذ",
-      "completed": "مكتملة"
+      "completed": "مكتملة",
+      "rejected": "مرفوضة"
     }
   },
   "IdeaForm": {
@@ -378,6 +384,20 @@
       "backToLogin": "العودة إلى تسجيل الدخول"
     }
   },
+  "Toasts": {
+    "postCreated": "تم إنشاء المنشور",
+    "commentAdded": "تم إضافة التعليق",
+    "commentDeleted": "تم حذف التعليق",
+    "postDeleted": "تم حذف المنشور",
+    "postSaved": "تم حفظ المنشور",
+    "memorySubmitted": "تم إرسال الذكرى",
+    "ideaSubmitted": "تم إرسال الفكرة",
+    "voteAdded": "تم إضافة التصويت",
+    "updated": "تم تحديث الملف الشخصي",
+    "linkCopied": "تم نسخ رابط المنشور",
+    "emailSent": "تحقق من بريدك الإلكتروني لرابط إعادة تعيين كلمة المرور",
+    "comingSoon": "قريبًا"
+  },
   "Errors": {
     "invalidInput": "المدخلات غير صحيحة",
     "invalidPost": "المنشور غير صالح",
@@ -426,6 +446,11 @@
     "polls": {
       "title": "لا توجد استطلاعات بعد",
       "description": "أنشئ أول استطلاع لجمع آراء المجتمع.",
+      "cta": "استكشف المنشورات"
+    },
+    "projects": {
+      "title": "لا توجد مشاريع بعد",
+      "description": "أطلق مشروعاً مواطناً واجمع المجتمع حول عمل محلي.",
       "cta": "استكشف المنشورات"
     }
   }

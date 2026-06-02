@@ -4,11 +4,15 @@ import {NextIntlClientProvider} from "next-intl";
 import {getMessages, getTranslations} from "next-intl/server";
 import {notFound} from "next/navigation";
 
+import {Suspense} from "react";
+import {Toaster} from "sonner";
+
 import {MobileNav} from "@/components/layout/mobile-nav";
 import {Navbar} from "@/components/layout/navbar";
 import {PageTransition} from "@/components/layout/page-transition";
 import {RightSidebar} from "@/components/layout/right-sidebar";
 import {Sidebar} from "@/components/layout/sidebar";
+import {ToastHandler} from "@/components/shared/toast-handler";
 import {ThemeProvider} from "@/components/layout/theme-provider";
 import {routing} from "@/lib/i18n/routing";
 import {cn} from "@/lib/utils/cn";
@@ -69,6 +73,10 @@ export default async function LocaleLayout({
   return (
     <ThemeProvider>
       <NextIntlClientProvider locale={locale} messages={messages}>
+        <Toaster position="top-center" richColors closeButton />
+        <Suspense fallback={null}>
+          <ToastHandler />
+        </Suspense>
         <div
           dir={isRtl ? "rtl" : "ltr"}
           className={cn(
