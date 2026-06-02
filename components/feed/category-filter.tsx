@@ -3,7 +3,6 @@
 import {useLocale, useTranslations} from "next-intl";
 
 import {Link} from "@/lib/i18n/routing";
-import {withLocale} from "@/lib/i18n/paths";
 
 export function CategoryFilter({
   items,
