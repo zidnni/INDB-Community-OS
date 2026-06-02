@@ -21,7 +21,7 @@ function SubmitButton({label, loading}: {label: string; loading: string}) {
   );
 }
 
-export function CreatePostCard() {
+export function CreatePostCard({avatarUrl}: {avatarUrl?: string | null}) {
   const t = useTranslations("FeedComposer");
   const locale = useLocale();
   const [showForm, setShowForm] = useState(false);
@@ -32,7 +32,7 @@ export function CreatePostCard() {
       <Card id="create-post" className="border-border/70">
         <CardContent className="space-y-3.5 p-4 sm:space-y-4 sm:p-5">
           <div className="flex items-start gap-3">
-            <UserAvatar label={t("title")} className="h-11 w-11 shrink-0" />
+            <UserAvatar label={t("title")} avatarUrl={avatarUrl} className="h-11 w-11 shrink-0" />
             <button
               type="button"
               onClick={() => setShowForm(true)}

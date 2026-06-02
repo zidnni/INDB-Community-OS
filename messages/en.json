@@ -277,6 +277,8 @@
       "comments": "Comments"
     },
     "editProfile": "Edit profile",
+    "changeAvatar": "Change Avatar",
+    "changeCover": "Change Cover",
     "shareProfile": "Share profile",
     "tabsTitle": "Profile Tabs",
     "tabs": {
@@ -300,7 +302,10 @@
     "updated": "Profile updated successfully.",
     "cancel": "Cancel",
     "noBio": "No bio yet.",
+    "noBioYet": "No bio yet.",
     "noCity": "No city set.",
+    "createPost": "Create post",
+    "noPostsYet": "No posts yet. Share your first update.",
     "fields": {
       "username": "Username",
       "fullName": "Full name",
@@ -450,9 +455,9 @@
       "cta": "Explore feed"
     },
     "profile": {
-      "title": "No posts on this profile",
-      "description": "Share a first update to start building your community presence.",
-      "cta": "Share update"
+      "title": "No posts yet",
+      "description": "Share your first update.",
+      "cta": "Create post"
     },
     "polls": {
       "title": "No polls yet",

@@ -1,20 +1,13 @@
-import {CalendarDays, MapPin, Pencil, UserRound} from "lucide-react";
 import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
 
-import {PostCard} from "@/components/feed/post-card";
-import {MemoryCard} from "@/components/memory/memory-card";
-import {IdeaCard} from "@/components/ideas/idea-card";
-import {EmptyState} from "@/components/shared/empty-state";
-import {Badge} from "@/components/ui/badge";
-import {Button} from "@/components/ui/button";
-import {Card, CardContent} from "@/components/ui/card";
+import {ProfileClient} from "@/components/profile/profile-client";
 import {getCommentsByPost} from "@/lib/data/comments";
 import {getUserPosts} from "@/lib/data/posts";
 import {getProfileWithCounts} from "@/lib/data/profile";
 import {getUserMemories} from "@/lib/data/memories";
 import {getUserIdeas} from "@/lib/data/ideas";
-import {Link, redirect} from "@/lib/i18n/routing";
+import {redirect} from "@/lib/i18n/routing";
 import {createClient} from "@/lib/supabase/server";
 
 export async function generateMetadata({
@@ -31,30 +24,12 @@ export async function generateMetadata({
   };
 }
 
-function getInitials(name: string | null | undefined): string {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return parts[0].substring(0, 2).toUpperCase();
-}
-
-function formatJoinDate(dateStr: string, locale: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString(locale === "ar" ? "ar-SA" : locale === "fr" ? "fr-FR" : "en-US", {
-    year: "numeric",
-    month: "long",
-  });
-}
-
 export default async function ProfilePage({
   params,
-  searchParams,
 }: {
   params: Promise<{locale: string}>;
-  searchParams: Promise<{tab?: string; error?: string; updated?: string}>;
 }) {
   const {locale} = await params;
-  const {tab: activeTab, error, updated} = await searchParams;
 
   const supabase = await createClient();
   const {data: {user}} = await supabase.auth.getUser();
@@ -73,250 +48,27 @@ export default async function ProfilePage({
 
   const currentUserId = user.id;
 
-  const t = await getTranslations({locale, namespace: "Profile"});
-  const emptyPosts = await getTranslations({locale, namespace: "EmptyStates.posts"});
-  const emptyMemories = await getTranslations({locale, namespace: "EmptyStates.memories"});
-  const emptyIdeas = await getTranslations({locale, namespace: "EmptyStates.ideas"});
-
   const [allPosts, memories, ideas] = await Promise.all([
     getUserPosts(profile.id, currentUserId),
     getUserMemories(profile.id),
     getUserIdeas(profile.id),
   ]);
 
-  const displayName = profile.full_name ?? profile.username ?? "?";
-  const initials = getInitials(displayName);
-  const joinDate = formatJoinDate(profile.created_at, locale);
-  const currentTab = activeTab === "memories" ? "memories" : activeTab === "ideas" ? "ideas" : activeTab === "about" ? "about" : "posts";
-
-  const tabs = [
-    {key: "posts", label: t("tabs.posts"), count: allPosts.length},
-    {key: "memories", label: t("tabs.memories"), count: memories.length},
-    {key: "ideas", label: t("tabs.ideas"), count: ideas.length},
-    {key: "about", label: t("tabs.about"), count: null},
-  ] as const;
+  const postsWithComments = await Promise.all(
+    allPosts.map(async (post) => {
+      const comments = await getCommentsByPost(post.id);
+      return {post, comments};
+    }),
+  );
 
   return (
-    <div className="space-y-4">
-      {updated ? (
-        <p className="rounded-xl bg-primary/10 p-3 text-sm text-primary">{t("updated")}</p>
-      ) : null}
-      {error ? (
-        <p className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive">{error}</p>
-      ) : null}
-
-      <Card className="overflow-hidden border-border/70 shadow-[0_12px_32px_rgba(8,33,56,0.08)]">
-        <div
-          className="relative h-40 sm:h-56"
-          style={
-            profile.cover_image_url
-              ? {backgroundImage: `url(${profile.cover_image_url})`, backgroundSize: "cover", backgroundPosition: "center"}
-              : {}
-          }
-        >
-          {!profile.cover_image_url ? (
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-accent/75 to-primary/70" />
-          ) : null}
-        </div>
-
-        <CardContent className="relative px-4 pb-4 sm:px-6 sm:pb-6">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:gap-5">
-            <div className="-mt-16 sm:-mt-20 z-10 flex shrink-0 justify-center sm:justify-start">
-              {profile.avatar_url ? (
-                <img
-                  src={profile.avatar_url}
-                  alt={displayName}
-                  className="h-32 w-32 rounded-full border-4 border-card object-cover sm:h-40 sm:w-40"
-                />
-              ) : (
-                <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-card bg-muted text-3xl font-bold sm:h-40 sm:w-40 sm:text-4xl">
-                  {initials}
-                </div>
-              )}
-            </div>
-
-            <div className="mt-3 flex-1 text-center sm:mt-0 sm:text-start">
-              <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-3">
-                <div>
-                  <h1 className="text-2xl font-bold sm:text-3xl">{displayName}</h1>
-                  {profile.username ? (
-                    <p className="text-sm text-muted-foreground">@{profile.username}</p>
-                  ) : null}
-                </div>
-                {profile.role && profile.role !== "member" ? (
-                  <Badge className="rounded-full px-3 py-1 text-xs font-medium">
-                    {t(`role.${profile.role}`)}
-                  </Badge>
-                ) : null}
-              </div>
-
-              {profile.bio ? (
-                <p className="mt-2 text-sm text-foreground/90">{profile.bio}</p>
-              ) : null}
-
-              <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground sm:justify-start">
-                {profile.city ? (
-                  <span className="inline-flex items-center gap-1">
-                    <MapPin size={13} />
-                    {profile.city}
-                  </span>
-                ) : null}
-                <span className="inline-flex items-center gap-1">
-                  <CalendarDays size={13} />
-                  {t("joined")} {joinDate}
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-3 flex justify-center sm:mt-0 sm:self-center">
-              <Link href="/profile/edit">
-                <Button variant="outline" size="sm" className="gap-1.5 rounded-full">
-                  <Pencil size={14} />
-                  {t("editProfile")}
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          <div className="mt-5 grid grid-cols-4 gap-2 rounded-2xl bg-muted/40 p-3 sm:gap-3 sm:p-4">
-            <div className="text-center">
-              <p className="text-lg font-bold sm:text-xl">{allPosts.length}</p>
-              <p className="text-xs text-muted-foreground">{t("stats.posts")}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold sm:text-xl">{memories.length}</p>
-              <p className="text-xs text-muted-foreground">{t("stats.memories")}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold sm:text-xl">{ideas.length}</p>
-              <p className="text-xs text-muted-foreground">{t("stats.ideas")}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold sm:text-xl">{profile.comments_count ?? 0}</p>
-              <p className="text-xs text-muted-foreground">{t("stats.comments")}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="flex gap-1 overflow-x-auto rounded-2xl border border-border/70 bg-card p-1 shadow-[0_8px_24px_rgba(8,33,56,0.06)]">
-        {tabs.map((tab) => (
-          <Link
-            key={tab.key}
-            href={`/profile?tab=${tab.key}`}
-            className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
-              currentTab === tab.key || (currentTab === "posts" && tab.key === "posts" && !activeTab)
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            }`}
-          >
-            {tab.label}
-            {tab.count !== null ? (
-              <span className={`rounded-full px-2 py-0.5 text-xs ${
-                currentTab === tab.key || (currentTab === "posts" && tab.key === "posts" && !activeTab)
-                  ? "bg-primary-foreground/20 text-primary-foreground"
-                  : "bg-muted-foreground/10 text-muted-foreground"
-              }`}>
-                {tab.count}
-              </span>
-            ) : null}
-          </Link>
-        ))}
-      </div>
-
-      {currentTab === "posts" ? (
-        allPosts.length > 0 ? (
-          <div className="space-y-3 sm:space-y-4">
-            {await Promise.all(
-              allPosts.map(async (post) => {
-                const comments = await getCommentsByPost(post.id);
-                return <PostCard key={post.id} post={post} comments={comments} currentUserId={currentUserId} />;
-              }),
-            )}
-          </div>
-        ) : (
-          <EmptyState
-            icon={UserRound}
-            title={emptyPosts("title")}
-            description={emptyPosts("description")}
-            ctaLabel={emptyPosts("cta")}
-            ctaHref="/feed"
-          />
-        )
-      ) : null}
-
-      {currentTab === "memories" ? (
-        memories.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {memories.map((memory) => (
-              <MemoryCard key={memory.id} memory={memory} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            icon={UserRound}
-            title={emptyMemories("title")}
-            description={emptyMemories("description")}
-            ctaLabel={emptyMemories("cta")}
-            ctaHref="/memory/submit"
-          />
-        )
-      ) : null}
-
-      {currentTab === "ideas" ? (
-        ideas.length > 0 ? (
-          <div className="space-y-3 sm:space-y-4">
-            {ideas.map((idea) => (
-              <IdeaCard key={idea.id} idea={idea} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            icon={UserRound}
-            title={emptyIdeas("title")}
-            description={emptyIdeas("description")}
-            ctaLabel={emptyIdeas("cta")}
-            ctaHref="/ideas/submit"
-          />
-        )
-      ) : null}
-
-      {currentTab === "about" ? (
-        <Card className="border-border/70 shadow-[0_8px_24px_rgba(8,33,56,0.06)]">
-          <CardContent className="space-y-4 p-5 sm:p-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("fields.fullName")}</p>
-                <p className="mt-1 text-sm">{profile.full_name ?? "—"}</p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("fields.username")}</p>
-                <p className="mt-1 text-sm">{profile.username ? `@${profile.username}` : "—"}</p>
-              </div>
-              <div className="sm:col-span-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("fields.bio")}</p>
-                <p className="mt-1 text-sm">{profile.bio ?? t("noBio")}</p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("fields.city")}</p>
-                <p className="mt-1 text-sm">{profile.city ?? t("noCity")}</p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("fields.languagePreference")}</p>
-                <p className="mt-1 text-sm">{profile.language_preference ?? "—"}</p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("fields.role")}</p>
-                <p className="mt-1 text-sm">{t(`role.${profile.role}`)}</p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("fields.memberSince")}</p>
-                <p className="mt-1 text-sm">{joinDate}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ) : null}
-    </div>
+    <ProfileClient
+      profile={profile}
+      postsWithComments={postsWithComments}
+      memories={memories}
+      ideas={ideas}
+      currentUserId={currentUserId}
+      locale={locale}
+    />
   );
 }

@@ -277,6 +277,8 @@
       "comments": "Commentaires"
     },
     "editProfile": "Modifier le profil",
+    "changeAvatar": "Changer la photo",
+    "changeCover": "Changer la couverture",
     "shareProfile": "Partager le profil",
     "tabsTitle": "Onglets du profil",
     "tabs": {
@@ -299,8 +301,11 @@
     "saving": "Enregistrement...",
     "updated": "Profil mis à jour avec succès.",
     "cancel": "Annuler",
-    "noBio": "Pas encore de bio.",
+    "noBio": "Aucune bio pour le moment.",
+    "noBioYet": "Aucune bio pour le moment.",
     "noCity": "Aucune ville renseignée.",
+    "createPost": "Créer une publication",
+    "noPostsYet": "Aucune publication pour le moment. Partagez votre première nouvelle.",
     "fields": {
       "username": "Nom d'utilisateur",
       "fullName": "Nom complet",
@@ -450,9 +455,9 @@
       "cta": "Explorer le fil"
     },
     "profile": {
-      "title": "Aucune publication sur ce profil",
-      "description": "Partagez une première mise à jour pour développer votre présence communautaire.",
-      "cta": "Partager une mise à jour"
+      "title": "Aucune publication pour le moment",
+      "description": "Partagez votre première nouvelle.",
+      "cta": "Créer une publication"
     },
     "polls": {
       "title": "Aucun sondage pour le moment",

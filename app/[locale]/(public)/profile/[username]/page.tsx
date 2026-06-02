@@ -90,7 +90,18 @@ export default async function PublicProfilePage({
   return (
     <div className="space-y-4">
       <Card className="overflow-hidden border-border/70 shadow-[0_12px_32px_rgba(8,33,56,0.08)]">
-        <div className="relative h-40 sm:h-56 bg-gradient-to-r from-primary/95 via-accent/75 to-primary/70" />
+        <div
+          className="relative h-40 sm:h-56"
+          style={
+            profile.cover_image_url
+              ? {backgroundImage: `url(${profile.cover_image_url})`, backgroundSize: "cover", backgroundPosition: "center"}
+              : {}
+          }
+        >
+          {!profile.cover_image_url ? (
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-accent/75 to-primary/70" />
+          ) : null}
+        </div>
 
         <CardContent className="relative px-4 pb-4 sm:px-6 sm:pb-6">
           <div className="flex flex-col sm:flex-row sm:items-end sm:gap-5">

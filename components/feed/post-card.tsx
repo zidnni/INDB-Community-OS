@@ -217,7 +217,7 @@ export function PostCard({
         <CardHeader className="pb-2.5 sm:pb-3">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3">
-              <UserAvatar label={authorName} className="h-11 w-11 shrink-0" />
+              <UserAvatar label={authorName} avatarUrl={post.author?.avatar_url} className="h-11 w-11 shrink-0" />
               <div className="space-y-1">
                 <CardTitle className="text-[15px] leading-none sm:text-base">{authorName}</CardTitle>
                 <p className="text-[11px] text-muted-foreground sm:text-xs">
@@ -341,15 +341,16 @@ export function PostCard({
                 const commentAuthor = comment.author?.full_name ?? comment.author?.username ?? t("unknownAuthor");
                 const isOwnComment = currentUserId != null && comment.author_id === currentUserId;
                 return (
-                  <CommentCard
-                    key={comment.id}
-                    commentId={comment.id}
-                    author={commentAuthor}
-                    content={comment.content}
-                    timeAgo={timeAgo(comment.created_at, locale)}
-                    isOwn={isOwnComment}
-                    locale={locale}
-                  />
+                   <CommentCard
+                     key={comment.id}
+                     commentId={comment.id}
+                     author={commentAuthor}
+                     authorAvatarUrl={comment.author?.avatar_url}
+                     content={comment.content}
+                     timeAgo={timeAgo(comment.created_at, locale)}
+                     isOwn={isOwnComment}
+                     locale={locale}
+                   />
                 );
               })}
             </div>

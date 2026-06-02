@@ -9,6 +9,7 @@ import {Button} from "@/components/ui/button";
 import {ThemeToggle} from "@/components/layout/theme-toggle";
 import {UserAvatar} from "@/components/layout/user-avatar";
 import {Link} from "@/lib/i18n/routing";
+import {getCurrentProfile} from "@/lib/data/profile";
 import {createClient} from "@/lib/supabase/server";
 
 export async function Navbar({locale}: {locale: string}) {
@@ -16,7 +17,9 @@ export async function Navbar({locale}: {locale: string}) {
 
   const supabase = await createClient();
   const {data} = await supabase.auth.getUser();
+  const profile = data.user ? await getCurrentProfile() : null;
   const isLoggedIn = !!data.user;
+  const avatarUrl = profile?.avatar_url;
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/90 pt-[var(--safe-top)] backdrop-blur-xl">
@@ -24,7 +27,7 @@ export async function Navbar({locale}: {locale: string}) {
         <div className="grid h-14 grid-cols-[auto_1fr_auto] items-center gap-2 md:hidden">
           {isLoggedIn ? (
             <Link href="/profile" className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full">
-              <UserAvatar label={t("memberAvatarLabel")} className="h-10 w-10" />
+              <UserAvatar label={t("memberAvatarLabel")} avatarUrl={avatarUrl} className="h-10 w-10" />
             </Link>
           ) : (
             <div className="flex items-center gap-1">
@@ -66,7 +69,7 @@ export async function Navbar({locale}: {locale: string}) {
             <NotificationDropdown />
             <LanguageSwitcher />
             <ThemeToggle />
-            <AuthNav locale={locale} isLoggedIn={isLoggedIn} />
+            <AuthNav locale={locale} isLoggedIn={isLoggedIn} avatarUrl={avatarUrl} />
           </div>
         </div>
       </div>

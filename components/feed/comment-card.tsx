@@ -19,6 +19,7 @@ function DeleteButton() {
 export function CommentCard({
   commentId,
   author,
+  authorAvatarUrl,
   content,
   timeAgo,
   isOwn,
@@ -26,6 +27,7 @@ export function CommentCard({
 }: {
   commentId: string;
   author: string;
+  authorAvatarUrl?: string | null;
   content: string;
   timeAgo: string;
   isOwn: boolean;
@@ -33,7 +35,7 @@ export function CommentCard({
 }) {
   return (
     <div className="flex items-start gap-2 rounded-xl bg-muted/60 p-3">
-      <UserAvatar className="h-7 w-7 shrink-0" label={author} />
+      <UserAvatar className="h-7 w-7 shrink-0" label={author} avatarUrl={authorAvatarUrl} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className="text-xs font-semibold">{author}</p>

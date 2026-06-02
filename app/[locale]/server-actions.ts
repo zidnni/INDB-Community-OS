@@ -290,6 +290,10 @@ export async function toggleSaveAction(formData: FormData) {
   revalidatePath("/", "layout");
 }
 
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_AVATAR_SIZE = 2 * 1024 * 1024;
+const MAX_COVER_SIZE = 5 * 1024 * 1024;
+
 export async function updateProfileAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
   const supabase = await createClient();
@@ -326,12 +330,24 @@ export async function updateProfileAction(formData: FormData) {
 
   const avatarFile = formData.get("avatarFile");
   if (avatarFile instanceof File && avatarFile.size > 0) {
+    if (!ALLOWED_IMAGE_TYPES.includes(avatarFile.type)) {
+      redirect(toPath(locale, "/profile?error=Invalid avatar format. Use JPG, PNG, or WebP."));
+    }
+    if (avatarFile.size > MAX_AVATAR_SIZE) {
+      redirect(toPath(locale, "/profile?error=Avatar must be under 2MB."));
+    }
     const uploaded = await uploadFile(avatarFile, "avatars", user.id);
     if (uploaded) avatarUrl = uploaded;
   }
 
   const coverFile = formData.get("coverFile");
   if (coverFile instanceof File && coverFile.size > 0) {
+    if (!ALLOWED_IMAGE_TYPES.includes(coverFile.type)) {
+      redirect(toPath(locale, "/profile?error=Invalid cover format. Use JPG, PNG, or WebP."));
+    }
+    if (coverFile.size > MAX_COVER_SIZE) {
+      redirect(toPath(locale, "/profile?error=Cover image must be under 5MB."));
+    }
     const uploaded = await uploadFile(coverFile, "profile-covers", user.id);
     if (uploaded) coverImageUrl = uploaded;
   }

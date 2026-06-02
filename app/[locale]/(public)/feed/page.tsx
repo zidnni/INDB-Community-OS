@@ -7,6 +7,7 @@ import {PostCard} from "@/components/feed/post-card";
 import {EmptyState} from "@/components/shared/empty-state";
 import {getCommentsByPost} from "@/lib/data/comments";
 import {getPosts} from "@/lib/data/posts";
+import {getCurrentProfile} from "@/lib/data/profile";
 import {createClient} from "@/lib/supabase/server";
 
 export async function generateMetadata({
@@ -34,12 +35,13 @@ export default async function FeedPage({
   const supabase = await createClient();
   const {data: {user}} = await supabase.auth.getUser();
   const currentUserId = user?.id ?? null;
+  const profile = user ? await getCurrentProfile() : null;
 
   const posts = await getPosts(currentUserId);
 
   return (
     <div className="space-y-3 sm:space-y-4">
-      <CreatePostCard />
+      <CreatePostCard avatarUrl={profile?.avatar_url} />
 
       {posts.length > 0 ? (
         <div className="space-y-3 sm:space-y-4">
