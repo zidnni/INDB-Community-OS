@@ -28,10 +28,10 @@ export function LoginForm({locale, next}: {locale: string; next?: string}) {
       <Input type="password" name="password" placeholder={t("password")} required />
       <div className="flex items-center justify-between">
         <SubmitButton label={t("submit")} loading={t("submitting")} />
-        <Link href={`/${locale}/forgot-password`} className="text-xs text-primary hover:underline">{t("forgotPassword")}</Link>
+        <Link href="/forgot-password" className="text-xs text-primary hover:underline">{t("forgotPassword")}</Link>
       </div>
       <p className="text-center text-xs text-muted-foreground">
-        {t("noAccount")} <Link href={next ? `/${locale}/register?next=${encodeURIComponent(next)}` : `/${locale}/register`} className="text-primary hover:underline">{t("register")}</Link>
+        {t("noAccount")} <Link href={next ? `/register?next=${encodeURIComponent(next)}` : "/register"} className="text-primary hover:underline">{t("register")}</Link>
       </p>
     </form>
   );

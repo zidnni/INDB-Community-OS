@@ -199,7 +199,7 @@ export function ProfileEditForm({profile, locale}: {profile: ProfileRow; locale:
             {submitting ? t("saving") : t("save")}
           </Button>
           <p className="text-center text-xs text-muted-foreground">
-            <Link href={`/${locale}/profile`} className="text-primary hover:underline">{t("cancel")}</Link>
+            <Link href="/profile" className="text-primary hover:underline">{t("cancel")}</Link>
           </p>
         </form>
       </CardContent>

@@ -26,7 +26,7 @@ export function ForgotPasswordForm({locale}: {locale: string}) {
       <Input type="email" name="email" placeholder={t("email")} required />
       <SubmitButton label={t("submit")} loading={t("submitting")} />
       <p className="text-center text-xs text-muted-foreground">
-        <Link href={`/${locale}/login`} className="text-primary hover:underline">{t("backToLogin")}</Link>
+        <Link href="/login" className="text-primary hover:underline">{t("backToLogin")}</Link>
       </p>
     </form>
   );

@@ -1,10 +1,9 @@
 ﻿"use client";
 
 import {Home, Images, Lightbulb, Newspaper, UserRound} from "lucide-react";
-import {useLocale, useTranslations} from "next-intl";
+import {useTranslations} from "next-intl";
 
 import {Link, usePathname} from "@/lib/i18n/routing";
-import {withLocale} from "@/lib/i18n/paths";
 import {cn} from "@/lib/utils/cn";
 
 const bottomItems = [
@@ -24,7 +23,6 @@ const iconMap = {
 } as const;
 
 export function MobileNav() {
-  const locale = useLocale();
   const t = useTranslations("Navigation");
   const pathname = usePathname();
 
@@ -41,7 +39,7 @@ export function MobileNav() {
           return (
             <li key={item.href}>
               <Link
-                href={withLocale(locale, item.href)}
+                href={item.href as never}
                 className={cn(
                   "group flex min-h-14 flex-1 flex-col items-center justify-center rounded-xl px-1 py-1 text-[11px] font-medium transition",
                   active

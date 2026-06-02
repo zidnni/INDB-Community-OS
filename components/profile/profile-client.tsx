@@ -200,7 +200,7 @@ export function ProfileClient({
             {tabs.map((tab) => (
               <Link
                 key={tab.key}
-                href={`/${locale}/profile?tab=${tab.key}`}
+                href={`/profile?tab=${tab.key}`}
                 className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
                   currentTab === tab.key || (currentTab === "posts" && tab.key === "posts" && !activeTab)
                     ? "bg-primary text-primary-foreground shadow-sm"
@@ -238,7 +238,7 @@ export function ProfileClient({
                   title={emptyProfilePosts("title")}
                   description={emptyProfilePosts("description")}
                   ctaLabel={emptyProfilePosts("cta")}
-                  ctaHref={`/${locale}/feed`}
+                  ctaHref="/feed"
                 />
               )
             ) : null}
@@ -256,7 +256,7 @@ export function ProfileClient({
                   title={emptyMemories("title")}
                   description={emptyMemories("description")}
                   ctaLabel={emptyMemories("cta")}
-                  ctaHref={`/${locale}/memory/submit`}
+                  ctaHref="/memory/submit"
                 />
               )
             ) : null}
@@ -274,7 +274,7 @@ export function ProfileClient({
                   title={emptyIdeas("title")}
                   description={emptyIdeas("description")}
                   ctaLabel={emptyIdeas("cta")}
-                  ctaHref={`/${locale}/ideas/submit`}
+                  ctaHref="/ideas/submit"
                 />
               )
             ) : null}

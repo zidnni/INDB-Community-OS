@@ -25,12 +25,12 @@ export function AuthNav({locale, isLoggedIn, avatarUrl}: {locale: string; isLogg
   if (!isLoggedIn) {
     return (
       <div className="flex items-center gap-1">
-        <Link href={`/${locale}/register`}>
+        <Link href="/register">
           <Button variant="ghost" size="sm" className="gap-1.5">
             {t("createAccount")}
           </Button>
         </Link>
-        <Link href={`/${locale}/login`}>
+        <Link href="/login">
           <Button variant="ghost" size="sm" className="gap-1.5">
             {t("login")}
           </Button>
@@ -41,7 +41,7 @@ export function AuthNav({locale, isLoggedIn, avatarUrl}: {locale: string; isLogg
 
   return (
     <div className="flex items-center gap-1">
-      <Link href={`/${locale}/profile`}>
+      <Link href="/profile">
         <Button variant="ghost" size="icon" className="rounded-full">
           <UserAvatar label={t("memberAvatarLabel")} avatarUrl={avatarUrl} className="h-9 w-9" />
         </Button>

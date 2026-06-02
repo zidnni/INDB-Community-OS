@@ -30,7 +30,7 @@ export function RegisterForm({locale, next}: {locale: string; next?: string}) {
       <Input type="password" name="confirmPassword" placeholder={t("confirmPassword")} required />
       <SubmitButton label={t("submit")} loading={t("submitting")} />
       <p className="text-center text-xs text-muted-foreground">
-        {t("hasAccount")} <Link href={next ? `/${locale}/login?next=${encodeURIComponent(next)}` : `/${locale}/login`} className="text-primary hover:underline">{t("login")}</Link>
+        {t("hasAccount")} <Link href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="text-primary hover:underline">{t("login")}</Link>
       </p>
     </form>
   );
