@@ -5,6 +5,7 @@ import {redirect} from "next/navigation";
 import {getTranslations} from "next-intl/server";
 
 import {routing} from "@/lib/i18n/routing";
+import {withLocale} from "@/lib/i18n/paths";
 import {createClient} from "@/lib/supabase/server";
 import {toggleReaction} from "@/lib/data/reactions";
 import {
@@ -26,14 +27,25 @@ function normalizeLocale(value: FormDataEntryValue | null) {
 }
 
 function toPath(locale: string, pathname: string) {
-  const prefix = `/${locale}`;
-  if (pathname.startsWith(prefix)) return pathname;
-  for (const l of routing.locales) {
-    const lp = `/${l}`;
-    if (pathname === lp) return prefix;
-    if (pathname.startsWith(`${lp}/`)) return `${prefix}${pathname.slice(lp.length)}`;
+  return withLocale(pathname, locale);
+}
+
+function getReturnPath(formData: FormData, fallback: string) {
+  const returnTo = formData.get("returnTo");
+  if (typeof returnTo !== "string" || !returnTo.startsWith("/")) {
+    return fallback;
   }
-  return `${prefix}${pathname}`;
+
+  if (returnTo.startsWith("//") || returnTo.includes("://")) {
+    return fallback;
+  }
+
+  return returnTo;
+}
+
+function appendParam(path: string, key: string, value: string) {
+  const separator = path.includes("?") ? "&" : "?";
+  return `${path}${separator}${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
 }
 
 export async function signOutAction(formData: FormData) {
@@ -159,6 +171,7 @@ async function uploadFile(
 
 export async function createPostAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
+  const returnPath = getReturnPath(formData, "/feed");
   const supabase = await createClient();
 
   const {
@@ -166,7 +179,7 @@ export async function createPostAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    const next = encodeURIComponent("/feed");
+    const next = encodeURIComponent(returnPath);
     redirect(toPath(locale, `/login?next=${next}`));
   }
 
@@ -177,7 +190,7 @@ export async function createPostAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirect(toPath(locale, `/feed?error=${encodeURIComponent("Invalid post content")}`));
+    redirect(toPath(locale, appendParam(returnPath, "error", "Invalid post content")));
   }
 
   let image_url: string | null = null;
@@ -197,12 +210,13 @@ export async function createPostAction(formData: FormData) {
     image_url,
   });
 
-  revalidatePath(toPath(locale, "/feed"));
-  redirect(toPath(locale, "/feed?postCreated=1"));
+  revalidatePath(toPath(locale, returnPath));
+  redirect(toPath(locale, appendParam(returnPath, "postCreated", "1")));
 }
 
 export async function addCommentAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
+  const returnPath = getReturnPath(formData, "/feed");
   const postId = formData.get("postId");
   const supabase = await createClient();
 
@@ -211,7 +225,7 @@ export async function addCommentAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    const next = encodeURIComponent(`/feed`);
+    const next = encodeURIComponent(returnPath);
     redirect(toPath(locale, `/login?next=${next}`));
   }
 
@@ -220,7 +234,7 @@ export async function addCommentAction(formData: FormData) {
   });
 
   if (!parsed.success || typeof postId !== "string") {
-    redirect(toPath(locale, "/feed"));
+    redirect(toPath(locale, returnPath));
   }
 
   await supabase.from("comments").insert({
@@ -229,12 +243,13 @@ export async function addCommentAction(formData: FormData) {
     content: parsed.data.content,
   });
 
-  revalidatePath(toPath(locale, "/feed"));
-  redirect(toPath(locale, "/feed?commentAdded=1"));
+  revalidatePath(toPath(locale, returnPath));
+  redirect(toPath(locale, appendParam(returnPath, "commentAdded", "1")));
 }
 
 export async function toggleReactionAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
+  const returnPath = getReturnPath(formData, "/feed");
   const postId = formData.get("postId");
   const reactionType = formData.get("reactionType") as string | null;
   const supabase = await createClient();
@@ -244,17 +259,17 @@ export async function toggleReactionAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    const next = encodeURIComponent("/feed");
+    const next = encodeURIComponent(returnPath);
     redirect(toPath(locale, `/login?next=${next}`));
   }
 
   if (typeof postId !== "string" || !reactionType) {
-    redirect(toPath(locale, "/feed"));
+    redirect(toPath(locale, returnPath));
   }
 
   const validTypes: readonly string[] = ["like", "love", "support", "celebrate", "insightful", "sad"];
   if (!validTypes.includes(reactionType)) {
-    redirect(toPath(locale, "/feed"));
+    redirect(toPath(locale, returnPath));
   }
 
   await toggleReaction(postId, user.id, reactionType as ReactionType);
@@ -545,6 +560,7 @@ export async function submitIdeaAction(formData: FormData) {
 
 export async function deletePostAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
+  const returnPath = getReturnPath(formData, "/feed");
   const supabase = await createClient();
 
   const {
@@ -552,13 +568,13 @@ export async function deletePostAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(toPath(locale, "/login"));
+    redirect(toPath(locale, `/login?next=${encodeURIComponent(returnPath)}`));
   }
 
   const postId = formData.get("postId");
 
   if (typeof postId !== "string") {
-    redirect(toPath(locale, "/feed"));
+    redirect(toPath(locale, returnPath));
   }
 
   const {data: post} = await supabase
@@ -568,17 +584,18 @@ export async function deletePostAction(formData: FormData) {
     .single();
 
   if (!post || post.author_id !== user.id) {
-    redirect(toPath(locale, "/feed"));
+    redirect(toPath(locale, returnPath));
   }
 
   await supabase.from("posts").delete().eq("id", postId);
 
-  revalidatePath(toPath(locale, "/feed"));
-  redirect(toPath(locale, "/feed?postDeleted=1"));
+  revalidatePath(toPath(locale, returnPath));
+  redirect(toPath(locale, appendParam(returnPath, "postDeleted", "1")));
 }
 
 export async function deleteCommentAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
+  const returnPath = getReturnPath(formData, "/feed");
   const supabase = await createClient();
 
   const {
@@ -586,13 +603,13 @@ export async function deleteCommentAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(toPath(locale, "/login"));
+    redirect(toPath(locale, `/login?next=${encodeURIComponent(returnPath)}`));
   }
 
   const commentId = formData.get("commentId");
 
   if (typeof commentId !== "string") {
-    redirect(toPath(locale, "/feed"));
+    redirect(toPath(locale, returnPath));
   }
 
   const {data: comment} = await supabase
@@ -602,13 +619,13 @@ export async function deleteCommentAction(formData: FormData) {
     .single();
 
   if (!comment || comment.author_id !== user.id) {
-    redirect(toPath(locale, "/feed"));
+    redirect(toPath(locale, returnPath));
   }
 
   await supabase.from("comments").delete().eq("id", commentId);
 
-  revalidatePath(toPath(locale, "/feed"));
-  redirect(toPath(locale, "/feed?commentDeleted=1"));
+  revalidatePath(toPath(locale, returnPath));
+  redirect(toPath(locale, appendParam(returnPath, "commentDeleted", "1")));
 }
 
 export async function forgotPasswordAction(formData: FormData) {

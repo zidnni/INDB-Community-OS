@@ -424,7 +424,8 @@
     "invalidProfile": "الملف الشخصي غير صالح",
     "invalidMemory": "الذكرى غير صالحة",
     "invalidIdea": "الفكرة غير صالحة",
-    "saveFailed": "فشل الحفظ"
+    "saveFailed": "فشل الحفظ",
+    "reactionFailed": "فشل تحديث التفاعل"
   },
   "Brand": {
     "title": "INDB Community OS",

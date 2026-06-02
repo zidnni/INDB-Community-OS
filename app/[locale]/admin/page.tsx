@@ -8,6 +8,7 @@ import {getPostsTodayCount} from "@/lib/data/posts";
 import {getPendingMemoriesCount} from "@/lib/data/memories";
 import {getIdeasCount} from "@/lib/data/ideas";
 import {getReportsCount, getPendingReports} from "@/lib/data/reports";
+import {withLocale} from "@/lib/i18n/paths";
 import {createClient} from "@/lib/supabase/server";
 
 export async function generateMetadata({
@@ -36,7 +37,7 @@ export default async function AdminPage({
   const {data: {user}} = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(`/${locale}/login`);
+    redirect(withLocale("/login", locale));
   }
 
   const {data: profile} = await supabase
@@ -46,7 +47,7 @@ export default async function AdminPage({
     .single();
 
   if (profile?.role !== "admin") {
-    redirect(`/${locale}/feed`);
+    redirect(withLocale("/feed", locale));
   }
 
   const [postsToday, pendingMemories, openIdeas, reportsCount, pendingReports] = await Promise.all([

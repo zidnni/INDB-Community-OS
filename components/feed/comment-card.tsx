@@ -24,6 +24,7 @@ export function CommentCard({
   timeAgo,
   isOwn,
   locale,
+  returnTo,
 }: {
   commentId: string;
   author: string;
@@ -32,6 +33,7 @@ export function CommentCard({
   timeAgo: string;
   isOwn: boolean;
   locale: string;
+  returnTo: string;
 }) {
   return (
     <div className="flex items-start gap-2 rounded-xl bg-muted/60 p-3">
@@ -46,6 +48,7 @@ export function CommentCard({
       {isOwn ? (
         <form action={deleteCommentAction}>
           <input type="hidden" name="locale" value={locale} />
+          <input type="hidden" name="returnTo" value={returnTo} />
           <input type="hidden" name="commentId" value={commentId} />
           <DeleteButton />
         </form>

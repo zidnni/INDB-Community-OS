@@ -424,7 +424,8 @@
     "invalidProfile": "Invalid profile",
     "invalidMemory": "Invalid memory",
     "invalidIdea": "Invalid idea",
-    "saveFailed": "Save failed"
+    "saveFailed": "Save failed",
+    "reactionFailed": "Reaction update failed"
   },
   "Brand": {
     "title": "INDB Community OS",

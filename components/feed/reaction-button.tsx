@@ -3,9 +3,11 @@
 import {useEffect, useRef, useState} from "react";
 import {useRouter} from "next/navigation";
 import {Heart} from "lucide-react";
+import {useTranslations} from "next-intl";
 import {toast} from "sonner";
 
 import {createClient} from "@/lib/supabase/client";
+import {withLocale} from "@/lib/i18n/paths";
 import {toggleReactionAction} from "@/app/[locale]/server-actions";
 import type {ReactionType} from "@/types/database";
 
@@ -21,11 +23,13 @@ const REACTIONS: {type: ReactionType; emoji: string}[] = [
 export function ReactionButton({
   postId,
   locale,
+  returnTo,
   currentReaction,
   likesCount,
 }: {
   postId: string;
   locale: string;
+  returnTo: string;
   currentReaction?: ReactionType | null;
   likesCount: number;
 }) {
@@ -35,6 +39,7 @@ export function ReactionButton({
   );
   const [localTotal, setLocalTotal] = useState(likesCount);
   const router = useRouter();
+  const errors = useTranslations("Errors");
   const pickerRef = useRef<HTMLDivElement>(null);
 
   // Sync from server when props change (after router.refresh)
@@ -75,7 +80,7 @@ export function ReactionButton({
     if (!user) {
       setLocalReaction(prevReaction);
       setLocalTotal(prevTotal);
-      window.location.href = `/${locale}/login?next=${encodeURIComponent("/feed")}`;
+      router.push(withLocale(`/login?next=${encodeURIComponent(returnTo)}`, locale));
       return;
     }
 
@@ -83,6 +88,7 @@ export function ReactionButton({
     formData.set("locale", locale);
     formData.set("postId", postId);
     formData.set("reactionType", type);
+    formData.set("returnTo", returnTo);
 
     try {
       await toggleReactionAction(formData);
@@ -90,7 +96,7 @@ export function ReactionButton({
     } catch {
       setLocalReaction(prevReaction);
       setLocalTotal(prevTotal);
-      toast.error("Failed to update reaction");
+      toast.error(errors("reactionFailed"));
     }
   }
 

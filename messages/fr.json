@@ -424,7 +424,8 @@
     "invalidProfile": "Profil invalide",
     "invalidMemory": "Souvenir invalide",
     "invalidIdea": "Idée invalide",
-    "saveFailed": "Échec de l'enregistrement"
+    "saveFailed": "Échec de l'enregistrement",
+    "reactionFailed": "Échec de la réaction"
   },
   "Brand": {
     "title": "INDB Community OS",

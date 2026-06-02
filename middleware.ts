@@ -25,7 +25,7 @@ export default async function middleware(request: NextRequest) {
 
   if (needsAuth || isAuthPage) {
     const env = getSupabaseEnv();
-    const response = NextResponse.next();
+    const response = handleI18nRouting(request);
 
     const supabase = createServerClient(env.supabaseUrl, env.supabaseAnonKey, {
       cookies: {

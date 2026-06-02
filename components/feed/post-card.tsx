@@ -3,6 +3,7 @@
 import {useEffect, useMemo, useRef, useState} from "react";
 import {motion} from "framer-motion";
 import {Bookmark, MessageCircle, Send, Share2, Trash2} from "lucide-react";
+import {useRouter} from "next/navigation";
 import {useLocale, useTranslations} from "next-intl";
 import {useFormStatus} from "react-dom";
 import {toast} from "sonner";
@@ -14,6 +15,8 @@ import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";
+import {usePathname} from "@/lib/i18n/routing";
+import {withLocale} from "@/lib/i18n/paths";
 import {createClient} from "@/lib/supabase/client";
 import type {PostWithAuthor, CommentWithAuthor} from "@/types/database";
 import {detectContentLanguage, type ContentLanguage} from "@/lib/i18n/detectContentLanguage";
@@ -82,7 +85,10 @@ export function PostCard({
 }) {
   const t = useTranslations("Feed");
   const common = useTranslations("Common");
+  const errors = useTranslations("Errors");
   const locale = useLocale();
+  const pathname = usePathname();
+  const router = useRouter();
   const uiLanguage: ContentLanguage = locale === "ar" || locale === "fr" ? locale : "en";
   const contentLanguage = useMemo(() => detectContentLanguage(post.content), [post.content]);
   const canTranslate = contentLanguage !== uiLanguage;
@@ -100,6 +106,7 @@ export function PostCard({
   const postTime = timeAgo(post.created_at, locale);
   const visibleContent = isTranslated && translatedText ? translatedText : post.content;
   const isOwnPost = currentUserId != null && post.author_id === currentUserId;
+  const returnPath = pathname || "/feed";
 
   useEffect(() => {
     setIsTranslated(false);
@@ -114,7 +121,11 @@ export function PostCard({
   }, [post.user_saved, post.saves_count]);
 
   async function handleShare() {
-    const url = `${window.location.origin}/${locale}/feed`;
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    const localizedPath = currentUrl.startsWith(`/${locale}`)
+      ? currentUrl
+      : withLocale(returnPath, locale);
+    const url = `${window.location.origin}${localizedPath}`;
     if (navigator.share) {
       try {
         await navigator.share({title: authorName, text: post.content, url});
@@ -135,7 +146,7 @@ export function PostCard({
     const supabase = createClient();
     const {data: {user}} = await supabase.auth.getUser();
     if (!user) {
-      window.location.href = `/${locale}/login?next=${encodeURIComponent("/feed")}`;
+      router.push(withLocale(`/login?next=${encodeURIComponent(returnPath)}`, locale));
       return;
     }
     setShowCommentInput((p) => !p);
@@ -148,7 +159,7 @@ export function PostCard({
     const supabase = createClient();
     const {data: {user}} = await supabase.auth.getUser();
     if (!user) {
-      window.location.href = `/${locale}/login?next=${encodeURIComponent("/feed")}`;
+      router.push(withLocale(`/login?next=${encodeURIComponent(returnPath)}`, locale));
       return;
     }
 
@@ -162,6 +173,7 @@ export function PostCard({
     const formData = new FormData();
     formData.set("locale", locale);
     formData.set("postId", post.id);
+    formData.set("returnTo", returnPath);
 
     try {
       await toggleSaveAction(formData);
@@ -169,7 +181,7 @@ export function PostCard({
     } catch {
       setIsSaved(prevSaved);
       setSavesCount(prevCount);
-      toast.error("Failed to save");
+      toast.error(errors("saveFailed"));
     }
   }
 
@@ -234,6 +246,7 @@ export function PostCard({
               {isOwnPost ? (
                 <form action={deletePostAction}>
                   <input type="hidden" name="locale" value={locale} />
+                  <input type="hidden" name="returnTo" value={returnPath} />
                   <input type="hidden" name="postId" value={post.id} />
                   <DeletePostButton />
                 </form>
@@ -283,6 +296,7 @@ export function PostCard({
             <ReactionButton
               postId={post.id}
               locale={locale}
+              returnTo={returnPath}
               currentReaction={post.user_reaction}
               likesCount={post.likes_count}
             />
@@ -323,6 +337,7 @@ export function PostCard({
           {showCommentInput ? (
             <form action={addCommentAction} className="flex items-center gap-2">
               <input type="hidden" name="locale" value={locale} />
+              <input type="hidden" name="returnTo" value={returnPath} />
               <input type="hidden" name="postId" value={post.id} />
               <Input
                 ref={commentInputRef}
@@ -350,6 +365,7 @@ export function PostCard({
                      timeAgo={timeAgo(comment.created_at, locale)}
                      isOwn={isOwnComment}
                      locale={locale}
+                     returnTo={returnPath}
                    />
                 );
               })}

@@ -10,6 +10,7 @@ import {UserAvatar} from "@/components/layout/user-avatar";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent} from "@/components/ui/card";
 import {Textarea} from "@/components/ui/textarea";
+import {usePathname} from "@/lib/i18n/routing";
 import {createPostAction} from "@/app/[locale]/server-actions";
 
 function SubmitButton({label, loading}: {label: string; loading: string}) {
@@ -24,8 +25,10 @@ function SubmitButton({label, loading}: {label: string; loading: string}) {
 export function CreatePostCard({avatarUrl}: {avatarUrl?: string | null}) {
   const t = useTranslations("FeedComposer");
   const locale = useLocale();
+  const pathname = usePathname();
   const [showForm, setShowForm] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const returnPath = pathname || "/feed";
 
   if (!showForm) {
     return (
@@ -81,6 +84,7 @@ export function CreatePostCard({avatarUrl}: {avatarUrl?: string | null}) {
         </div>
         <form action={createPostAction} className="space-y-3" encType="multipart/form-data">
           <input type="hidden" name="locale" value={locale} />
+          <input type="hidden" name="returnTo" value={returnPath} />
           <Textarea name="content" placeholder={t("socialPrompt")} required />
           <div className="flex items-center gap-2">
             <select

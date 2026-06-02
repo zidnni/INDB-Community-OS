@@ -9,6 +9,7 @@ import {Toaster} from "sonner";
 
 import {MobileNav} from "@/components/layout/mobile-nav";
 import {Navbar} from "@/components/layout/navbar";
+import {LocaleDocumentSync} from "@/components/layout/locale-document-sync";
 import {PageTransition} from "@/components/layout/page-transition";
 import {RightSidebar} from "@/components/layout/right-sidebar";
 import {Sidebar} from "@/components/layout/sidebar";
@@ -73,6 +74,7 @@ export default async function LocaleLayout({
   return (
     <ThemeProvider>
       <NextIntlClientProvider locale={locale} messages={messages}>
+        <LocaleDocumentSync locale={locale} />
         <Toaster position="top-center" richColors closeButton />
         <Suspense fallback={null}>
           <ToastHandler />
