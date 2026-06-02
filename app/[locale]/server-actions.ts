@@ -294,6 +294,63 @@ const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_AVATAR_SIZE = 2 * 1024 * 1024;
 const MAX_COVER_SIZE = 5 * 1024 * 1024;
 
+export async function uploadAvatarAction(formData: FormData): Promise<{url?: string; error?: string}> {
+  const locale = normalizeLocale(formData.get("locale"));
+  const supabase = await createClient();
+
+  const {data: {user}} = await supabase.auth.getUser();
+  if (!user) return {error: "Not authenticated"};
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return {error: "No file provided"};
+
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    return {error: "Invalid format. Use JPG, PNG, or WebP."};
+  }
+  if (file.size > MAX_AVATAR_SIZE) {
+    return {error: "Image must be under 2MB."};
+  }
+
+  const url = await uploadFile(file, "avatars", user.id);
+  if (!url) return {error: "Upload failed"};
+
+  const {error: dbError} = await supabase.from("profiles").update({avatar_url: url}).eq("id", user.id);
+  if (dbError) return {error: dbError.message};
+
+  revalidatePath(toPath(locale, "/profile"));
+  revalidatePath(toPath(locale, "/feed"));
+
+  return {url};
+}
+
+export async function uploadCoverAction(formData: FormData): Promise<{url?: string; error?: string}> {
+  const locale = normalizeLocale(formData.get("locale"));
+  const supabase = await createClient();
+
+  const {data: {user}} = await supabase.auth.getUser();
+  if (!user) return {error: "Not authenticated"};
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return {error: "No file provided"};
+
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    return {error: "Invalid format. Use JPG, PNG, or WebP."};
+  }
+  if (file.size > MAX_COVER_SIZE) {
+    return {error: "Image must be under 5MB."};
+  }
+
+  const url = await uploadFile(file, "profile-covers", user.id);
+  if (!url) return {error: "Upload failed"};
+
+  const {error: dbError} = await supabase.from("profiles").update({cover_image_url: url}).eq("id", user.id);
+  if (dbError) return {error: dbError.message};
+
+  revalidatePath(toPath(locale, "/profile"));
+
+  return {url};
+}
+
 export async function updateProfileAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
   const supabase = await createClient();
