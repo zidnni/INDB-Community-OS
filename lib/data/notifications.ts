@@ -160,6 +160,28 @@ export async function createShareNotification(
   if (error) console.error("createShareNotification error:", error);
 }
 
+export async function createIdeaCommentNotification(
+  ideaAuthorId: string,
+  actorId: string,
+  ideaId: string,
+): Promise<void> {
+  if (ideaAuthorId === actorId) return;
+
+  const supabase = await createClient();
+
+  const {error} = await supabase.from("notifications").insert({
+    user_id: ideaAuthorId,
+    actor_id: actorId,
+    type: "idea_comment",
+    entity_type: "idea",
+    entity_id: ideaId,
+    title: "New comment on your idea",
+    message: null,
+  });
+
+  if (error) console.error("createIdeaCommentNotification error:", error);
+}
+
 export async function createCommentNotification(
   postAuthorId: string,
   actorId: string,

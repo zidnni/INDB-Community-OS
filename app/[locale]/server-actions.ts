@@ -17,6 +17,7 @@ import {
   upsertReactionNotification,
   createCommentNotification,
   createShareNotification,
+  createIdeaCommentNotification,
 } from "@/lib/data/notifications";
 import {toggleReaction} from "@/lib/data/reactions";
 import {
@@ -28,7 +29,7 @@ import {
   profileSchema,
   registerSchema,
 } from "@/lib/validations/community";
-import type {ReactionType} from "@/types/database";
+import type {IdeaCommentWithAuthor, ReactionType} from "@/types/database";
 
 function normalizeLocale(value: FormDataEntryValue | null) {
   const locale = typeof value === "string" ? value : routing.defaultLocale;
@@ -826,6 +827,99 @@ export async function shareIdeaAction(
   }
 
   await createShareNotification(idea.author_id, user.id, ideaId);
+
+  return {success: true};
+}
+
+export async function addIdeaCommentAction(
+  formData: FormData,
+): Promise<{success: boolean; error?: string; comment?: IdeaCommentWithAuthor}> {
+  const ideaId = formData.get("ideaId");
+  const supabase = await createClient();
+
+  const {
+    data: {user},
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {success: false, error: "unauthorized"};
+  }
+
+  const parsed = commentSchema.safeParse({
+    content: formData.get("content"),
+  });
+
+  if (!parsed.success || typeof ideaId !== "string") {
+    return {success: false, error: "invalid"};
+  }
+
+  const {data: idea, error: ideaError} = await supabase
+    .from("ideas")
+    .select("author_id")
+    .eq("id", ideaId)
+    .single();
+
+  if (ideaError || !idea) {
+    return {success: false, error: "not_found"};
+  }
+
+  const {data: newComment, error: insertError} = await supabase
+    .from("idea_comments")
+    .insert({
+      idea_id: ideaId,
+      author_id: user.id,
+      content: parsed.data.content,
+    })
+    .select("*, author:profiles!idea_comments_author_id_fkey(id, username, full_name, avatar_url)")
+    .single();
+
+  if (insertError || !newComment) {
+    return {success: false, error: "insert_failed"};
+  }
+
+  if (idea.author_id !== user.id) {
+    await createIdeaCommentNotification(idea.author_id, user.id, ideaId);
+  }
+
+  return {success: true, comment: newComment as unknown as IdeaCommentWithAuthor};
+}
+
+export async function deleteIdeaCommentAction(
+  formData: FormData,
+): Promise<{success: boolean; error?: string}> {
+  const commentId = formData.get("commentId");
+  const supabase = await createClient();
+
+  const {
+    data: {user},
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {success: false, error: "unauthorized"};
+  }
+
+  if (typeof commentId !== "string") {
+    return {success: false, error: "invalid"};
+  }
+
+  const {data: comment} = await supabase
+    .from("idea_comments")
+    .select("author_id")
+    .eq("id", commentId)
+    .single();
+
+  if (!comment || comment.author_id !== user.id) {
+    return {success: false, error: "forbidden"};
+  }
+
+  const {error: deleteError} = await supabase
+    .from("idea_comments")
+    .delete()
+    .eq("id", commentId);
+
+  if (deleteError) {
+    return {success: false, error: "delete_failed"};
+  }
 
   return {success: true};
 }

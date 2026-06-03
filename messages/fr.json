@@ -114,6 +114,7 @@
     "startedFollowing": "{actorName} a commencé à vous suivre",
     "reactedToPost": "{actorName} a réagi à votre publication",
     "commentedOnPost": "{actorName} a commenté votre publication",
+    "commentedOnYourIdea": "{actorName} a commenté votre idée",
     "sharedYourIdea": "{actorName} a partagé votre idée",
     "someone": "Quelqu'un"
   },
@@ -241,6 +242,14 @@
     "unknownAuthor": "Inconnu",
     "voteFailed": "Échec du vote",
     "commentsComingSoon": "Commentaires bientôt disponibles",
+    "commentsWithCount": "Commentaires ({count})",
+    "commentPlaceholder": "Écrire un commentaire...",
+    "noCommentsYet": "Aucun commentaire pour le moment. Soyez le premier à commenter.",
+    "loginToComment": "Connectez-vous pour commenter",
+    "commentFailed": "Échec de l'ajout du commentaire",
+    "commentDeleteFailed": "Échec de la suppression du commentaire",
+    "delete": "Supprimer",
+    "shareAnother": "Partager une autre idée",
     "status": {
       "submitted": "Soumise",
       "underReview": "En révision",

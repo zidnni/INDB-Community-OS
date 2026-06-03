@@ -1,11 +1,12 @@
 "use client";
 
 import {motion} from "framer-motion";
-import {CalendarDays, Lightbulb, MessageSquare, Share2, UserRound} from "lucide-react";
+import {CalendarDays, Lightbulb, Share2, UserRound} from "lucide-react";
 import {useLocale, useTranslations} from "next-intl";
 import {toast} from "sonner";
 
 import {shareIdeaAction} from "@/app/[locale]/server-actions";
+import {IdeaComments} from "@/components/ideas/idea-comments";
 import {IdeaStatusBadge} from "@/components/ideas/idea-status-badge";
 import {VoteButton} from "@/components/ideas/vote-button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
@@ -92,8 +93,9 @@ export function IdeaCard({idea}: {idea: IdeaWithAuthor}) {
             </span>
           </div>
 
-          <div className="flex items-center justify-between gap-2 pt-1">
+          <div className="flex flex-wrap items-center gap-2 pt-1">
             <VoteButton ideaId={idea.id} votes={idea.votes_count} />
+            <IdeaComments ideaId={idea.id} />
             <button
               type="button"
               onClick={handleShare}
@@ -102,11 +104,6 @@ export function IdeaCard({idea}: {idea: IdeaWithAuthor}) {
               <Share2 size={14} />
               {t("share")}
             </button>
-          </div>
-
-          <div className="rounded-xl border border-dashed border-border/60 bg-muted/30 px-3 py-2.5 text-center text-xs text-muted-foreground">
-            <MessageSquare size={13} className="me-1 inline-block" />
-            {t("commentsComingSoon")}
           </div>
         </CardContent>
       </Card>

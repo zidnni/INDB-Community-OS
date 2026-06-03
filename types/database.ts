@@ -134,6 +134,15 @@ export interface IdeaRow {
   updated_at: string;
 }
 
+export interface IdeaCommentRow {
+  id: string;
+  idea_id: string;
+  author_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface IdeaVoteRow {
   id: string;
   idea_id: string;
@@ -235,6 +244,10 @@ export interface MemoryWithContributor extends MemoryRow {
 export interface IdeaWithAuthor extends IdeaRow {
   author: Pick<ProfileRow, "id" | "username" | "full_name" | "avatar_url"> | null;
   category: Pick<CategoryRow, "id" | "slug" | "name_en" | "name_fr" | "name_ar"> | null;
+}
+
+export interface IdeaCommentWithAuthor extends IdeaCommentRow {
+  author: Pick<ProfileRow, "id" | "username" | "full_name" | "avatar_url"> | null;
 }
 
 export interface CommentWithAuthor extends CommentRow {

@@ -114,6 +114,7 @@
     "startedFollowing": "{actorName} started following you",
     "reactedToPost": "{actorName} reacted to your post",
     "commentedOnPost": "{actorName} commented on your post",
+    "commentedOnYourIdea": "{actorName} commented on your idea",
     "sharedYourIdea": "{actorName} shared your idea",
     "someone": "Someone"
   },
@@ -241,6 +242,14 @@
     "unknownAuthor": "Unknown",
     "voteFailed": "Vote failed",
     "commentsComingSoon": "Comments coming soon",
+    "commentsWithCount": "Comments ({count})",
+    "commentPlaceholder": "Write a comment...",
+    "noCommentsYet": "No comments yet. Be the first to comment.",
+    "loginToComment": "Log in to comment",
+    "commentFailed": "Failed to add comment",
+    "commentDeleteFailed": "Failed to delete comment",
+    "delete": "Delete",
+    "shareAnother": "Share another idea",
     "status": {
       "submitted": "Submitted",
       "underReview": "Under Review",

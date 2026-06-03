@@ -50,6 +50,7 @@ function getNotificationIcon(type: string) {
     case "reaction":
       return Heart;
     case "comment":
+    case "idea_comment":
       return MessageCircle;
     case "save":
       return Bookmark;
@@ -292,6 +293,8 @@ export function NotificationDropdown({locale}: {locale: string}) {
           return t("reactedToPost", {actorName});
         case "comment":
           return t("commentedOnPost", {actorName});
+        case "idea_comment":
+          return t("commentedOnYourIdea", {actorName});
         default:
           return n.message ?? "";
       }

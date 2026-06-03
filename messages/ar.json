@@ -114,6 +114,7 @@
     "startedFollowing": "بدأ {actorName} بمتابعتك",
     "reactedToPost": "تفاعل {actorName} مع منشورك",
     "commentedOnPost": "علّق {actorName} على منشورك",
+    "commentedOnYourIdea": "علّق {actorName} على فكرتك",
     "sharedYourIdea": "شارك {actorName} فكرتك",
     "someone": "شخص ما"
   },
@@ -241,6 +242,14 @@
     "unknownAuthor": "غير معروف",
     "voteFailed": "فشل التصويت",
     "commentsComingSoon": "التعليقات قريبًا",
+    "commentsWithCount": "تعليقات ({count})",
+    "commentPlaceholder": "اكتب تعليقًا...",
+    "noCommentsYet": "لا توجد تعليقات بعد. كن أول من يعلّق.",
+    "loginToComment": "سجّل الدخول للتعليق",
+    "commentFailed": "فشل إضافة التعليق",
+    "commentDeleteFailed": "فشل حذف التعليق",
+    "delete": "حذف",
+    "shareAnother": "مشاركة فكرة أخرى",
     "status": {
       "submitted": "مقدمة",
       "underReview": "قيد المراجعة",
