@@ -3,11 +3,13 @@
 import {AnimatePresence, motion} from "framer-motion";
 import {
   Bell,
+  BellRing,
   Bookmark,
   Heart,
   MessageCircle,
   UserPlus,
   CheckCheck,
+  X,
 } from "lucide-react";
 import {useEffect, useRef, useState} from "react";
 import {useTranslations} from "next-intl";
@@ -265,22 +267,22 @@ export function NotificationDropdown({locale}: {locale: string}) {
           <UserAvatar
             label={displayName}
             avatarUrl={n.actor?.avatar_url}
-            className="h-9 w-9"
+            className="h-10 w-10"
           />
-          <div className="absolute -bottom-0.5 -end-0.5 flex h-4 w-4 items-center justify-center rounded-full border border-card bg-brand-primary text-[8px] text-white">
+          <div className="absolute -bottom-0.5 -end-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full border-2 border-card bg-brand-primary text-[8px] text-white">
             <Icon size={10} />
           </div>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs leading-snug text-foreground/90">
+          <p className="text-sm leading-snug text-foreground/90">
             {getMessage()}
           </p>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
+          <p className="mt-1 text-[11px] text-muted-foreground">
             {timeAgo(n.created_at, locale)}
           </p>
         </div>
         {!n.read ? (
-          <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-brand-primary" />
+          <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-brand-primary" />
         ) : null}
       </button>
     );
@@ -306,53 +308,62 @@ export function NotificationDropdown({locale}: {locale: string}) {
       <AnimatePresence>
         {open ? (
           <>
-            {/* Overlay for mobile */}
+            {/* Overlay */}
             <motion.div
               key="overlay"
               initial={{opacity: 0}}
               animate={{opacity: 1}}
               exit={{opacity: 0}}
-              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm sm:hidden"
+              transition={{duration: 0.2}}
+              className="fixed inset-0 z-50 bg-black/50 sm:bg-black/20 sm:backdrop-blur-sm"
               onClick={() => setOpen(false)}
             />
 
-            {/* Mobile: bottom sheet */}
+            {/* Mobile: full-screen modal */}
             <motion.div
-              key="mobile-sheet"
+              key="mobile-modal"
               initial={{y: "100%"}}
               animate={{y: 0}}
               exit={{y: "100%"}}
-              transition={{type: "spring", damping: 30, stiffness: 300}}
-              className="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[75vh] rounded-t-2xl border border-border/80 bg-card shadow-2xl sm:hidden"
-              style={{maxHeight: "75dvh"}}
+              transition={{type: "spring", damping: 32, stiffness: 350}}
+              className="fixed inset-x-0 bottom-0 z-50 flex max-h-[90dvh] flex-col rounded-t-2xl bg-card shadow-2xl sm:hidden"
+              style={{maxHeight: "90dvh"}}
             >
-              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border/60 bg-card px-4 py-3">
-                <h3 className="text-sm font-semibold">{t("title")}</h3>
-                <div className="flex items-center gap-2">
-                  {hasUnread ? (
-                    <button
-                      type="button"
-                      onClick={handleMarkAllRead}
-                      className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                    >
-                      <CheckCheck size={14} />
-                      {t("markAllRead")}
-                    </button>
-                  ) : null}
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border/60 bg-card px-1 py-2">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                >
+                  <X size={18} />
+                </button>
+                <h2 className="text-base font-semibold">{t("title")}</h2>
+                {hasUnread ? (
                   <button
                     type="button"
-                    onClick={() => setOpen(false)}
-                    className="text-xs text-muted-foreground hover:text-foreground"
+                    onClick={handleMarkAllRead}
+                    className="flex h-9 items-center gap-1 rounded-full px-3 text-xs font-medium text-primary transition hover:bg-primary/10"
                   >
-                    {t("close")}
+                    <CheckCheck size={14} />
+                    {t("markAllRead")}
                   </button>
-                </div>
+                ) : (
+                  <div className="w-20" />
+                )}
               </div>
-              <div className="overflow-y-auto pb-safe" style={{maxHeight: "calc(75dvh - 52px)"}}>
+              <div
+                className="flex-1 overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
+              >
                 {loading && notifications.length === 0 ? (
-                  <div className="p-6 text-center text-xs text-muted-foreground">{t("loading")}</div>
+                  <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                    <BellRing size={32} className="mb-3 animate-pulse text-muted-foreground/40" />
+                    <p className="text-sm">{t("loading")}</p>
+                  </div>
                 ) : notifications.length === 0 ? (
-                  <div className="p-6 text-center text-xs text-muted-foreground">{t("empty")}</div>
+                  <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                    <BellRing size={40} className="mb-4 text-muted-foreground/30" />
+                    <p className="text-sm">{t("empty")}</p>
+                  </div>
                 ) : (
                   notifications.map(renderNotificationItem)
                 )}
@@ -366,7 +377,7 @@ export function NotificationDropdown({locale}: {locale: string}) {
               animate={{opacity: 1, y: 0}}
               exit={{opacity: 0, y: 8}}
               transition={{duration: 0.2}}
-              className="absolute end-0 top-12 z-40 hidden w-[360px] sm:block"
+              className="absolute end-0 top-12 z-50 hidden w-[360px] sm:block"
             >
               <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl">
                 <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
@@ -384,9 +395,15 @@ export function NotificationDropdown({locale}: {locale: string}) {
                 </div>
                 <div className="overflow-y-auto" style={{maxHeight: "400px"}}>
                   {loading && notifications.length === 0 ? (
-                    <div className="p-6 text-center text-xs text-muted-foreground">{t("loading")}</div>
+                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                      <BellRing size={24} className="mb-2 animate-pulse text-muted-foreground/40" />
+                      <p className="text-xs">{t("loading")}</p>
+                    </div>
                   ) : notifications.length === 0 ? (
-                    <div className="p-6 text-center text-xs text-muted-foreground">{t("empty")}</div>
+                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                      <BellRing size={28} className="mb-2 text-muted-foreground/30" />
+                      <p className="text-xs">{t("empty")}</p>
+                    </div>
                   ) : (
                     notifications.map(renderNotificationItem)
                   )}
