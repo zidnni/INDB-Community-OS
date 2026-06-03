@@ -11,6 +11,8 @@ import {
   validateCompressedImageFile,
 } from "@/lib/images/upload-config";
 import {createClient} from "@/lib/supabase/server";
+import {toggleFollow} from "@/lib/data/follows";
+import {createFollowNotification} from "@/lib/data/notifications";
 import {toggleReaction} from "@/lib/data/reactions";
 import {
   commentSchema,
@@ -339,6 +341,40 @@ export async function toggleSaveAction(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
+}
+
+export async function toggleFollowAction(formData: FormData): Promise<{success: boolean; following?: boolean; error?: string}> {
+  const locale = normalizeLocale(formData.get("locale"));
+  const profileId = formData.get("profileId");
+  const profileUsername = formData.get("profileUsername");
+  const supabase = await createClient();
+
+  const {
+    data: {user},
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {success: false, error: "notAuthenticated"};
+  }
+
+  if (typeof profileId !== "string" || profileId.length === 0) {
+    return {success: false, error: "invalidProfile"};
+  }
+
+  const result = await toggleFollow(user.id, profileId);
+  if (!result.success) return result;
+
+  if (result.following) {
+    await createFollowNotification(user.id, profileId);
+  }
+
+  revalidatePath(toPath(locale, "/profile"));
+  if (typeof profileUsername === "string" && profileUsername.length > 0) {
+    revalidatePath(toPath(locale, `/profile/${profileUsername}`));
+  }
+  revalidatePath("/", "layout");
+
+  return result;
 }
 
 export async function uploadAvatarAction(formData: FormData): Promise<{url?: string; error?: string}> {

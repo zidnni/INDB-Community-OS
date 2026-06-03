@@ -16,7 +16,7 @@ export async function ModerationQueue({
 }: {
   items: Array<{
     id: string;
-    target_type: string;
+    target_type: string;     
     reason: string;
     status: string;
     created_at: string;

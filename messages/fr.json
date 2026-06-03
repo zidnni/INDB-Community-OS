@@ -322,6 +322,17 @@
       "memberSince": "Membre depuis"
     }
   },
+  "Follow": {
+    "follow": "Suivre",
+    "following": "Abonné",
+    "unfollow": "Se désabonner",
+    "followers": "Abonnés",
+    "followingCount": "Abonnements",
+    "followedToast": "Vous suivez maintenant ce profil",
+    "unfollowedToast": "Vous ne suivez plus ce profil",
+    "loginToFollow": "Connectez-vous pour suivre des utilisateurs",
+    "failed": "Impossible de mettre à jour l’abonnement"
+  },
   "ProfileCard": {
     "bio": "Conteur communautaire qui documente souvenirs, idées et projets locaux.",
     "location": "Dakhlet Nouadhibou",

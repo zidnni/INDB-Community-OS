@@ -322,6 +322,17 @@
       "memberSince": "Member since"
     }
   },
+  "Follow": {
+    "follow": "Follow",
+    "following": "Following",
+    "unfollow": "Unfollow",
+    "followers": "Followers",
+    "followingCount": "Following",
+    "followedToast": "You are now following this profile",
+    "unfollowedToast": "You unfollowed this profile",
+    "loginToFollow": "Login to follow users",
+    "failed": "Unable to update follow status"
+  },
   "ProfileCard": {
     "bio": "Community storyteller documenting memories, ideas, and local projects.",
     "location": "Dakhlet Nouadhibou",

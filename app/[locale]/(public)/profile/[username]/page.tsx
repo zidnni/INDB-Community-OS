@@ -4,12 +4,14 @@ import {notFound} from "next/navigation";
 import {getTranslations} from "next-intl/server";
 
 import {PostCard} from "@/components/feed/post-card";
+import {FollowSummary} from "@/components/profile/follow-summary";
 import {MemoryCard} from "@/components/memory/memory-card";
 import {IdeaCard} from "@/components/ideas/idea-card";
 import {EmptyState} from "@/components/shared/empty-state";
 import {Badge} from "@/components/ui/badge";
 import {Card, CardContent} from "@/components/ui/card";
 import {getCommentsByPost} from "@/lib/data/comments";
+import {getFollowStats, isFollowing} from "@/lib/data/follows";
 import {getUserPosts} from "@/lib/data/posts";
 import {getProfileByUsername} from "@/lib/data/profile";
 import {getUserMemories} from "@/lib/data/memories";
@@ -64,10 +66,12 @@ export default async function PublicProfilePage({
   const {data: {user}} = await supabase.auth.getUser();
   const currentUserId = user?.id ?? null;
 
-  const [allPosts, memories, ideas] = await Promise.all([
+  const [allPosts, memories, ideas, followStats, currentUserIsFollowing] = await Promise.all([
     getUserPosts(profile.id, currentUserId),
     getUserMemories(profile.id),
     getUserIdeas(profile.id),
+    getFollowStats(profile.id),
+    isFollowing(currentUserId, profile.id),
   ]);
 
   const displayName = profile.full_name ?? profile.username ?? "?";
@@ -153,13 +157,25 @@ export default async function PublicProfilePage({
             </div>
 
             <div className="mt-3 flex justify-center sm:mt-0 sm:self-center">
-              {currentUserId === profile.id ? (
-                <Link href="/profile">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-2 text-xs font-medium text-primary hover:bg-primary/20">
-                    {t("editProfile")}
-                  </span>
-                </Link>
-              ) : null}
+              <div className="flex flex-col items-center gap-2">
+                {currentUserId === profile.id ? (
+                  <Link href="/profile">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-2 text-xs font-medium text-primary hover:bg-primary/20">
+                      {t("editProfile")}
+                    </span>
+                  </Link>
+                ) : null}
+                <FollowSummary
+                  profileId={profile.id}
+                  username={profile.username}
+                  locale={locale}
+                  currentUserId={currentUserId}
+                  initialIsFollowing={currentUserIsFollowing}
+                  initialFollowersCount={followStats.followersCount}
+                  followingCount={followStats.followingCount}
+                  showButton={currentUserId !== profile.id}
+                />
+              </div>
             </div>
           </div>
 

@@ -1,4 +1,5 @@
 import {createClient} from "@/lib/supabase/server";
+import {getFollowStats} from "@/lib/data/follows";
 import type {ProfileRow, ProfileWithCounts} from "@/types/database";
 
 export async function getProfile(userId: string): Promise<ProfileRow | null> {
@@ -44,12 +45,16 @@ export async function getProfileWithCounts(userId: string): Promise<ProfileWithC
     .select("*", {count: "exact", head: true})
     .eq("author_id", userId);
 
+  const followStats = await getFollowStats(userId);
+
   return {
     ...(profile as ProfileRow),
     posts_count: postsCount ?? 0,
     memories_count: memoriesCount ?? 0,
     ideas_count: ideasCount ?? 0,
     comments_count: commentsCount ?? 0,
+    followers_count: followStats.followersCount,
+    following_count: followStats.followingCount,
   };
 }
 

@@ -15,7 +15,7 @@ import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";
-import {usePathname} from "@/lib/i18n/routing";
+import {Link, usePathname} from "@/lib/i18n/routing";
 import {withLocale} from "@/lib/i18n/paths";
 import {createClient} from "@/lib/supabase/client";
 import type {PostWithAuthor, CommentWithAuthor} from "@/types/database";
@@ -103,6 +103,7 @@ export function PostCard({
   const [savesCount, setSavesCount] = useState(post.saves_count);
 
   const authorName = post.author?.full_name ?? post.author?.username ?? t("unknownAuthor");
+  const authorProfileHref = post.author?.username ? `/profile/${post.author.username}` : null;
   const postTime = timeAgo(post.created_at, locale);
   const visibleContent = isTranslated && translatedText ? translatedText : post.content;
   const isOwnPost = currentUserId != null && post.author_id === currentUserId;
@@ -229,9 +230,23 @@ export function PostCard({
         <CardHeader className="pb-2.5 sm:pb-3">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3">
-              <UserAvatar label={authorName} avatarUrl={post.author?.avatar_url} className="h-11 w-11 shrink-0" />
+              {authorProfileHref ? (
+                <Link href={authorProfileHref} className="shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/40">
+                  <UserAvatar label={authorName} avatarUrl={post.author?.avatar_url} className="h-11 w-11 shrink-0" />
+                </Link>
+              ) : (
+                <UserAvatar label={authorName} avatarUrl={post.author?.avatar_url} className="h-11 w-11 shrink-0" />
+              )}
               <div className="space-y-1">
-                <CardTitle className="text-[15px] leading-none sm:text-base">{authorName}</CardTitle>
+                <CardTitle className="text-[15px] leading-none sm:text-base">
+                  {authorProfileHref ? (
+                    <Link href={authorProfileHref} className="transition hover:text-primary hover:underline">
+                      {authorName}
+                    </Link>
+                  ) : (
+                    authorName
+                  )}
+                </CardTitle>
                 <p className="text-[11px] text-muted-foreground sm:text-xs">
                   {postTime} {t("ago")}
                 </p>

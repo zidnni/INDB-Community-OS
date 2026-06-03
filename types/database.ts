@@ -87,6 +87,13 @@ export interface SavedPostRow {
   created_at: string;
 }
 
+export interface UserFollowRow {
+  id: string;
+  follower_id: string;
+  following_id: string;
+  created_at: string;
+}
+
 export interface MemoryRow {
   id: string;
   contributor_id: string | null;
@@ -232,6 +239,8 @@ export interface ProfileWithCounts extends ProfileRow {
   memories_count: number;
   ideas_count: number;
   comments_count: number;
+  followers_count: number;
+  following_count: number;
 }
 
 export interface EventWithCreator extends EventRow {

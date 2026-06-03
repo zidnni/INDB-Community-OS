@@ -22,6 +22,7 @@ import {Link} from "@/lib/i18n/routing";
 import type {CommentWithAuthor, IdeaWithAuthor, MemoryWithContributor, PostWithAuthor, ProfileWithCounts} from "@/types/database";
 
 import {EditProfileModal} from "./edit-profile-modal";
+import {FollowSummary} from "./follow-summary";
 
 function getInitials(name: string | null | undefined): string {
   if (!name) return "?";
@@ -159,6 +160,18 @@ export function ProfileClient({
                   <CalendarDays size={14} />
                   {t("joined")} {joinDate}
                 </span>
+              </div>
+              <div className="mt-3">
+                <FollowSummary
+                  profileId={profile.id}
+                  username={profile.username}
+                  locale={locale}
+                  currentUserId={currentUserId}
+                  initialIsFollowing={false}
+                  initialFollowersCount={profile.followers_count}
+                  followingCount={profile.following_count}
+                  showButton={false}
+                />
               </div>
             </div>
 
