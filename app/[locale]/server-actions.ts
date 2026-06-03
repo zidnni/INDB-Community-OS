@@ -776,7 +776,6 @@ export async function forgotPasswordAction(formData: FormData) {
 export async function shareIdeaAction(
   formData: FormData,
 ): Promise<{success: boolean; error?: string}> {
-  const locale = normalizeLocale(formData.get("locale"));
   const ideaId = formData.get("ideaId");
   const supabase = await createClient();
 
