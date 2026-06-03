@@ -110,6 +110,7 @@ export function IdeaCard({idea, totalUsers}: IdeaCardProps) {
       transition={{duration: 0.28, ease: "easeOut"}}
     >
       <Card className="overflow-hidden border-border/70 shadow-[0_14px_34px_rgba(8,33,56,0.08)]">
+        <div className="bg-red-500 text-white text-center text-xs font-bold py-1">DEBUG IDEA CARD - {idea.id.slice(0,8)}</div>
         {idea.image_url ? (
           <div className="relative h-48 w-full overflow-hidden">
             <img src={idea.image_url} alt={idea.title} className="h-full w-full object-cover" />
