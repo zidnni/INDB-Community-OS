@@ -107,7 +107,13 @@
   "Notifications": {
     "button": "الإشعارات",
     "title": "الإشعارات",
-    "empty": "لا توجد إشعارات بعد."
+    "empty": "لا توجد إشعارات بعد",
+    "markAllRead": "وضع الكل كمقروء",
+    "loading": "جارٍ التحميل...",
+    "close": "إغلاق",
+    "startedFollowing": "بدأ {actorName} بمتابعتك",
+    "reactedToPost": "تفاعل {actorName} مع منشورك",
+    "commentedOnPost": "علّق {actorName} على منشورك"
   },
   "RightSidebar": {
     "trendingTopics": "المواضيع الرائجة",

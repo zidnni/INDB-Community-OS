@@ -12,7 +12,11 @@ import {
 } from "@/lib/images/upload-config";
 import {createClient} from "@/lib/supabase/server";
 import {toggleFollow} from "@/lib/data/follows";
-import {createFollowNotification} from "@/lib/data/notifications";
+import {
+  createFollowNotification,
+  upsertReactionNotification,
+  createCommentNotification,
+} from "@/lib/data/notifications";
 import {toggleReaction} from "@/lib/data/reactions";
 import {
   commentSchema,
@@ -268,11 +272,21 @@ export async function addCommentAction(formData: FormData) {
     redirect(toPath(locale, returnPath));
   }
 
+  const {data: postForNotify} = await supabase
+    .from("posts")
+    .select("author_id")
+    .eq("id", postId)
+    .single();
+
   await supabase.from("comments").insert({
     post_id: postId,
     author_id: user.id,
     content: parsed.data.content,
   });
+
+  if (postForNotify && postForNotify.author_id !== user.id) {
+    await createCommentNotification(postForNotify.author_id, user.id, postId);
+  }
 
   revalidatePath(toPath(locale, returnPath));
   redirect(toPath(locale, appendParam(returnPath, "commentAdded", "1")));
@@ -303,7 +317,17 @@ export async function toggleReactionAction(formData: FormData) {
     redirect(toPath(locale, returnPath));
   }
 
-  await toggleReaction(postId, user.id, reactionType as ReactionType);
+  const {data: postForNotify} = await supabase
+    .from("posts")
+    .select("author_id")
+    .eq("id", postId)
+    .single();
+
+  const result = await toggleReaction(postId, user.id, reactionType as ReactionType);
+
+  if (result.action !== "deleted" && postForNotify && postForNotify.author_id !== user.id) {
+    await upsertReactionNotification(postForNotify.author_id, user.id, postId);
+  }
 
   revalidatePath("/", "layout");
 }

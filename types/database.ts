@@ -155,11 +155,18 @@ export interface ReportRow {
 export interface NotificationRow {
   id: string;
   user_id: string;
+  actor_id: string | null;
   type: string;
+  entity_type: string | null;
+  entity_id: string | null;
   title: string;
   message: string | null;
   read: boolean;
   created_at: string;
+}
+
+export interface NotificationWithActor extends NotificationRow {
+  actor: Pick<ProfileRow, "id" | "username" | "full_name" | "avatar_url"> | null;
 }
 
 export interface EventRow {

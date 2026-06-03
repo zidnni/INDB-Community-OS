@@ -107,7 +107,13 @@
   "Notifications": {
     "button": "Notifications",
     "title": "Notifications",
-    "empty": "No notifications yet."
+    "empty": "No notifications yet",
+    "markAllRead": "Mark all as read",
+    "loading": "Loading...",
+    "close": "Close",
+    "startedFollowing": "{actorName} started following you",
+    "reactedToPost": "{actorName} reacted to your post",
+    "commentedOnPost": "{actorName} commented on your post"
   },
   "RightSidebar": {
     "trendingTopics": "Trending Topics",

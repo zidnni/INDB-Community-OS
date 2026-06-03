@@ -50,7 +50,7 @@ export async function Navbar({locale}: {locale: string}) {
 
           <div className="flex items-center justify-self-end gap-1">
             <ThemeToggle />
-            <NotificationDropdown />
+            <NotificationDropdown locale={locale} />
             <LanguageSwitcher />
           </div>
         </div>
@@ -67,7 +67,7 @@ export async function Navbar({locale}: {locale: string}) {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <NotificationDropdown />
+            <NotificationDropdown locale={locale} />
             <LanguageSwitcher />
             <ThemeToggle />
             <AuthNav locale={locale} isLoggedIn={isLoggedIn} avatarUrl={avatarUrl} />
