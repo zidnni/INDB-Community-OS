@@ -328,6 +328,7 @@ export function NotificationDropdown({locale}: {locale: string}) {
               transition={{type: "spring", damping: 32, stiffness: 350}}
               className="fixed inset-x-0 bottom-0 z-50 flex max-h-[90dvh] flex-col rounded-t-2xl bg-card shadow-2xl sm:hidden"
               style={{maxHeight: "90dvh"}}
+              onClick={(e) => e.stopPropagation()}
             >
               <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border/60 bg-card px-1 py-2">
                 <button
