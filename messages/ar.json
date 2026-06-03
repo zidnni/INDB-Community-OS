@@ -48,7 +48,11 @@
     },
     "ideaSubmit": {
       "title": "إرسال فكرة",
-      "description": "اقترح فكرة مدنية وساهم في تحديد أولويات المجتمع."
+      "description": "اقترح فكرة مدنية وساهم في تشكيل أولويات المجتمع."
+    },
+    "ideaEdit": {
+      "title": "تعديل الفكرة",
+      "description": "حدّث اقتراح فكرتك المدنية."
     }
   },
   "LanguageSwitcher": {
@@ -258,6 +262,8 @@
     "commentDeleteFailed": "فشل حذف التعليق",
     "delete": "حذف",
     "shareAnother": "مشاركة فكرة أخرى",
+    "edit": "تعديل",
+    "deleteConfirm": "هل أنت متأكد من حذف هذه الفكرة؟",
     "status": {
       "submitted": "مقدمة",
       "underReview": "قيد المراجعة",
@@ -269,6 +275,8 @@
   },
   "IdeaForm": {
     "title": "إرسال فكرة مدنية",
+    "editTitle": "تعديل فكرتك",
+    "update": "تحديث الفكرة",
     "ready": "الفكرة جاهزة للإرسال.",
     "fields": {
       "title": "عنوان الفكرة",

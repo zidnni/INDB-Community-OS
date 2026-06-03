@@ -707,6 +707,112 @@ export async function submitIdeaAction(formData: FormData) {
   redirect(toPath(locale, "/ideas?ideaSubmitted=1"));
 }
 
+export async function updateIdeaAction(formData: FormData) {
+  const locale = normalizeLocale(formData.get("locale"));
+  const errorsT = await getTranslations({locale, namespace: "Errors"});
+  const imageT = await getTranslations({locale, namespace: "ImageUpload"});
+  const supabase = await createClient();
+
+  const {
+    data: {user},
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(toPath(locale, "/login"));
+  }
+
+  const ideaId = formData.get("ideaId");
+  if (typeof ideaId !== "string") {
+    redirect(toPath(locale, "/ideas"));
+  }
+
+  const {data: existing} = await supabase
+    .from("ideas")
+    .select("author_id, image_url")
+    .eq("id", ideaId)
+    .single();
+
+  if (!existing || existing.author_id !== user.id) {
+    redirect(toPath(locale, "/ideas"));
+  }
+
+  const rawCategoryId = formData.get("categoryId");
+  const parsed = ideaSchema.safeParse({
+    title: formData.get("title"),
+    description: formData.get("description"),
+    categoryId: rawCategoryId === "" || rawCategoryId === "other" ? undefined : rawCategoryId,
+  });
+
+  if (!parsed.success) {
+    const errorMsg = getValidationError(parsed, errorsT, "invalidIdea");
+    redirect(toPath(locale, `/ideas/submit?id=${encodeURIComponent(ideaId)}&error=${encodeURIComponent(errorMsg)}`));
+  }
+
+  const imageFile = formData.get("imageFile");
+  const hasImage = imageFile instanceof File && imageFile.size > 0;
+  let image_url = existing.image_url;
+
+  if (hasImage) {
+    const uploaded = await uploadImageFile(imageFile, "idea-media", user.id, "post", imageT);
+    if (uploaded.error) {
+      redirect(toPath(locale, `/ideas/submit?id=${encodeURIComponent(ideaId)}&error=${encodeURIComponent(uploaded.error)}`));
+    }
+    image_url = uploaded.url ?? image_url;
+  }
+
+  const {error: updateError} = await supabase
+    .from("ideas")
+    .update({
+      title: parsed.data.title,
+      description: parsed.data.description,
+      category_id: parsed.data.categoryId ?? null,
+      image_url,
+    })
+    .eq("id", ideaId);
+
+  if (updateError) {
+    redirect(toPath(locale, `/ideas/submit?id=${encodeURIComponent(ideaId)}&error=${encodeURIComponent(updateError.message)}`));
+  }
+
+  revalidatePath(toPath(locale, "/ideas"));
+  redirect(toPath(locale, "/ideas?ideaUpdated=1"));
+}
+
+export async function deleteIdeaAction(formData: FormData) {
+  const locale = normalizeLocale(formData.get("locale"));
+  const returnPath = getReturnPath(formData, "/ideas");
+  const supabase = await createClient();
+
+  const {
+    data: {user},
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(toPath(locale, `/login?next=${encodeURIComponent(returnPath)}`));
+  }
+
+  const ideaId = formData.get("ideaId");
+
+  if (typeof ideaId !== "string") {
+    redirect(toPath(locale, returnPath));
+  }
+
+  const {data: idea} = await supabase
+    .from("ideas")
+    .select("author_id")
+    .eq("id", ideaId)
+    .single();
+
+  if (!idea || idea.author_id !== user.id) {
+    redirect(toPath(locale, returnPath));
+  }
+
+  await supabase.from("ideas").delete().eq("id", ideaId);
+
+  revalidatePath(toPath(locale, returnPath));
+  redirect(toPath(locale, "/ideas?ideaDeleted=1"));
+}
+
 export async function deletePostAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
   const returnPath = getReturnPath(formData, "/feed");

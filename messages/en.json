@@ -49,6 +49,10 @@
     "ideaSubmit": {
       "title": "Submit Idea",
       "description": "Propose a civic idea and help shape community priorities."
+    },
+    "ideaEdit": {
+      "title": "Edit Idea",
+      "description": "Update your civic idea proposal."
     }
   },
   "LanguageSwitcher": {
@@ -258,6 +262,8 @@
     "commentDeleteFailed": "Failed to delete comment",
     "delete": "Delete",
     "shareAnother": "Share another idea",
+    "edit": "Edit",
+    "deleteConfirm": "Are you sure you want to delete this idea?",
     "status": {
       "submitted": "Submitted",
       "underReview": "Under Review",
@@ -269,6 +275,8 @@
   },
   "IdeaForm": {
     "title": "Submit a civic idea",
+    "editTitle": "Edit your idea",
+    "update": "Update idea",
     "ready": "Your idea is ready to submit.",
     "fields": {
       "title": "Idea title",

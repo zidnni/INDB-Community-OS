@@ -48,6 +48,22 @@ export async function getUserIdeas(userId: string): Promise<IdeaWithAuthor[]> {
   return (data ?? []) as unknown as IdeaWithAuthor[];
 }
 
+export async function getIdeaById(id: string): Promise<IdeaWithAuthor | null> {
+  const supabase = await createClient();
+
+  const {data} = await supabase
+    .from("ideas")
+    .select(`
+      *,
+      author:profiles!ideas_author_id_fkey(id, username, full_name, avatar_url),
+      category:categories(id, slug, name_en, name_fr, name_ar)
+    `)
+    .eq("id", id)
+    .single();
+
+  return (data as unknown as IdeaWithAuthor) ?? null;
+}
+
 export async function getIdeaComments(ideaId: string): Promise<IdeaCommentWithAuthor[]> {
   const supabase = await createClient();
 

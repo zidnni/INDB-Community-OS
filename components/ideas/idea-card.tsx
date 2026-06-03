@@ -1,13 +1,15 @@
 "use client";
 
 import {motion} from "framer-motion";
-import {CalendarDays, Lightbulb, Share2} from "lucide-react";
+import {CalendarDays, Edit3, Lightbulb, Share2, Trash2} from "lucide-react";
 import {useLocale, useTranslations} from "next-intl";
+import {useFormStatus} from "react-dom";
 import {toast} from "sonner";
 
-import {shareIdeaAction} from "@/app/[locale]/server-actions";
+import {deleteIdeaAction, shareIdeaAction} from "@/app/[locale]/server-actions";
 import {IdeaComments} from "@/components/ideas/idea-comments";
 import {VoteButton} from "@/components/ideas/vote-button";
+import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Link} from "@/lib/i18n/routing";
 import type {IdeaBadge, IdeaWithAuthor} from "@/types/database";
@@ -15,6 +17,7 @@ import type {IdeaBadge, IdeaWithAuthor} from "@/types/database";
 interface IdeaCardProps {
   idea: IdeaWithAuthor;
   totalUsers?: number;
+  currentUserId?: string | null;
 }
 
 function AuthorAvatar({author}: {author: IdeaWithAuthor["author"]}) {
@@ -38,11 +41,21 @@ function AuthorAvatar({author}: {author: IdeaWithAuthor["author"]}) {
   );
 }
 
-export function IdeaCard({idea, totalUsers}: IdeaCardProps) {
+function DeleteIdeaButton() {
+  const {pending} = useFormStatus();
+  return (
+    <Button type="submit" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" disabled={pending}>
+      <Trash2 size={14} />
+    </Button>
+  );
+}
+
+export function IdeaCard({idea, totalUsers, currentUserId}: IdeaCardProps) {
   const t = useTranslations("Ideas");
   const locale = useLocale();
   const authorName = idea.author?.full_name ?? idea.author?.username ?? t("unknownAuthor");
   const authorUsername = idea.author?.username;
+  const isOwner = currentUserId != null && idea.author_id === currentUserId;
 
   const ideaExtra = idea as IdeaWithAuthor & {supportPercentage?: number; badge?: IdeaBadge};
   const supportPercentage = ideaExtra.supportPercentage ?? 0;
@@ -105,10 +118,30 @@ export function IdeaCard({idea, totalUsers}: IdeaCardProps) {
           </div>
         ) : null}
         <CardHeader className="pb-2.5">
-          <CardTitle className="inline-flex items-center gap-2 text-[15px] sm:text-base">
-            <Lightbulb size={16} className="shrink-0" />
-            <span>{idea.title}</span>
-          </CardTitle>
+          <div className="flex items-start justify-between gap-2">
+            <CardTitle className="inline-flex items-center gap-2 text-[15px] sm:text-base min-w-0">
+              <Lightbulb size={16} className="shrink-0" />
+              <span className="truncate">{idea.title}</span>
+            </CardTitle>
+            {isOwner ? (
+              <div className="flex items-center gap-0.5 shrink-0">
+                <Link href={`/ideas/submit?id=${idea.id}`}>
+                  <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
+                    <Edit3 size={14} />
+                  </Button>
+                </Link>
+                <form
+                  action={deleteIdeaAction}
+                  onSubmit={(e) => { if (!window.confirm(t("deleteConfirm"))) e.preventDefault(); }}
+                >
+                  <input type="hidden" name="locale" value={locale} />
+                  <input type="hidden" name="ideaId" value={idea.id} />
+                  <input type="hidden" name="returnTo" value="/ideas" />
+                  <DeleteIdeaButton />
+                </form>
+              </div>
+            ) : null}
+          </div>
         </CardHeader>
         <CardContent className="space-y-3 pt-0 sm:space-y-3">
           <p className="text-sm text-muted-foreground leading-relaxed">{idea.description}</p>

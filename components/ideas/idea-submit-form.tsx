@@ -9,23 +9,33 @@ import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
-import {submitIdeaAction} from "@/app/[locale]/server-actions";
+import {submitIdeaAction, updateIdeaAction} from "@/app/[locale]/server-actions";
 import {prepareImageForUpload, ImageUploadError} from "@/lib/images/client-compression";
 import {ACCEPTED_IMAGE_EXTENSIONS} from "@/lib/images/upload-config";
 
 export function IdeaSubmitForm({
   categories,
   locale,
+  initialData,
 }: {
   categories: Array<{id: number; name: string}>;
   locale: string;
+  initialData?: {
+    id: string;
+    title: string;
+    description: string;
+    category_id: number | null;
+    image_url: string | null;
+  } | null;
 }) {
   const t = useTranslations("IdeaForm");
   const imageT = useTranslations("ImageUpload");
   const formRef = useRef<HTMLFormElement>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image_url ?? null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
+
+  const isEditing = !!initialData;
 
   useEffect(() => {
     const form = formRef.current;
@@ -70,17 +80,18 @@ export function IdeaSubmitForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
+        <CardTitle>{isEditing ? t("editTitle") : t("title")}</CardTitle>
       </CardHeader>
       <CardContent>
-        <form ref={formRef} action={submitIdeaAction} className="space-y-3" encType="multipart/form-data">
+        <form ref={formRef} action={isEditing ? updateIdeaAction : submitIdeaAction} className="space-y-3" encType="multipart/form-data">
           <input type="hidden" name="locale" value={locale} />
-          <Input name="title" placeholder={t("fields.title")} required />
-          <Textarea name="description" placeholder={t("fields.description")} required />
+          {isEditing ? <input type="hidden" name="ideaId" value={initialData.id} /> : null}
+          <Input name="title" placeholder={t("fields.title")} required defaultValue={initialData?.title ?? ""} />
+          <Textarea name="description" placeholder={t("fields.description")} required defaultValue={initialData?.description ?? ""} />
           <select
             name="categoryId"
             className="h-10 w-full rounded-xl border border-border bg-card px-3 text-sm"
-            defaultValue=""
+            defaultValue={initialData?.category_id ?? ""}
             required
           >
             <option value="">{t("fields.category")}</option>
@@ -120,7 +131,7 @@ export function IdeaSubmitForm({
             </div>
           ) : null}
           <Button type="submit" className="min-h-11 w-full" disabled={imageUploading}>
-            {imageUploading ? imageT("uploading") : t("submit")}
+            {imageUploading ? imageT("uploading") : isEditing ? t("update") : t("submit")}
           </Button>
         </form>
       </CardContent>

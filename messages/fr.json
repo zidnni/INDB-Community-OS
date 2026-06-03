@@ -48,7 +48,11 @@
     },
     "ideaSubmit": {
       "title": "Soumettre une idée",
-      "description": "Proposez une idée civique et participez aux priorités de la communauté."
+      "description": "Proposer une idée citoyenne et contribuer aux priorités de la communauté."
+    },
+    "ideaEdit": {
+      "title": "Modifier l'idée",
+      "description": "Mettre à jour votre proposition d'idée citoyenne."
     }
   },
   "LanguageSwitcher": {
@@ -258,6 +262,8 @@
     "commentDeleteFailed": "Échec de la suppression du commentaire",
     "delete": "Supprimer",
     "shareAnother": "Partager une autre idée",
+    "edit": "Modifier",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette idée ?",
     "status": {
       "submitted": "Soumise",
       "underReview": "En révision",
@@ -269,6 +275,8 @@
   },
   "IdeaForm": {
     "title": "Soumettre une idée citoyenne",
+    "editTitle": "Modifier votre idée",
+    "update": "Mettre à jour l'idée",
     "ready": "Votre idée est prête à être soumise.",
     "fields": {
       "title": "Titre de l'idée",
