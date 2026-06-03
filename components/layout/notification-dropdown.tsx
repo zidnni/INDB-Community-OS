@@ -64,6 +64,8 @@ export function NotificationDropdown({locale}: {locale: string}) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const openRef = useRef(open);
+  openRef.current = open;
 
   useEffect(() => {
     if (!open) return;
@@ -101,6 +103,53 @@ export function NotificationDropdown({locale}: {locale: string}) {
     fetch();
     return () => { cancelled = true; };
   }, [open, supabase]);
+
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel>;
+    let cancelled = false;
+
+    async function setupRealtime() {
+      const {data: {user}} = await supabase.auth.getUser();
+      if (!user || cancelled) return;
+
+      channel = supabase
+        .channel("notifications-realtime")
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "notifications",
+            filter: `user_id=eq.${user.id}`,
+          },
+          async (payload) => {
+            setUnreadCount((c) => c + 1);
+
+            if (openRef.current) {
+              const {data} = await supabase
+                .from("notifications")
+                .select("*, actor:profiles!actor_id(id, username, full_name, avatar_url)")
+                .eq("id", payload.new.id)
+                .single();
+
+              if (data) {
+                setNotifications(
+                  (prev) => [data as unknown as NotificationWithActor, ...prev].slice(0, 20),
+                );
+              }
+            }
+          },
+        )
+        .subscribe();
+    }
+
+    setupRealtime();
+
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [supabase]);
 
   useEffect(() => {
     if (!open) return;
