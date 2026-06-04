@@ -61,12 +61,16 @@ export function IdeaCard({idea, totalUsers}: IdeaCardProps) {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({data}) => {
-      setCurrentUserId(data.user?.id ?? null);
+    supabase.auth.getSession().then(({data: {session}}) => {
+      setCurrentUserId(session?.user?.id ?? null);
+    }).catch(() => {
+      setCurrentUserId(null);
     });
   }, []);
 
   const isOwner = !!currentUserId && !!idea.author_id && currentUserId === idea.author_id;
+
+  console.log("[IdeaCard Debug]", {currentUserId, authorId: idea.author_id, isOwner});
 
   const ideaExtra = idea as IdeaWithAuthor & {supportPercentage?: number; badge?: IdeaBadge};
   const supportPercentage = ideaExtra.supportPercentage ?? 0;
