@@ -85,7 +85,7 @@ export function CreatePostCard({avatarUrl}: {avatarUrl?: string | null}) {
             <button
               type="button"
               onClick={() => setShowForm(true)}
-              className="min-h-24 w-full rounded-2xl border border-border/80 bg-muted/35 px-4 py-3 text-start text-sm leading-6 text-muted-foreground transition hover:border-primary/40 hover:bg-muted/55 sm:min-h-28"
+              className="min-h-24 w-full rounded-2xl border border-border/80 bg-muted/35 px-4 py-3 text-start text-base leading-6 text-muted-foreground transition hover:border-primary/40 hover:bg-muted/55 sm:min-h-28"
               aria-label={t("socialPrompt")}
             >
               {t("socialPrompt")}
@@ -103,9 +103,9 @@ export function CreatePostCard({avatarUrl}: {avatarUrl?: string | null}) {
                 transition={{delay: index * 0.05, duration: 0.2}}
                 whileHover={{y: -2}}
                 whileTap={{scale: 0.98}}
-                className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border/80 bg-card px-3 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground sm:text-sm"
+                className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border/80 bg-card px-4 text-sm font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
               >
-                <action.icon size={16} />
+                <action.icon size={18} />
                 {t(`quickActions.${action.key}`)}
               </motion.button>
             ))}
@@ -146,7 +146,7 @@ export function CreatePostCard({avatarUrl}: {avatarUrl?: string | null}) {
               <option value="project">Project</option>
             </select>
             <label className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-3 text-sm text-muted-foreground hover:text-foreground">
-              <ImagePlus size={16} />
+                <ImagePlus size={18} />
               {t("quickActions.image")}
               <input
                 name="imageFile"

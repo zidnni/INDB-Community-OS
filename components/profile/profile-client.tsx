@@ -93,9 +93,9 @@ export function ProfileClient({
           )}
           <button
             onClick={() => setEditModalOpen(true)}
-            className="absolute right-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm transition hover:bg-black/60"
-          >
-            <ImagePlus size={14} />
+                    className="absolute right-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm transition hover:bg-black/60"
+                  >
+                    <ImagePlus size={16} />
             {t("changeCover")}
           </button>
         </div>
@@ -133,7 +133,7 @@ export function ProfileClient({
                 <div>
                   <h1 className="text-xl font-bold sm:text-2xl md:text-3xl">{displayName}</h1>
                   {profile.username ? (
-                    <p className="text-sm text-muted-foreground">@{profile.username}</p>
+                    <p className="text-base text-muted-foreground">@{profile.username}</p>
                   ) : null}
                 </div>
                 {profile.role && profile.role !== "member" ? (
@@ -144,20 +144,20 @@ export function ProfileClient({
               </div>
 
               {profile.bio ? (
-                <p className="mt-2 text-sm text-foreground/85 sm:text-base">{profile.bio}</p>
+                <p className="mt-2 text-base text-foreground/85 sm:text-lg">{profile.bio}</p>
               ) : (
-                <p className="mt-2 text-sm italic text-muted-foreground">{t("noBioYet")}</p>
+                <p className="mt-2 text-base italic text-muted-foreground">{t("noBioYet")}</p>
               )}
 
-              <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-muted-foreground sm:justify-start">
+              <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-base text-muted-foreground sm:justify-start">
                 {profile.city ? (
                   <span className="inline-flex items-center gap-1">
-                    <MapPin size={14} />
+                    <MapPin size={16} />
                     {profile.city}
                   </span>
                 ) : null}
                 <span className="inline-flex items-center gap-1">
-                  <CalendarDays size={14} />
+                    <CalendarDays size={16} />
                   {t("joined")} {joinDate}
                 </span>
               </div>
@@ -182,7 +182,7 @@ export function ProfileClient({
                 onClick={() => setEditModalOpen(true)}
                 className="gap-1.5 rounded-full px-5"
               >
-                <Pencil size={14} />
+                <Pencil size={16} />
                 {t("editProfile")}
               </Button>
             </div>
@@ -191,20 +191,20 @@ export function ProfileClient({
           {/* Stats Row */}
           <div className="mt-5 grid grid-cols-4 divide-x divide-border rounded-2xl border border-border/70 bg-card">
             <div className="py-3 text-center">
-              <p className="text-lg font-bold sm:text-xl">{postsWithComments.length}</p>
-              <p className="text-xs text-muted-foreground">{t("stats.posts")}</p>
+              <p className="text-xl font-bold sm:text-2xl">{postsWithComments.length}</p>
+              <p className="text-sm text-muted-foreground">{t("stats.posts")}</p>
             </div>
             <div className="py-3 text-center">
-              <p className="text-lg font-bold sm:text-xl">{memories.length}</p>
-              <p className="text-xs text-muted-foreground">{t("stats.memories")}</p>
+              <p className="text-xl font-bold sm:text-2xl">{memories.length}</p>
+              <p className="text-sm text-muted-foreground">{t("stats.memories")}</p>
             </div>
             <div className="py-3 text-center">
-              <p className="text-lg font-bold sm:text-xl">{ideas.length}</p>
-              <p className="text-xs text-muted-foreground">{t("stats.ideas")}</p>
+              <p className="text-xl font-bold sm:text-2xl">{ideas.length}</p>
+              <p className="text-sm text-muted-foreground">{t("stats.ideas")}</p>
             </div>
             <div className="py-3 text-center">
-              <p className="text-lg font-bold sm:text-xl">{profile.comments_count ?? 0}</p>
-              <p className="text-xs text-muted-foreground">{t("stats.comments")}</p>
+              <p className="text-xl font-bold sm:text-2xl">{profile.comments_count ?? 0}</p>
+              <p className="text-sm text-muted-foreground">{t("stats.comments")}</p>
             </div>
           </div>
 
@@ -214,7 +214,7 @@ export function ProfileClient({
               <Link
                 key={tab.key}
                 href={`/profile?tab=${tab.key}`}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-5 py-3 text-base font-medium transition ${
                   currentTab === tab.key || (currentTab === "posts" && tab.key === "posts" && !activeTab)
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -223,7 +223,7 @@ export function ProfileClient({
                 {tab.label}
                 {tab.count !== null ? (
                   <span
-                    className={`rounded-full px-2 py-0.5 text-xs ${
+                    className={`rounded-full px-2.5 py-0.5 text-sm ${
                       currentTab === tab.key || (currentTab === "posts" && tab.key === "posts" && !activeTab)
                         ? "bg-primary-foreground/20 text-primary-foreground"
                         : "bg-muted-foreground/10 text-muted-foreground"
@@ -297,32 +297,32 @@ export function ProfileClient({
                 <CardContent className="space-y-4 p-5 sm:p-6">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t("fields.fullName")}</p>
-                      <p className="mt-1 text-sm">{profile.full_name ?? "—"}</p>
+                      <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">{t("fields.fullName")}</p>
+                      <p className="mt-1 text-base">{profile.full_name ?? "—"}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t("fields.username")}</p>
-                      <p className="mt-1 text-sm">{profile.username ? `@${profile.username}` : "—"}</p>
+                      <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">{t("fields.username")}</p>
+                      <p className="mt-1 text-base">{profile.username ? `@${profile.username}` : "—"}</p>
                     </div>
                     <div className="sm:col-span-2">
-                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t("fields.bio")}</p>
-                      <p className="mt-1 text-sm">{profile.bio ?? t("noBioYet")}</p>
+                      <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">{t("fields.bio")}</p>
+                      <p className="mt-1 text-base">{profile.bio ?? t("noBioYet")}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t("fields.city")}</p>
-                      <p className="mt-1 text-sm">{profile.city ?? "—"}</p>
+                      <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">{t("fields.city")}</p>
+                      <p className="mt-1 text-base">{profile.city ?? "—"}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t("fields.languagePreference")}</p>
-                      <p className="mt-1 text-sm">{profile.language_preference ?? "—"}</p>
+                      <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">{t("fields.languagePreference")}</p>
+                      <p className="mt-1 text-base">{profile.language_preference ?? "—"}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t("fields.role")}</p>
-                      <p className="mt-1 text-sm">{t(`role.${profile.role}`)}</p>
+                      <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">{t("fields.role")}</p>
+                      <p className="mt-1 text-base">{t(`role.${profile.role}`)}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t("fields.memberSince")}</p>
-                      <p className="mt-1 text-sm">{joinDate}</p>
+                      <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground">{t("fields.memberSince")}</p>
+                      <p className="mt-1 text-base">{joinDate}</p>
                     </div>
                   </div>
                 </CardContent>

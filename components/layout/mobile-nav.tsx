@@ -41,13 +41,13 @@ export function MobileNav() {
               <Link
                 href={item.href as never}
                 className={cn(
-                  "group flex min-h-14 flex-1 flex-col items-center justify-center rounded-xl px-1 py-1 text-[11px] font-medium transition",
+                  "group flex min-h-14 flex-1 flex-col items-center justify-center rounded-xl px-1 py-1 text-sm font-medium transition",
                   active
                     ? "text-primary"
                     : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
                 )}
               >
-                {Icon ? <Icon size={18} className={cn("transition", active ? "scale-105" : "group-hover:scale-105")} /> : null}
+                {Icon ?                 <Icon size={26} className={cn("transition", active ? "scale-105" : "group-hover:scale-105")} /> : null}
                 <span className="mt-1 w-full truncate text-center leading-none">{t(`items.${item.key}.short`)}</span>
                 <span
                   aria-hidden

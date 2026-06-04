@@ -93,7 +93,7 @@ export function FollowSummary({
           {isFollowing ? (isHovering ? t("unfollow") : t("following")) : t("follow")}
         </Button>
       ) : null}
-      <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground sm:justify-start">
+      <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground sm:justify-start">
         <button type="button" onClick={handleCountClick} className="hover:text-foreground">
           <span className="font-semibold text-foreground">{followersCount}</span> {t("followers")}
         </button>

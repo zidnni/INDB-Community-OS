@@ -147,9 +147,9 @@ export function IdeaComments({
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 px-3 py-2 text-xs text-muted-foreground transition hover:bg-muted hover:text-foreground"
+        className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 px-4 py-2.5 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
       >
-        <MessageSquare size={14} />
+        <MessageSquare size={16} />
         {t("commentsWithCount", {count: comments.length})}
       </button>
 
@@ -187,19 +187,19 @@ export function IdeaComments({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-baseline gap-2">
                             <span className="text-xs font-medium">{commentAuthorName}</span>
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-xs text-muted-foreground">
                               {timeAgo(comment.created_at, locale)}
                             </span>
                           </div>
-                          <p className="text-sm text-foreground/90 mt-0.5">{comment.content}</p>
+                          <p className="text-base text-foreground/90 mt-0.5">{comment.content}</p>
                           {isOwn ? (
                             <button
                               type="button"
                               onClick={() => handleDelete(comment.id)}
                               disabled={deletePending}
-                              className="mt-0.5 inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-destructive transition"
+                              className="mt-0.5 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition"
                             >
-                              <Trash2 size={10} />
+                              <Trash2 size={12} />
                               {t("delete") ?? "Delete"}
                             </button>
                           ) : null}
@@ -225,12 +225,12 @@ export function IdeaComments({
                     type="button"
                     onClick={handleSubmit}
                     disabled={addPending || !input.trim()}
-                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+                    className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
                   >
                     {addPending ? (
-                      <Loader2 size={14} className="animate-spin" />
+                      <Loader2 size={16} className="animate-spin" />
                     ) : (
-                      <SendHorizonal size={14} />
+                      <SendHorizonal size={16} />
                     )}
                   </button>
                 </div>

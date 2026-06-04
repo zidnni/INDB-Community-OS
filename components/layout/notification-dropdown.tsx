@@ -305,7 +305,7 @@ export function NotificationDropdown({locale}: {locale: string}) {
         key={n.id}
         type="button"
         onClick={() => handleNotificationClick(n)}
-        className={`flex w-full items-start gap-3 px-4 py-3.5 text-start text-sm transition active:bg-muted/80 hover:bg-muted/60 ${
+        className={`flex w-full items-start gap-3 px-4 py-4 text-start text-base transition active:bg-muted/80 hover:bg-muted/60 ${
           !n.read ? "bg-primary/[0.06]" : ""
         }`}
       >
@@ -315,15 +315,15 @@ export function NotificationDropdown({locale}: {locale: string}) {
             avatarUrl={n.actor?.avatar_url}
             className="h-10 w-10"
           />
-          <div className="absolute -bottom-0.5 -end-0.5 flex h-4.5 w-4.5 items-center justify-center rounded-full border-2 border-card bg-brand-primary text-[8px] text-white">
-            <Icon size={10} />
+          <div className="absolute -bottom-0.5 -end-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-card bg-brand-primary text-[10px] text-white">
+            <Icon size={12} />
           </div>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm leading-snug text-foreground/90">
+          <p className="text-base leading-snug text-foreground/90">
             {getMessage()}
           </p>
-          <p className="mt-1 text-[11px] text-muted-foreground">
+          <p className="mt-1 text-xs text-muted-foreground">
             {timeAgo(n.created_at, locale)}
           </p>
         </div>
@@ -344,7 +344,7 @@ export function NotificationDropdown({locale}: {locale: string}) {
         className="relative min-h-11 min-w-11 rounded-full p-0"
         style={{touchAction: "manipulation"}}
       >
-        <Bell size={18} />
+          <Bell size={22} />
         {unreadCount > 0 ? (
           <span className="absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-primary px-1 text-[10px] font-bold leading-none text-white">
             {unreadCount > 99 ? "99+" : unreadCount}
@@ -372,7 +372,7 @@ export function NotificationDropdown({locale}: {locale: string}) {
                 onClick={handleMarkAllRead}
                 className="flex h-9 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-primary transition hover:bg-primary/10"
               >
-                <CheckCheck size={16} />
+                <CheckCheck size={18} />
                 {t("markAllRead")}
               </button>
             ) : (
@@ -418,7 +418,7 @@ export function NotificationDropdown({locale}: {locale: string}) {
                     onClick={handleMarkAllRead}
                     className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
                   >
-                    <CheckCheck size={14} />
+                    <CheckCheck size={16} />
                     {t("markAllRead")}
                   </button>
                 ) : null}

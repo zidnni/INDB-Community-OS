@@ -213,7 +213,7 @@ export function IdeaSubmitForm({
             </select>
 
             <label className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-3 text-sm text-muted-foreground hover:text-foreground">
-              <ImagePlus size={16} />
+              <ImagePlus size={18} />
               {imageUploading ? imageT("uploading") : imageT("chooseImage")}
               <input
                 name="imageFile"
@@ -254,7 +254,7 @@ export function IdeaSubmitForm({
               >
                 {submitting ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" />
+                    <Loader2 size={18} className="animate-spin" />
                     {t("submitting")}
                   </>
                 ) : isEditing ? (

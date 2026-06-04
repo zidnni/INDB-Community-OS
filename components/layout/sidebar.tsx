@@ -45,14 +45,14 @@ export function Sidebar() {
                 <Link
                   href={item.href as never}
                   className={cn(
-                    "flex items-center justify-between rounded-xl px-3 py-2.5 text-sm transition",
+                    "flex items-center justify-between rounded-xl px-4 py-3 text-base transition",
                     active
                       ? "bg-primary text-primary-foreground shadow-md"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   <span className="inline-flex items-center gap-2">
-                    <Icon size={16} />
+                    <Icon size={20} />
                   {t(`items.${item.key}.label`)}
                   </span>
                 </Link>

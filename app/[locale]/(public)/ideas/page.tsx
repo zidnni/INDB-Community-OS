@@ -68,7 +68,7 @@ export default async function IdeasPage({
     const badgeKey = badgeTranslationKeys[idea.badge as IdeaBadge];
     if (!badgeKey) return null;
     return (
-      <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium hidden sm:inline ${badgeStyles[idea.badge as IdeaBadge]}`}>
+      <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium hidden sm:inline ${badgeStyles[idea.badge as IdeaBadge]}`}>
         {t(badgeKey)}
       </span>
     );
@@ -81,12 +81,12 @@ export default async function IdeasPage({
       <div className="rounded-2xl border border-border/70 bg-card p-3.5 sm:p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-xl font-semibold">{t("title")}</h1>
-            <p className="text-sm text-muted-foreground">{t("description")}</p>
+            <h1 className="text-2xl font-bold sm:text-3xl">{t("title")}</h1>
+            <p className="text-base text-muted-foreground">{t("description")}</p>
           </div>
           <Link
             href="/ideas/submit"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
           >
             <Plus size={16} />
             {t("shareAnother")}
@@ -98,7 +98,7 @@ export default async function IdeasPage({
         <section className="rounded-2xl border border-border/70 bg-card p-3.5 sm:p-4">
           <div className="mb-3 flex items-center gap-2">
             <Trophy size={18} className="text-amber-500 shrink-0" />
-            <h2 className="text-base font-semibold">{t("top10PopularIdeas")}</h2>
+            <h2 className="text-lg font-bold sm:text-xl">{t("top10PopularIdeas")}</h2>
           </div>
           <div className="flex gap-3 pb-2 sm:flex-col sm:gap-2 sm:pb-0 max-sm:overflow-x-auto max-sm:snap-x max-sm:snap-mandatory max-sm:scrollbar-none max-sm:px-4">
             {topIdeas.map((idea) => {
@@ -113,7 +113,7 @@ export default async function IdeasPage({
 
       {ideas.length > 0 ? (
     <div className="min-w-0 space-y-3 sm:space-y-4">
-          <h2 className="text-base font-semibold px-0.5">{t("allIdeas")}</h2>
+          <h2 className="text-lg font-bold sm:text-xl px-0.5">{t("allIdeas")}</h2>
           {ideas.map((idea) => (
             <IdeaCard key={idea.id} idea={idea} totalUsers={totalUsers} currentUserId={serverCurrentUserId} />
           ))}

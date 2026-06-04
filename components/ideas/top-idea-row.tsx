@@ -49,22 +49,22 @@ export function TopIdeaRow({idea, authorName, badgeEl}: TopIdeaRowProps) {
     <button
       ref={ref}
       type="button"
-      className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-border/50 bg-card/50 px-4 py-3 text-start transition hover:bg-muted/50 active:scale-[0.98] active:bg-muted/70 sm:px-4 sm:py-2.5 touch-manipulation max-sm:min-w-[80vw] max-sm:snap-start"
+      className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-border/50 bg-card/50 px-4 py-3 text-start transition hover:bg-muted/50 active:scale-[0.98] active:bg-muted/70 sm:px-4 sm:py-3 touch-manipulation max-sm:min-w-[80vw] max-sm:snap-start"
     >
-      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#0F4C75] to-[#27C5D8] text-[11px] font-bold text-white">
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#0F4C75] to-[#27C5D8] text-sm font-bold text-white">
         {idea.rank}
       </span>
 
       <Avatar author={idea.author} />
 
       <div className="flex flex-col min-w-0 flex-1">
-        <span className="truncate text-sm font-medium">{idea.title}</span>
-        <span className="text-[11px] text-muted-foreground truncate">{authorName}</span>
+        <span className="truncate text-base font-medium">{idea.title}</span>
+        <span className="text-sm text-muted-foreground truncate">{authorName}</span>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+      <div className="flex shrink-0 items-center gap-2 text-sm text-muted-foreground">
         <span className="inline-flex items-center gap-1 tabular-nums">
-          <ChevronUp size={12} />
+          <ChevronUp size={14} />
           {idea.votes_count}
         </span>
         <span className="tabular-nums hidden sm:inline">{idea.supportPercentage}%</span>

@@ -46,14 +46,14 @@ function AuthorAvatar({author}: {author: IdeaWithAuthor["author"]}) {
       <img
         src={author.avatar_url}
         alt=""
-        className="size-5 rounded-full object-cover shrink-0"
+        className="size-6 rounded-full object-cover shrink-0"
       />
     );
   }
 
   const initial = (author.full_name ?? author.username ?? "?").charAt(0).toUpperCase();
   return (
-    <span className="flex size-5 items-center justify-center rounded-full bg-gradient-to-br from-[#0F4C75] to-[#27C5D8] text-[10px] font-bold text-white shrink-0">
+    <span className="flex size-6 items-center justify-center rounded-full bg-gradient-to-br from-[#0F4C75] to-[#27C5D8] text-xs font-bold text-white shrink-0">
       {initial}
     </span>
   );
@@ -191,22 +191,22 @@ export function IdeaCard({idea, totalUsers, currentUserId}: IdeaCardProps) {
         ) : null}
         <CardHeader className="pb-2.5">
           <div className="flex items-start justify-between gap-2">
-            <CardTitle className="inline-flex items-center gap-2 text-[15px] sm:text-base min-w-0">
-              <Lightbulb size={16} className="shrink-0" />
+            <CardTitle className="inline-flex items-center gap-2 text-base sm:text-lg min-w-0">
+              <Lightbulb size={18} className="shrink-0" />
               <span className="line-clamp-2 overflow-hidden text-ellipsis">{idea.title}</span>
             </CardTitle>
             {canShowActions ? (
               <div className="relative shrink-0" ref={menuRef}>
-                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => setMenuOpen((p) => !p)}>
-                  <MoreHorizontal size={16} />
+                <Button type="button" variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground" onClick={() => setMenuOpen((p) => !p)}>
+                  <MoreHorizontal size={18} />
                 </Button>
                 {menuOpen ? (
                   <div className="absolute end-0 top-full z-10 mt-1 min-w-[140px] rounded-xl border border-border/60 bg-card py-1 shadow-lg">
-                    <Link href={`/ideas/submit?id=${idea.id}`} className="flex w-full items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted transition-colors" onClick={() => setMenuOpen(false)}>
+                    <Link href={`/ideas/submit?id=${idea.id}`} className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-foreground hover:bg-muted transition-colors" onClick={() => setMenuOpen(false)}>
                       {t("editIdea")}
                     </Link>
-                    <button type="button" className="flex w-full items-center gap-2 px-3 py-2 text-xs text-destructive hover:bg-muted transition-colors" onClick={() => { setMenuOpen(false); setShowDeleteConfirm(true); }}>
-                      <Trash2 size={12} />
+                    <button type="button" className="flex w-full items-center gap-2 px-3 py-2.5 text-sm text-destructive hover:bg-muted transition-colors" onClick={() => { setMenuOpen(false); setShowDeleteConfirm(true); }}>
+                      <Trash2 size={14} />
                       {t("deleteIdea")}
                     </button>
                   </div>
@@ -219,7 +219,7 @@ export function IdeaCard({idea, totalUsers, currentUserId}: IdeaCardProps) {
           <div>
             <p
               ref={descRef}
-              className={"text-sm text-muted-foreground leading-relaxed break-words [overflow-wrap:anywhere] " + (expanded ? "" : "line-clamp-3")}
+              className={"text-base text-muted-foreground leading-relaxed break-words [overflow-wrap:anywhere] " + (expanded ? "" : "line-clamp-3")}
             >
               {idea.description}
             </p>
@@ -227,18 +227,18 @@ export function IdeaCard({idea, totalUsers, currentUserId}: IdeaCardProps) {
               <button
                 type="button"
                 onClick={() => setExpanded((p) => !p)}
-                className="mt-0.5 inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                className="mt-0.5 inline-flex items-center gap-1 text-sm text-primary hover:underline"
               >
                 {expanded ? (
-                  <><ChevronUp size={12} />{t("showLess")}</>
+                  <><ChevronUp size={14} />{t("showLess")}</>
                 ) : (
-                  <><ChevronDown size={12} />{t("showMore")}</>
+                  <><ChevronDown size={14} />{t("showMore")}</>
                 )}
               </button>
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+          <div className="flex flex-col gap-1 text-sm text-muted-foreground">
             <div className="flex items-center gap-1.5">
               {authorUsername ? (
                 <Link href={`/profile/${authorUsername}`} className="hover:text-foreground transition-colors">
@@ -251,22 +251,22 @@ export function IdeaCard({idea, totalUsers, currentUserId}: IdeaCardProps) {
             <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
               {categoryName ? (
                 <span className="inline-flex items-center gap-1.5">
-                  <Lightbulb size={13} />
+                  <Lightbulb size={14} />
                   {categoryName}
                 </span>
               ) : null}
               {categoryName ? <span className="text-muted-foreground/50" aria-hidden="true">•</span> : null}
               <span className="inline-flex items-center gap-1.5">
-                <CalendarDays size={13} />
+                <CalendarDays size={14} />
                 {new Date(idea.created_at).toLocaleDateString(locale)}
               </span>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
             <span className="text-muted-foreground tabular-nums">{t("supportPercent", {percent: supportPercentage})}</span>
             {badge ? (
-              <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium", badgeStyles[badge])}>
+              <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", badgeStyles[badge])}>
                 {t(badgeTranslationKeys[badge])}
               </span>
             ) : null}
@@ -287,9 +287,9 @@ export function IdeaCard({idea, totalUsers, currentUserId}: IdeaCardProps) {
             <button
               type="button"
               onClick={handleShare}
-              className="inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-border/60 px-3 py-2 text-xs text-muted-foreground transition hover:bg-muted hover:text-foreground"
+              className="inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-xl border border-border/60 px-4 py-2.5 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
             >
-              <Share2 size={14} />
+              <Share2 size={16} />
               {t("share")}
             </button>
           </div>

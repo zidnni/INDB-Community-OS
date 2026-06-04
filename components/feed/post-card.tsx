@@ -270,7 +270,7 @@ export function PostCard({
                 <UserAvatar label={authorName} avatarUrl={post.author?.avatar_url} className="h-11 w-11 shrink-0" />
               )}
               <div className="space-y-1">
-                <CardTitle className="text-[15px] leading-none sm:text-base">
+                <CardTitle className="text-base leading-none sm:text-lg">
                   {authorProfileHref ? (
                     <Link href={authorProfileHref} className="transition hover:text-primary hover:underline">
                       {authorName}
@@ -279,22 +279,22 @@ export function PostCard({
                     authorName
                   )}
                 </CardTitle>
-                <p className="text-[11px] text-muted-foreground sm:text-xs">
+                <p className="text-xs text-muted-foreground sm:text-sm">
                   {postTime} {t("ago")}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-1">
               {post.category ? (
-                <Badge className="bg-brand-primary-soft px-2 py-1 text-[10px] text-brand-primary sm:text-xs">
+                <Badge className="bg-brand-primary-soft px-2.5 py-1 text-xs text-brand-primary sm:text-sm">
                   {getCategorySlug(post, locale)}
                 </Badge>
               ) : null}
               {isOwnPost ? (
                 <div className="flex items-center gap-0.5">
                   <Link href={`/post/edit?id=${post.id}`}>
-                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
-                      <Edit3 size={14} />
+                    <Button type="button" variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary">
+                      <Edit3 size={16} />
                     </Button>
                   </Link>
                   <form action={deletePostAction}>
@@ -311,7 +311,7 @@ export function PostCard({
 
         <CardContent className="space-y-3.5 pt-0 sm:space-y-4">
           <div className="space-y-1.5">
-            <p className="text-sm leading-6 text-foreground/95 sm:text-[15px] sm:leading-7">{visibleContent}</p>
+            <p className="text-base leading-7 text-foreground/95 sm:text-lg sm:leading-8">{visibleContent}</p>
 
             {canTranslate ? (
               <div className="space-y-1">
@@ -319,7 +319,7 @@ export function PostCard({
                   type="button"
                   onClick={onToggleTranslation}
                   disabled={isTranslating}
-                  className="text-xs font-medium text-primary transition hover:underline disabled:cursor-not-allowed disabled:opacity-70"
+                  className="text-sm font-medium text-primary transition hover:underline disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {isTranslated ? common("seeOriginal") : common("seeTranslation")}
                 </button>
@@ -359,31 +359,31 @@ export function PostCard({
             <button
               type="button"
               onClick={handleCommentClick}
-              className="flex flex-1 items-center justify-center gap-1.5 min-h-11 rounded-xl px-2 text-xs text-muted-foreground transition hover:bg-muted sm:gap-2 sm:px-3 sm:text-sm"
+              className="flex flex-1 items-center justify-center gap-1.5 min-h-12 rounded-xl px-3 text-sm text-muted-foreground transition hover:bg-muted sm:gap-2 sm:px-4"
             >
-              <MessageCircle size={16} className="shrink-0" />
+              <MessageCircle size={18} className="shrink-0" />
               <span>{commentsCount > 0 ? commentsCount : t("comments")}</span>
             </button>
 
             <button
               type="button"
               onClick={handleSave}
-              className={`flex flex-1 items-center justify-center gap-1.5 min-h-11 rounded-xl px-2 text-xs transition sm:gap-2 sm:px-3 sm:text-sm ${
+              className={`flex flex-1 items-center justify-center gap-1.5 min-h-12 rounded-xl px-3 text-sm transition sm:gap-2 sm:px-4 ${
                 isSaved
                   ? "bg-primary/10 text-primary hover:bg-primary/15"
                   : "text-muted-foreground hover:bg-muted"
               }`}
             >
-              <Bookmark size={16} className="shrink-0" />
+              <Bookmark size={18} className="shrink-0" />
               <span>{isSaved ? t("saved") : t("save")}</span>
             </button>
 
             <button
               type="button"
               onClick={handleShare}
-              className="flex flex-1 items-center justify-center gap-1.5 min-h-11 rounded-xl px-2 text-xs text-muted-foreground transition hover:bg-muted sm:gap-2 sm:px-3 sm:text-sm"
+              className="flex flex-1 items-center justify-center gap-1.5 min-h-12 rounded-xl px-3 text-sm text-muted-foreground transition hover:bg-muted sm:gap-2 sm:px-4"
             >
-              <Share2 size={16} className="shrink-0" />
+              <Share2 size={18} className="shrink-0" />
               <span className="hidden sm:inline">{t("share")}</span>
             </button>
           </div>
@@ -400,8 +400,8 @@ export function PostCard({
                 required
                 className="min-h-11"
               />
-              <Button type="submit" size="icon" className="shrink-0" disabled={commentPending}>
-                {commentPending ? <span className="text-xs">{t("sending")}</span> : <Send size={14} />}
+                <Button type="submit" size="icon" className="shrink-0" disabled={commentPending}>
+                {commentPending ? <span className="text-xs">{t("sending")}</span> : <Send size={16} />}
               </Button>
             </form>
           ) : null}

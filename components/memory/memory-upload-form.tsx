@@ -201,7 +201,7 @@ export function MemoryUploadForm({
             />
 
             <label className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-3 text-sm text-muted-foreground hover:text-foreground">
-              <ImagePlus size={16} />
+              <ImagePlus size={18} />
               {imageUploading ? imageT("uploading") : imageT("chooseImage")}
               <input
                 name="media"

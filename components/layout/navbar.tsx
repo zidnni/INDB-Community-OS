@@ -32,12 +32,12 @@ export async function Navbar({locale}: {locale: string}) {
           ) : (
             <div className="flex items-center gap-1">
               <Link href="/register">
-                <Button variant="ghost" size="sm" className="h-9 px-2 text-xs">
+                <Button variant="ghost" size="sm" className="h-10 px-3 text-sm">
                   {t("createAccount")}
                 </Button>
               </Link>
               <Link href="/login">
-                <Button variant="ghost" size="sm" className="h-9 px-2 text-xs">
+                <Button variant="ghost" size="sm" className="h-10 px-3 text-sm">
                   {t("login")}
                 </Button>
               </Link>

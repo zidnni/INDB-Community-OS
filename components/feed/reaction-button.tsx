@@ -106,16 +106,16 @@ export function ReactionButton({
       <button
         type="button"
         onClick={() => setOpen((p) => !p)}
-        className={`inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-2 text-xs transition sm:gap-2 sm:px-3 sm:text-sm ${
+        className={`inline-flex min-h-12 items-center justify-center gap-1.5 rounded-xl px-3 text-sm transition sm:gap-2 sm:px-4 ${
           localReaction
             ? "bg-primary/10 text-primary hover:bg-primary/15"
             : "text-muted-foreground hover:bg-muted"
         }`}
       >
         {currentEmoji ? (
-          <span className="text-lg">{currentEmoji}</span>
+          <span className="text-xl">{currentEmoji}</span>
         ) : (
-          <Heart size={16} className="shrink-0" />
+          <Heart size={18} className="shrink-0" />
         )}
         <span>{localTotal}</span>
       </button>

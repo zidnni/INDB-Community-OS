@@ -13,7 +13,7 @@ function LogoutButton({label, loading}: {label: string; loading: string}) {
   const {pending} = useFormStatus();
   return (
     <Button type="submit" variant="ghost" size="sm" disabled={pending} className="gap-1.5">
-      <LogOut size={14} />
+      <LogOut size={16} />
       {pending ? loading : label}
     </Button>
   );

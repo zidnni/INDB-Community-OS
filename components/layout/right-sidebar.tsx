@@ -13,16 +13,16 @@ export async function RightSidebar() {
       {featuredMemories.length > 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle className="inline-flex items-center gap-2 text-base">
-              <History size={16} />
+            <CardTitle className="inline-flex items-center gap-2 text-lg">
+              <History size={18} />
               {t("featuredMemories")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {featuredMemories.slice(0, 3).map((memory) => (
               <div key={memory.id} className="rounded-xl bg-muted/60 p-2">
-                <p className="text-sm font-semibold">{memory.title}</p>
-                <p className="text-xs text-muted-foreground">{memory.year ?? memory.decade ?? "?"}</p>
+                <p className="text-base font-semibold">{memory.title}</p>
+                <p className="text-sm text-muted-foreground">{memory.year ?? memory.decade ?? "?"}</p>
               </div>
             ))}
           </CardContent>
