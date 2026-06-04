@@ -3,7 +3,7 @@
 import {motion} from "framer-motion";
 import {CalendarDays, Edit3, Lightbulb, Loader2, Share2, Trash2, X} from "lucide-react";
 import {useLocale, useTranslations} from "next-intl";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {useFormStatus} from "react-dom";
 import {toast} from "sonner";
 
@@ -13,12 +13,12 @@ import {VoteButton} from "@/components/ideas/vote-button";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Link} from "@/lib/i18n/routing";
-import {createClient} from "@/lib/supabase/client";
 import type {IdeaBadge, IdeaWithAuthor} from "@/types/database";
 
 interface IdeaCardProps {
   idea: IdeaWithAuthor;
   totalUsers?: number;
+  currentUserId?: string | null;
 }
 
 function AuthorAvatar({author}: {author: IdeaWithAuthor["author"]}) {
@@ -51,26 +51,14 @@ function DeleteIdeaButton() {
   );
 }
 
-export function IdeaCard({idea, totalUsers}: IdeaCardProps) {
+export function IdeaCard({idea, totalUsers, currentUserId}: IdeaCardProps) {
   const t = useTranslations("Ideas");
   const locale = useLocale();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const authorName = idea.author?.full_name ?? idea.author?.username ?? t("unknownAuthor");
   const authorUsername = idea.author?.username;
 
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getSession().then(({data: {session}}) => {
-      setCurrentUserId(session?.user?.id ?? null);
-    }).catch(() => {
-      setCurrentUserId(null);
-    });
-  }, []);
-
   const isOwner = !!currentUserId && !!idea.author_id && currentUserId === idea.author_id;
-
-  console.log("[IdeaCard Debug]", {currentUserId, authorId: idea.author_id, isOwner});
 
   const ideaExtra = idea as IdeaWithAuthor & {supportPercentage?: number; badge?: IdeaBadge};
   const supportPercentage = ideaExtra.supportPercentage ?? 0;

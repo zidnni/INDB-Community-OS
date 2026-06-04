@@ -23,10 +23,10 @@ export default async function middleware(request: NextRequest) {
   const needsAuth = matchPath(pathWithoutLocale, protectedPaths);
   const isAuthPage = matchPath(pathWithoutLocale, authPaths);
 
-  if (needsAuth || isAuthPage) {
-    const env = getSupabaseEnv();
-    const response = handleI18nRouting(request);
+  const response = handleI18nRouting(request);
 
+  try {
+    const env = getSupabaseEnv();
     const supabase = createServerClient(env.supabaseUrl, env.supabaseAnonKey, {
       cookies: {
         getAll() {
@@ -53,11 +53,11 @@ export default async function middleware(request: NextRequest) {
     if (isAuthPage && user) {
       return NextResponse.redirect(new URL(`/${locale}/feed`, request.url));
     }
-
-    return response;
+  } catch {
+    // Session refresh failed, continue with i18n routing
   }
 
-  return handleI18nRouting(request);
+  return response;
 }
 
 export const config = {
