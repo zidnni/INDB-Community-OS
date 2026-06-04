@@ -142,14 +142,14 @@ export default async function IdeasPage({
         </section>
       ) : null}
 
-      {mainIdeas.length > 0 || (!topIdeas.length && ideas.length > 0) ? (
+      {ideas.length > 0 ? (
         <div className="space-y-3 sm:space-y-4">
           <h2 className="text-base font-semibold px-0.5">{t("allIdeas")}</h2>
           {(mainIdeas.length > 0 ? mainIdeas : ideas).map((idea) => (
             <IdeaCard key={idea.id} idea={idea} totalUsers={totalUsers} />
           ))}
         </div>
-      ) : ideas.length === 0 ? (
+      ) : (
         <EmptyState
           icon={Lightbulb}
           title={empty("title")}
@@ -157,7 +157,7 @@ export default async function IdeasPage({
           ctaLabel={empty("cta")}
           ctaHref="/ideas/submit"
         />
-      ) : null}
+      )}
     </div>
   );
 }
