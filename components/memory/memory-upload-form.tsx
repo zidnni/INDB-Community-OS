@@ -94,11 +94,11 @@ export function MemoryUploadForm({
     setTitleError(null);
     setDescError(null);
 
-    if (!title || title.length < 4) {
+    if (!title || title.length < 1) {
       setTitleError(t("errors.title"));
       hasError = true;
     }
-    if (!description || description.length < 10) {
+    if (!description || description.length < 1) {
       setDescError(t("errors.story"));
       hasError = true;
     }
@@ -107,11 +107,23 @@ export function MemoryUploadForm({
 
     setSubmitting(true);
 
-    if (isEditing && existingMemory) {
-      formData.set("memoryId", existingMemory.id);
-      await updateMemoryAction(formData);
-    } else {
-      await submitMemoryAction(formData);
+    let serverError: string | null = null;
+    try {
+      if (isEditing && existingMemory) {
+        formData.set("memoryId", existingMemory.id);
+        await updateMemoryAction(formData);
+      } else {
+        await submitMemoryAction(formData);
+      }
+    } catch (error) {
+      serverError = error instanceof Error ? error.message : String(error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("[MemoryUploadForm] submit error:", error);
+      }
+    }
+    setSubmitting(false);
+    if (serverError) {
+      toast.error(serverError);
     }
   }
 

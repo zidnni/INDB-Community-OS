@@ -216,6 +216,7 @@
     "title": "Archives",
     "description": "Un musée numérique des récits communautaires, photos et repères historiques.",
     "openTimeline": "Ouvrir la chronologie",
+    "submitNew": "Soumettre un nouveau souvenir",
     "contributedBy": "Contribué par {name}",
     "relatedMemories": "Souvenirs liés",
     "noImage": "Aucune image disponible",
@@ -238,7 +239,9 @@
       "needsMoreInfo": "Plus d'infos nécessaires"
     },
     "memoryShared": "Souvenir partagé avec succès",
-    "memoryUpdated": "Souvenir mis à jour"
+    "memoryUpdated": "Souvenir mis à jour",
+    "memorySaved": "Souvenir enregistré",
+    "memoryUnsaved": "Souvenir retiré des éléments enregistrés"
   },
   "MemoryReactions": {
     "love": "J'adore",
@@ -252,13 +255,13 @@
     "editTitle": "Modifier le souvenir",
     "update": "Mettre à jour le souvenir",
     "ready": "Votre souvenir est prêt à être soumis.",
+    "imageHelper": "Ajoutez une photo si vous en avez une. Les souvenirs peuvent aussi être partagés comme des récits.",
     "fields": {
       "title": "Titre du souvenir",
       "story": "Partagez l'histoire et son contexte",
       "category": "Sélectionner une catégorie",
       "eraLabel": "Période (optionnel)",
-      "location": "Lieu (optionnel)",
-      "imageHelper": "Ajoutez une photo pour renforcer le récit (optionnel, pas de photo nécessaire pour les souvenirs sensibles)"
+      "location": "Lieu (optionnel)"
     },
     "errors": {
       "title": "Veuillez saisir un titre valide.",

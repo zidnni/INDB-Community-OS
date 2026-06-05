@@ -170,16 +170,36 @@ async function uploadFile(
   userId: string,
 ): Promise<string | null> {
   const supabase = await createClient();
-  const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-  const filePath = `${userId}/${Date.now()}.${ext}`;
+  const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const filePath = `${userId}/memories/${Date.now()}-${safeFileName}`;
+
+  if (process.env.NODE_ENV === "development") {
+    console.log("[uploadFile] starting upload", {
+      bucket,
+      filePath,
+      fileSize: file.size,
+      fileType: file.type,
+      fileName: file.name,
+    });
+  }
 
   const {error: uploadError} = await supabase.storage
     .from(bucket)
     .upload(filePath, file, {cacheControl: "3600", upsert: false});
 
-  if (uploadError) return null;
+  if (uploadError) {
+    if (process.env.NODE_ENV === "development") {
+      console.log("[uploadFile] upload failed", {error: uploadError.message, statusCode: uploadError.statusCode});
+    }
+    return null;
+  }
 
   const {data: publicUrlData} = supabase.storage.from(bucket).getPublicUrl(filePath);
+
+  if (process.env.NODE_ENV === "development") {
+    console.log("[uploadFile] upload success", {publicUrl: publicUrlData.publicUrl});
+  }
+
   return publicUrlData.publicUrl;
 }
 
@@ -190,14 +210,28 @@ async function uploadImageFile(
   kind: ImageUploadKind,
   t: (key: "invalidType" | "tooLarge" | "failed") => string,
 ): Promise<{url?: string; error?: string}> {
+  if (process.env.NODE_ENV === "development") {
+    console.log("[uploadImageFile] validating file", {size: file.size, type: file.type, kind});
+  }
+
   const validationError = validateCompressedImageFile(file, kind);
   if (validationError) {
+    if (process.env.NODE_ENV === "development") {
+      console.log("[uploadImageFile] validation failed", {validationError});
+    }
     return {error: t(validationError)};
   }
 
   const url = await uploadFile(file, bucket, userId);
   if (!url) {
+    if (process.env.NODE_ENV === "development") {
+      console.log("[uploadImageFile] uploadFile returned null");
+    }
     return {error: t("failed")};
+  }
+
+  if (process.env.NODE_ENV === "development") {
+    console.log("[uploadImageFile] success", {url});
   }
 
   return {url};
@@ -637,15 +671,11 @@ function getValidationError(
 
   const field = issue.path[0];
   if (issue.code === "too_small") {
-    if (field === "title") return t("titleTooShort");
-    if (field === "description") return t("descriptionTooShort");
-  }
-  if (issue.code === "invalid_type" && issue.message.includes("Required")) {
     if (field === "title") return t("titleRequired");
     if (field === "description") return t("descriptionRequired");
   }
 
-  return issue.message || t(fallback);
+  return t(fallback);
 }
 
 export async function submitMemoryAction(formData: FormData) {
@@ -654,69 +684,115 @@ export async function submitMemoryAction(formData: FormData) {
   const imageT = await getTranslations({locale, namespace: "ImageUpload"});
   const supabase = await createClient();
 
-  const {
-    data: {user},
-  } = await supabase.auth.getUser();
+  try {
+    const {
+      data: {user},
+    } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect(toPath(locale, "/login"));
-  }
-
-  const parsed = memorySchema.safeParse({
-    title: formData.get("title"),
-    description: formData.get("description"),
-    decade: formData.get("decade"),
-    year: formData.get("year"),
-    location: formData.get("location"),
-    tags: formData.get("tags"),
-  });
-
-  if (!parsed.success) {
-    const errorMsg = getValidationError(parsed, errorsT, "invalidMemory");
-    redirect(toPath(locale, `/memory/submit?error=${encodeURIComponent(errorMsg)}`));
-  }
-
-  const mediaFile = formData.get("media");
-  const hasMedia = mediaFile instanceof File && mediaFile.size > 0;
-  let media_url: string | null = null;
-
-  if (hasMedia) {
-    const uploaded = await uploadImageFile(mediaFile, "memory-archive", user.id, "memory", imageT);
-    if (uploaded.error) {
-      redirect(toPath(locale, appendParam("/memory/submit", "error", uploaded.error)));
+    if (!user) {
+      redirect(toPath(locale, "/login"));
     }
-    media_url = uploaded.url ?? null;
+
+    const parsed = memorySchema.safeParse({
+      title: formData.get("title"),
+      description: formData.get("description"),
+      decade: formData.get("decade"),
+      year: formData.get("year"),
+      location: formData.get("location"),
+      tags: formData.get("tags"),
+    });
+
+    if (!parsed.success) {
+      const errorMsg = getValidationError(parsed, errorsT, "invalidMemory");
+      redirect(toPath(locale, `/memory/submit?error=${encodeURIComponent(errorMsg)}`));
+    }
+
+    const mediaFile = formData.get("media");
+    const hasMedia = mediaFile instanceof File && mediaFile.size > 0;
+    let media_url: string | null = null;
+
+    if (process.env.NODE_ENV === "development") {
+      console.log("[submitMemoryAction] media check", {
+        hasMedia,
+        isFile: mediaFile instanceof File,
+        size: mediaFile instanceof File ? mediaFile.size : typeof mediaFile,
+        type: mediaFile instanceof File ? mediaFile.type : typeof mediaFile,
+      });
+    }
+
+    if (hasMedia) {
+      const uploaded = await uploadImageFile(mediaFile, "memory-archive", user.id, "memory", imageT);
+      if (uploaded.error) {
+        if (process.env.NODE_ENV === "development") {
+          console.log("[submitMemoryAction] upload failed, redirecting with error", {error: uploaded.error});
+        }
+        redirect(toPath(locale, appendParam("/memory/submit", "error", uploaded.error)));
+      }
+      media_url = uploaded.url ?? null;
+      if (process.env.NODE_ENV === "development") {
+        console.log("[submitMemoryAction] upload succeeded", {media_url});
+      }
+    }
+
+    const media_type = hasMedia ? "image" : null;
+
+    const tags = parsed.data.tags
+      ? parsed.data.tags.split(",").map((t: string) => t.trim()).filter(Boolean)
+      : [];
+
+    if (process.env.NODE_ENV === "development") {
+      console.log("[submitMemoryAction] inserting memory", {
+        media_url,
+        media_type,
+        title: parsed.data.title,
+      });
+    }
+
+    const {data: memory, error} = await supabase
+      .from("memories")
+      .insert({
+        contributor_id: user.id,
+        title: parsed.data.title,
+        description: parsed.data.description,
+        decade: parsed.data.decade || null,
+        year: parsed.data.year ? Number(parsed.data.year) : null,
+        location: parsed.data.location || null,
+        media_url,
+        media_type,
+        verification_status: "approved",
+        tags: tags.length > 0 ? tags : null,
+      })
+      .select("id")
+      .single();
+
+    if (error || !memory) {
+      if (process.env.NODE_ENV === "development") {
+        console.log("[submitMemoryAction] insert failed", {error: error?.message, memory});
+      }
+      redirect(
+        toPath(locale, `/memory/submit?error=${encodeURIComponent(error?.message ?? errorsT("submitFailed"))}`),
+      );
+    }
+
+    if (process.env.NODE_ENV === "development") {
+      console.log("[submitMemoryAction] insert success", {id: memory?.id});
+    }
+
+    revalidatePath(toPath(locale, "/memory"));
+    redirect(toPath(locale, "/memory?memorySubmitted=1"));
+  } catch (unexpectedError) {
+    if (typeof unexpectedError === "object" && unexpectedError !== null && "digest" in unexpectedError) {
+      const digest = (unexpectedError as {digest: string}).digest;
+      if (typeof digest === "string" && digest.startsWith("NEXT_REDIRECT")) {
+        throw unexpectedError;
+      }
+    }
+    if (process.env.NODE_ENV === "development") {
+      console.error("[submitMemoryAction] UNEXPECTED error:", unexpectedError);
+    }
+    const errorMessage = unexpectedError instanceof Error ? unexpectedError.message : String(unexpectedError);
+    redirect(toPath(locale, `/memory/submit?error=${encodeURIComponent(errorMessage)}`));
   }
-
-  const tags = parsed.data.tags
-    ? parsed.data.tags.split(",").map((t: string) => t.trim()).filter(Boolean)
-    : [];
-
-  const {data: memory, error} = await supabase
-    .from("memories")
-    .insert({
-      contributor_id: user.id,
-      title: parsed.data.title,
-      description: parsed.data.description,
-      decade: parsed.data.decade || null,
-      year: parsed.data.year ? Number(parsed.data.year) : null,
-      location: parsed.data.location || null,
-      media_url,
-      media_type: hasMedia ? "image" : null,
-      verification_status: "approved",
-      tags: tags.length > 0 ? tags : null,
-    })
-    .select("id")
-    .single();
-
-  if (error || !memory) {
-    redirect(
-      toPath(locale, `/memory/submit?error=${encodeURIComponent(error?.message ?? errorsT("submitFailed"))}`),
-    );
-  }
-
-  revalidatePath(toPath(locale, "/memory"));
-  redirect(toPath(locale, "/memory?memorySubmitted=1"));
 }
 
 export async function submitIdeaAction(formData: FormData) {

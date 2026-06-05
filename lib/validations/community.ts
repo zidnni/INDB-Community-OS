@@ -37,10 +37,10 @@ export const profileSchema = z.object({
 });
 
 export const memorySchema = z.object({
-  title: z.string().min(4).max(150),
-  description: z.string().min(10).max(5000),
+  title: z.string().min(1).max(150),
+  description: z.string().min(1).max(5000),
   decade: z.string().max(60).optional().or(z.literal("")),
-  year: z.coerce.number().int().min(1800).max(2100).optional().or(z.literal("")),
+  year: z.string().optional().or(z.literal("")),
   location: z.string().max(120).optional().or(z.literal("")),
   tags: z.string().optional().or(z.literal("")),
 });

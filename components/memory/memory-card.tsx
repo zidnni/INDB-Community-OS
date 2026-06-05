@@ -57,6 +57,9 @@ export function MemoryCard({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
+  const [saved, setSaved] = useState(false);
+  const [savePending, setSavePending] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -82,6 +85,13 @@ export function MemoryCard({
         if (myReaction) {
           setUserReaction(myReaction.reaction_type as MemoryReactionType);
         }
+        const {data: savedData} = await supabase
+          .from("saved_memories")
+          .select("id")
+          .eq("memory_id", memory.id)
+          .eq("user_id", user.id)
+          .maybeSingle();
+        setSaved(!!savedData);
       }
       const {data: allReactions} = await supabase
         .from("memory_reactions")
@@ -134,32 +144,31 @@ export function MemoryCard({
   }
 
   async function handleSave() {
+    if (savePending) return;
     const {data: {user}} = await supabase.auth.getUser();
     if (!user) {
       window.location.href = `/${locale}/login?next=/memory`;
       return;
     }
-
-    const {data: existing} = await supabase
-      .from("saved_memories")
-      .select("id")
-      .eq("memory_id", memory.id)
-      .eq("user_id", user.id)
-      .maybeSingle();
-    const saved = !!existing;
+    setSavePending(true);
+    const newSaved = !saved;
+    setSaved(newSaved);
+    toast.success(newSaved ? t("memorySaved") : t("memoryUnsaved"));
 
     const formData = new FormData();
     formData.set("memoryId", memory.id);
 
-    const result = saved ? await unsaveMemoryAction(formData) : await saveMemoryAction(formData);
-    if (result.success) {
-      toast.success(saved ? feed("save") : feed("saved"));
-      router.refresh();
-    } else if (result.error === "unauthorized") {
-      window.location.href = `/${locale}/login?next=/memory`;
-    } else {
-      toast.error(feed("shareFailed") ?? "Failed");
+    const result = newSaved ? await saveMemoryAction(formData) : await unsaveMemoryAction(formData);
+    if (!result.success) {
+      setSaved(!newSaved);
+      if (result.error === "unauthorized") {
+        window.location.href = `/${locale}/login?next=/memory`;
+        setSavePending(false);
+        return;
+      }
+      toast.error(t("shareFailed") ?? "Failed");
     }
+    setSavePending(false);
   }
 
   return (
@@ -276,42 +285,52 @@ export function MemoryCard({
             </div>
           ) : null}
 
-          <div className="flex items-center gap-1 border-t border-border/60 pt-2">
-            <div className="flex-1">
+          <div className="border-t border-border/60 pt-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1">
               <MemoryReactions
                 memoryId={memory.id}
                 initialCounts={reactionCounts}
                 initialUserReaction={userReaction}
               />
-            </div>
-
-            <MemoryComments memoryId={memory.id} onCommentCountChange={setCommentCount}>
               <button
                 type="button"
-                className="flex flex-1 items-center justify-center gap-1.5 min-h-12 rounded-xl px-3 text-sm text-muted-foreground transition hover:bg-muted sm:gap-2 sm:px-4"
+                onClick={() => setCommentsOpen((p) => !p)}
+                className={`flex items-center justify-center gap-1.5 min-h-12 rounded-xl px-2 text-sm transition ${
+                  commentsOpen
+                    ? "bg-primary/10 text-primary hover:bg-primary/15"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
               >
                 <MessageCircle size={18} className="shrink-0" />
                 <span>{commentCount > 0 ? commentCount : feed("comments")}</span>
               </button>
-            </MemoryComments>
-
-            <button
-              type="button"
-              onClick={handleSave}
-              className="flex flex-1 items-center justify-center gap-1.5 min-h-12 rounded-xl px-3 text-sm text-muted-foreground transition hover:bg-muted sm:gap-2 sm:px-4"
-            >
-              <Bookmark size={18} className="shrink-0" />
-              <span className="hidden sm:inline">{feed("save")}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleShare}
-              className="flex flex-1 items-center justify-center gap-1.5 min-h-12 rounded-xl px-3 text-sm text-muted-foreground transition hover:bg-muted sm:gap-2 sm:px-4"
-            >
-              <Share2 size={18} className="shrink-0" />
-              <span className="hidden sm:inline">{t("share")}</span>
-            </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                className={`flex items-center justify-center gap-1.5 min-h-12 rounded-xl px-2 text-sm transition ${
+                  saved
+                    ? "bg-primary/10 text-primary hover:bg-primary/15"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                <Bookmark size={18} className="shrink-0" />
+                <span className="hidden sm:inline">{saved ? feed("saved") : feed("save")}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleShare}
+                className="flex items-center justify-center gap-1.5 min-h-12 rounded-xl px-2 text-sm text-muted-foreground transition hover:bg-muted"
+              >
+                <Share2 size={18} className="shrink-0" />
+                <span className="hidden sm:inline">{t("share")}</span>
+              </button>
+            </div>
+            <MemoryComments
+              memoryId={memory.id}
+              onCommentCountChange={setCommentCount}
+              open={commentsOpen}
+              onToggle={() => setCommentsOpen((p) => !p)}
+            />
           </div>
         </CardContent>
       </Card>

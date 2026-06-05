@@ -1,6 +1,7 @@
 import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
 
+import {MemoryErrorToast} from "@/components/memory/memory-error-toast";
 import {MemoryUploadForm} from "@/components/memory/memory-upload-form";
 import {getMemoryById} from "@/lib/data/memories";
 
@@ -23,10 +24,10 @@ export default async function SubmitMemoryPage({
   searchParams,
 }: {
   params: Promise<{locale: string}>;
-  searchParams: Promise<{id?: string}>;
+  searchParams: Promise<{id?: string; error?: string}>;
 }) {
   const {locale} = await params;
-  const {id} = await searchParams;
+  const {id, error} = await searchParams;
 
   let existingMemory = null;
   if (id) {
@@ -35,6 +36,7 @@ export default async function SubmitMemoryPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 pb-4 sm:px-0">
+      <MemoryErrorToast error={error} />
       <MemoryUploadForm locale={locale} existingMemory={existingMemory} />
     </div>
   );

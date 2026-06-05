@@ -2,11 +2,10 @@
 
 import {useEffect, useRef, useState} from "react";
 import {Heart} from "lucide-react";
-import {useLocale, useTranslations} from "next-intl";
+import {useTranslations} from "next-intl";
 import {toast} from "sonner";
 
 import {reactToMemoryAction} from "@/app/[locale]/server-actions";
-import {createClient} from "@/lib/supabase/client";
 import type {MemoryReactionType} from "@/types/database";
 
 const REACTIONS: {type: MemoryReactionType; emoji: string}[] = [
@@ -36,6 +35,11 @@ export function MemoryReactions({
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setCounts(initialCounts ?? {});
+    setUserReaction(initialUserReaction ?? null);
+  }, [initialCounts, initialUserReaction]);
 
   useEffect(() => {
     if (!open) return;

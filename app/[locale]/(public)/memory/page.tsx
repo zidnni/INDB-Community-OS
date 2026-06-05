@@ -52,6 +52,14 @@ export default async function MemoryPage({
         </div>
       </div>
 
+      <div className="flex justify-end">
+        <Link href="/memory/submit">
+          <Button className="min-h-11">
+            {t("submitNew")}
+          </Button>
+        </Link>
+      </div>
+
       {memories.length > 0 ? (
         <MemoryGrid items={memories} />
       ) : (

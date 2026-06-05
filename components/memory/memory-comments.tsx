@@ -37,15 +37,21 @@ export function MemoryComments({
   memoryId,
   onCommentCountChange,
   children,
+  open: controlledOpen,
+  onToggle,
 }: {
   memoryId: string;
   onCommentCountChange?: (count: number) => void;
   children?: React.ReactNode;
+  open?: boolean;
+  onToggle?: () => void;
 }) {
   const t = useTranslations("Ideas");
   const locale = useLocale();
   const supabase = useRef(createClient()).current;
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const toggle = onToggle ?? (() => setInternalOpen((p) => !p));
   const [comments, setComments] = useState<MemoryCommentWithAuthor[]>([]);
   const [loading, setLoading] = useState(false);
   const [input, setInput] = useState("");
@@ -95,7 +101,7 @@ export function MemoryComments({
 
       if (!result.success) {
         if (result.error === "unauthorized") {
-          window.location.href = `/${locale}/login?next=/memory`;
+          window.location.href = `/${locale}/login?next=/memory/${memoryId}`;
           return;
         }
         toast.error(t("commentFailed") ?? "Failed to add comment");
@@ -136,16 +142,18 @@ export function MemoryComments({
     }
   }
 
+  const isControlled = controlledOpen !== undefined;
+
   return (
-    <div>
+    <>
       {children ? (
-        <div onClick={() => setOpen((prev) => !prev)}>
+        <div onClick={toggle}>
           {children}
         </div>
-      ) : (
+      ) : isControlled ? null : (
         <button
           type="button"
-          onClick={() => setOpen((prev) => !prev)}
+          onClick={toggle}
           className="inline-flex items-center gap-1.5 rounded-xl border border-border/60 px-4 py-2.5 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
         >
           <MessageSquare size={16} />
@@ -185,24 +193,26 @@ export function MemoryComments({
                           className="mt-0.5 h-7 w-7 shrink-0"
                         />
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-xs font-medium">{commentAuthorName}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {timeAgo(comment.created_at, locale)}
-                            </span>
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-xs font-medium">{commentAuthorName}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {timeAgo(comment.created_at, locale)}
+                              </span>
+                            </div>
+                            <p className="text-sm text-foreground/90 leading-relaxed">{comment.content}</p>
+                            {isOwn ? (
+                              <button
+                                type="button"
+                                onClick={() => handleDelete(comment.id)}
+                                disabled={deletePending}
+                                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition self-start"
+                              >
+                                <Trash2 size={11} />
+                                {t("delete") ?? "Delete"}
+                              </button>
+                            ) : null}
                           </div>
-                          <p className="mt-0.5 text-base text-foreground/90">{comment.content}</p>
-                          {isOwn ? (
-                            <button
-                              type="button"
-                              onClick={() => handleDelete(comment.id)}
-                              disabled={deletePending}
-                              className="mt-0.5 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition"
-                            >
-                              <Trash2 size={12} />
-                              {t("delete") ?? "Delete"}
-                            </button>
-                          ) : null}
                         </div>
                       </div>
                     );
@@ -211,7 +221,7 @@ export function MemoryComments({
               )}
 
               {currentUserId ? (
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-end">
                   <textarea
                     ref={inputRef}
                     value={input}
@@ -219,7 +229,7 @@ export function MemoryComments({
                     onKeyDown={handleKeyDown}
                     placeholder={t("commentPlaceholder")}
                     rows={1}
-                    className="min-h-0 flex-1 resize-none rounded-xl border border-border/60 bg-card px-3 py-2 text-sm max-sm:text-base outline-none ring-primary/30 placeholder:text-muted-foreground focus:ring"
+                    className="min-h-0 flex-1 resize-none rounded-xl border border-border/60 bg-card px-3 py-2.5 text-sm max-sm:text-base outline-none ring-primary/30 placeholder:text-muted-foreground focus:ring"
                   />
                   <button
                     type="button"
@@ -237,7 +247,7 @@ export function MemoryComments({
               ) : (
                 <p className="py-2 text-center text-xs text-muted-foreground">
                   <a
-                    href={`/${locale}/login?next=/memory`}
+                    href={`/${locale}/login?next=/memory/${memoryId}`}
                     className="text-primary hover:underline"
                   >
                     {t("loginToComment") ?? "Log in to comment"}
@@ -248,6 +258,6 @@ export function MemoryComments({
           </motion.div>
         ) : null}
       </AnimatePresence>
-    </div>
+    </>
   );
 }

@@ -216,6 +216,7 @@
     "title": "Memory Archive",
     "description": "A digital museum of community stories, photos, and historical context.",
     "openTimeline": "Open Timeline",
+    "submitNew": "Submit new memory",
     "contributedBy": "Contributed by {name}",
     "relatedMemories": "Related Memories",
     "noImage": "No image available",
@@ -238,7 +239,9 @@
       "needsMoreInfo": "Needs more info"
     },
     "memoryShared": "Memory shared successfully",
-    "memoryUpdated": "Memory updated"
+    "memoryUpdated": "Memory updated",
+    "memorySaved": "Memory saved",
+    "memoryUnsaved": "Memory removed from saved"
   },
   "MemoryReactions": {
     "love": "Love",
@@ -252,13 +255,13 @@
     "editTitle": "Edit memory",
     "update": "Update memory",
     "ready": "Your memory is ready to submit.",
+    "imageHelper": "Add a photo if you have one. Memories can also be shared as stories.",
     "fields": {
       "title": "Memory title",
       "story": "Share the story and context",
       "category": "Select a category",
       "eraLabel": "Era (optional)",
-      "location": "Location (optional)",
-      "imageHelper": "Add a photo to strengthen the story (optional, no photo needed for sensitive memories)"
+      "location": "Location (optional)"
     },
     "errors": {
       "title": "Please enter a valid memory title.",

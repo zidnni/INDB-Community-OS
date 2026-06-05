@@ -34,6 +34,8 @@ export function MemoryDetailsClient({
   const [deleting, setDeleting] = useState(false);
   const [saved, setSaved] = useState(false);
   const [savePending, setSavePending] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [commentCount, setCommentCount] = useState(0);
 
   useEffect(() => {
     async function load() {
@@ -65,6 +67,12 @@ export function MemoryDetailsClient({
         counts[row.reaction_type] = (counts[row.reaction_type] ?? 0) + 1;
       }
       setReactionCounts(counts);
+
+      const {count: cCount} = await supabase
+        .from("memory_comments")
+        .select("*", {count: "exact", head: true})
+        .eq("memory_id", memory.id);
+      setCommentCount(cCount ?? 0);
     }
     load();
   }, [memory.id, supabase]);
@@ -109,7 +117,7 @@ export function MemoryDetailsClient({
     const result = saved ? await unsaveMemoryAction(formData) : await saveMemoryAction(formData);
     if (result.success) {
       setSaved(!saved);
-      toast.success(saved ? feed("save") : feed("saved"));
+      toast.success(saved ? t("memoryUnsaved") : t("memorySaved"));
     } else if (result.error === "unauthorized") {
       window.location.href = `/${locale}/login?next=/memory/${memory.id}`;
       setSavePending(false);
@@ -207,46 +215,52 @@ export function MemoryDetailsClient({
             </div>
           ) : null}
 
-          <div className="flex items-center gap-1 border-t border-border/60 pt-3">
-            <div className="flex-1">
+          <div className="border-t border-border/60 pt-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1">
               <MemoryReactions
                 memoryId={memory.id}
                 initialCounts={reactionCounts}
                 initialUserReaction={userReaction}
               />
-            </div>
-
-            <MemoryComments memoryId={memory.id}>
               <button
                 type="button"
-                className="flex flex-1 items-center justify-center gap-1.5 min-h-12 rounded-xl px-3 text-sm text-muted-foreground transition hover:bg-muted sm:gap-2 sm:px-4"
+                onClick={() => setCommentsOpen((p) => !p)}
+                className={`flex items-center justify-center gap-1.5 min-h-12 rounded-xl px-2 text-sm transition ${
+                  commentsOpen
+                    ? "bg-primary/10 text-primary hover:bg-primary/15"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
               >
                 <MessageCircle size={18} className="shrink-0" />
-                <span>{feed("comments")}</span>
+                <span>{commentCount > 0 ? commentCount : feed("comments")}</span>
               </button>
-            </MemoryComments>
-
-            <button
-              type="button"
-              onClick={handleSave}
-              className={`flex flex-1 items-center justify-center gap-1.5 min-h-12 rounded-xl px-3 text-sm transition sm:gap-2 sm:px-4 ${
-                saved
-                  ? "bg-primary/10 text-primary hover:bg-primary/15"
-                  : "text-muted-foreground hover:bg-muted"
-              }`}
-            >
-              <Bookmark size={18} className="shrink-0" />
-              <span className="hidden sm:inline">{saved ? feed("saved") : feed("save")}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleShare}
-              className="flex flex-1 items-center justify-center gap-1.5 min-h-12 rounded-xl px-3 text-sm text-muted-foreground transition hover:bg-muted sm:gap-2 sm:px-4"
-            >
-              <Share2 size={18} className="shrink-0" />
-              <span className="hidden sm:inline">{t("share")}</span>
-            </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                className={`flex items-center justify-center gap-1.5 min-h-12 rounded-xl px-2 text-sm transition ${
+                  saved
+                    ? "bg-primary/10 text-primary hover:bg-primary/15"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                <Bookmark size={18} className="shrink-0" />
+                <span className="hidden sm:inline">{saved ? feed("saved") : feed("save")}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleShare}
+                className="flex items-center justify-center gap-1.5 min-h-12 rounded-xl px-2 text-sm text-muted-foreground transition hover:bg-muted"
+              >
+                <Share2 size={18} className="shrink-0" />
+                <span className="hidden sm:inline">{t("share")}</span>
+              </button>
+            </div>
+            <MemoryComments
+              memoryId={memory.id}
+              onCommentCountChange={setCommentCount}
+              open={commentsOpen}
+              onToggle={() => setCommentsOpen((p) => !p)}
+            />
           </div>
         </CardContent>
       </Card>
