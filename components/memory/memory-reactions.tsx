@@ -21,7 +21,6 @@ export function MemoryReactions({
   memoryId,
   initialCounts,
   initialUserReaction,
-  showLabels,
   className,
   onCountsChange,
   onUserReactionChange,
@@ -29,7 +28,6 @@ export function MemoryReactions({
   memoryId: string;
   initialCounts?: Record<string, number>;
   initialUserReaction?: MemoryReactionType | null;
-  showLabels?: boolean;
   className?: string;
   onCountsChange?: (counts: Record<string, number>) => void;
   onUserReactionChange?: (reaction: MemoryReactionType | null) => void;
@@ -58,8 +56,8 @@ export function MemoryReactions({
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  const totalCount = Object.values(counts).reduce((sum, c) => sum + c, 0);
   const currentEmoji = REACTIONS.find((r) => r.type === userReaction)?.emoji;
+  const reactionLabel = userReaction ? t(`reactions.${userReaction}`) : t("reactions.like");
 
   async function handleSelect(type: MemoryReactionType) {
     setOpen(false);
@@ -115,6 +113,8 @@ export function MemoryReactions({
       <button
         type="button"
         onClick={() => setOpen((p) => !p)}
+        aria-label={reactionLabel}
+        title={reactionLabel}
         className={`inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-1.5 rounded-xl px-2 text-xs transition xl:text-sm ${
           userReaction
             ? "bg-primary/10 text-primary hover:bg-primary/15"
@@ -126,7 +126,6 @@ export function MemoryReactions({
         ) : (
           <Heart size={18} className="shrink-0" />
         )}
-        <span>{totalCount > 0 ? totalCount : (showLabels ? t("reactions.like") : "")}</span>
       </button>
 
       {open ? (

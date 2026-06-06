@@ -31,7 +31,7 @@ export function MemoryActions({
   const [saved, setSaved] = useState(false);
   const [savePending, setSavePending] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
-  const [commentCount, setCommentCount] = useState(0);
+  const [, setCommentCount] = useState(0);
   const supabase = createClient();
 
   useEffect(() => {
@@ -128,7 +128,6 @@ export function MemoryActions({
           memoryId={memoryId}
           initialCounts={reactionCounts}
           initialUserReaction={userReaction}
-          showLabels
           className="min-w-0 flex-[1_1_calc(50%-0.25rem)] xl:flex-1"
           onCountsChange={onReactionCountsChange}
           onUserReactionChange={onUserReactionChange}
@@ -136,6 +135,8 @@ export function MemoryActions({
         <button
           type="button"
           onClick={handleCommentsToggle}
+          aria-label={feed("comments")}
+          title={feed("comments")}
           className={`flex min-h-11 min-w-0 flex-[1_1_calc(50%-0.25rem)] items-center justify-center gap-1.5 rounded-xl px-2 text-xs transition xl:flex-1 xl:text-sm ${
             commentsOpen
               ? "bg-primary/10 text-primary hover:bg-primary/15"
@@ -143,12 +144,13 @@ export function MemoryActions({
           }`}
         >
           <MessageCircle size={18} className="shrink-0" />
-          <span>{commentCount > 0 ? commentCount : feed("comments")}</span>
         </button>
         <button
           type="button"
           onClick={handleSave}
           disabled={savePending}
+          aria-label={saved ? feed("saved") : feed("save")}
+          title={saved ? feed("saved") : feed("save")}
           className={`flex min-h-11 min-w-0 flex-[1_1_calc(50%-0.25rem)] items-center justify-center gap-1.5 rounded-xl px-2 text-xs transition xl:flex-1 xl:text-sm ${
             saved
               ? "bg-primary/10 text-primary hover:bg-primary/15"
@@ -160,15 +162,15 @@ export function MemoryActions({
           ) : (
             <Bookmark size={18} className={`shrink-0 ${saved ? "fill-primary" : ""}`} />
           )}
-          <span>{saved ? feed("saved") : feed("save")}</span>
         </button>
         <button
           type="button"
           onClick={handleShare}
+          aria-label={memoryT("share")}
+          title={memoryT("share")}
           className="flex min-h-11 min-w-0 flex-[1_1_calc(50%-0.25rem)] items-center justify-center gap-1.5 rounded-xl px-2 text-xs text-muted-foreground transition hover:bg-muted xl:flex-1 xl:text-sm"
         >
           <Share2 size={18} className="shrink-0" />
-          <span>{memoryT("share")}</span>
         </button>
       </div>
       <MemoryComments
