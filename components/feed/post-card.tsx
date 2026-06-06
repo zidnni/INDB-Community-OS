@@ -279,7 +279,7 @@ export function PostCard({
             </div>
             <div className="flex items-center gap-1">
               {post.category ? (
-                <Badge className="bg-brand-primary-soft px-2.5 py-1 text-xs text-brand-primary sm:text-sm">
+                <Badge className="bg-primary/10 text-xs text-primary sm:text-sm">
                   {getCategorySlug(post, locale)}
                 </Badge>
               ) : null}

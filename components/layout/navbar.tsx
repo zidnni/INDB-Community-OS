@@ -45,7 +45,7 @@ export async function Navbar({locale}: {locale: string}) {
           )}
 
           <Link href="/" className="inline-flex items-center justify-self-center">
-            <Logo variant="full" size="sm" priority className="w-20" />
+            <Logo size="sm" priority className="w-20" />
           </Link>
 
           <div className="flex items-center justify-self-end gap-1">
@@ -58,7 +58,7 @@ export async function Navbar({locale}: {locale: string}) {
         <div className="hidden h-16 items-center justify-between gap-3 md:flex">
           <div className="flex items-center gap-3">
             <Link href="/" className="inline-flex items-center">
-              <Logo variant="full" size="sm" priority className="w-24 sm:w-28" />
+              <Logo size="sm" priority className="w-24 sm:w-28" />
             </Link>
           </div>
 

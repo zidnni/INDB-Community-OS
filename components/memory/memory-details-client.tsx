@@ -70,7 +70,7 @@ export function MemoryDetailsClient({
             <img src={memory.media_url} alt={memory.title} className="h-full w-full object-cover" />
           </div>
         ) : (
-          <div className="flex h-72 w-full items-center justify-center bg-gradient-to-br from-brand-primary/10 via-brand-primary/5 to-muted sm:h-80">
+          <div className="flex h-72 w-full items-center justify-center bg-gradient-to-br from-primary/10 via-primary/5 to-muted sm:h-80">
             <div className="flex flex-col items-center gap-3 text-muted-foreground/60">
               <Archive size={40} strokeWidth={1.5} />
               <span className="text-sm font-medium">{t("storyMemory")}</span>
@@ -81,7 +81,7 @@ export function MemoryDetailsClient({
         <CardHeader className="space-y-3">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge className="bg-brand-primary-soft text-brand-primary">
+              <Badge className="bg-primary/10 text-primary">
                 {memory.decade ?? memory.year ?? "?"}
               </Badge>
               {memory.location ? (

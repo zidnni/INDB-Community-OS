@@ -51,7 +51,7 @@ export function TopIdeaRow({idea, authorName, badgeEl}: TopIdeaRowProps) {
       type="button"
       className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-border/50 bg-card/50 px-4 py-3 text-start transition hover:bg-muted/50 active:scale-[0.98] active:bg-muted/70 sm:px-4 sm:py-3 touch-manipulation max-sm:min-w-[80vw] max-sm:snap-start"
     >
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#0F4C75] to-[#27C5D8] text-sm font-bold text-white">
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
         {idea.rank}
       </span>
 

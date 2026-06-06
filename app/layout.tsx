@@ -9,6 +9,34 @@ export const metadata: Metadata = {
   title: "I love NDB | INDB Community OS",
   description:
     "Nouadhibou community platform for civic memory, participation, and solutions.",
+  icons: {
+    icon: "/images/logondb.jpeg",
+    apple: "/images/logondb.jpeg",
+  },
+  openGraph: {
+    title: "I love NDB | INDB Community OS",
+    description:
+      "Nouadhibou community platform for civic memory, participation, and solutions.",
+    url: "https://indb-community-os.vercel.app",
+    siteName: "INDB Community OS",
+    images: [
+      {
+        url: "/images/logondb.jpeg",
+        width: 1408,
+        height: 768,
+        alt: "INDB Community OS",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "I love NDB | INDB Community OS",
+    description:
+      "Nouadhibou community platform for civic memory, participation, and solutions.",
+    images: ["/images/logondb.jpeg"],
+  },
 };
 
 export const viewport: Viewport = {

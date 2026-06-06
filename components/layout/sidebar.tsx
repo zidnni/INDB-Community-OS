@@ -28,7 +28,7 @@ export function Sidebar() {
   return (
     <div className="sticky top-22 space-y-4">
       <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-[0_12px_30px_rgba(7,31,54,0.08)]">
-        <Logo variant="full" size="md" />
+        <Logo size="md" />
       </div>
 
       <nav className="rounded-2xl border border-border/70 bg-card p-2 shadow-[0_12px_30px_rgba(7,31,54,0.08)]">

@@ -89,7 +89,7 @@ export function ProfileClient({
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="h-full w-full bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-primary" />
+            <div className="h-full w-full bg-gradient-to-br from-primary/80 via-primary/60 to-primary/80" />
           )}
           <button
             onClick={() => setEditModalOpen(true)}

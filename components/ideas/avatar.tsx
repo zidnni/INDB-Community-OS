@@ -9,7 +9,7 @@ export function Avatar({author}: {author: AuthorSummary}) {
   }
   const initial = (author.full_name ?? author.username ?? "?").charAt(0).toUpperCase();
   return (
-    <span className="flex size-5 items-center justify-center rounded-full bg-gradient-to-br from-[#0F4C75] to-[#27C5D8] text-[10px] font-bold text-white shrink-0">
+    <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shrink-0">
       {initial}
     </span>
   );

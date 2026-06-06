@@ -315,7 +315,7 @@ export function NotificationDropdown({locale}: {locale: string}) {
             avatarUrl={n.actor?.avatar_url}
             className="h-10 w-10"
           />
-          <div className="absolute -bottom-0.5 -end-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-card bg-brand-primary text-[10px] text-white">
+          <div className="absolute -bottom-0.5 -end-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-card bg-primary text-[10px] text-primary-foreground">
             <Icon size={12} />
           </div>
         </div>
@@ -328,7 +328,7 @@ export function NotificationDropdown({locale}: {locale: string}) {
           </p>
         </div>
         {!n.read ? (
-          <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-brand-primary" />
+          <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
         ) : null}
       </button>
     );
@@ -346,7 +346,7 @@ export function NotificationDropdown({locale}: {locale: string}) {
       >
           <Bell size={22} />
         {unreadCount > 0 ? (
-          <span className="absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-primary px-1 text-[10px] font-bold leading-none text-white">
+          <span className="absolute -end-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         ) : null}

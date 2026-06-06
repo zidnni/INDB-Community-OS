@@ -53,7 +53,7 @@ function AuthorAvatar({author}: {author: IdeaWithAuthor["author"]}) {
 
   const initial = (author.full_name ?? author.username ?? "?").charAt(0).toUpperCase();
   return (
-    <span className="flex size-6 items-center justify-center rounded-full bg-gradient-to-br from-[#0F4C75] to-[#27C5D8] text-xs font-bold text-white shrink-0">
+    <span className="flex size-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground shrink-0">
       {initial}
     </span>
   );

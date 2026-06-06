@@ -6,70 +6,67 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
 
-  --font-latin:
-    "Inter",
-    "Segoe UI",
-    "Helvetica Neue",
-    "Arial",
-    sans-serif;
-  --font-arabic:
-    "Noto Sans Arabic",
-    "Cairo",
-    "Tahoma",
-    "Segoe UI",
-    sans-serif;
+  --font-latin: "Inter", "Segoe UI", "Helvetica Neue", "Arial", sans-serif;
+  --font-arabic: "Cairo", "Noto Sans Arabic", "Tahoma", "Segoe UI", sans-serif;
 
-  --brand-primary: #0f4769;
-  --brand-primary-strong: #093650;
-  --brand-primary-soft: #dbeaf2;
-  --brand-secondary: #28aab3;
-  --brand-secondary-soft: #d9f1f3;
+  /* Brand */
+  --brand-red: #ed2124;
+  --brand-red-hover: #c91b1e;
+  --brand-red-active: #a91517;
 
-  --background: #f5f8fb;
-  --foreground: #112534;
+  /* Light mode */
+  --background: #f5f7fa;
+  --foreground: #111827;
   --card: #ffffff;
-  --muted: #e9eff4;
-  --muted-foreground: #4b6373;
-  --border: #d4deea;
-  --primary: var(--brand-primary);
-  --primary-foreground: #f5fbff;
-  --accent: var(--brand-secondary);
-  --accent-foreground: #05242c;
-  --destructive: #c23d48;
-  --radius: 16px;
+  --card-elevated: #ffffff;
+  --muted: #f8fafc;
+  --muted-foreground: #6b7280;
+  --border: #e5e7eb;
+  --primary: var(--brand-red);
+  --primary-foreground: #ffffff;
+  --destructive: #ef4444;
+  --radius: 20px;
 }
 
 .dark {
-  --background: #07131f;
-  --foreground: #ebf6ff;
-  --card: #102333;
-  --muted: #173144;
-  --muted-foreground: #9eb4c4;
-  --border: #29465d;
-  --primary: #64b6c6;
-  --primary-foreground: #062634;
-  --accent: #2ba3ad;
-  --accent-foreground: #e9fdff;
-  --destructive: #f2828a;
+  --background: #0f1115;
+  --foreground: #f8fafc;
+  --card: #171a21;
+  --card-elevated: #1e232d;
+  --muted: #171a21;
+  --muted-foreground: #7b8798;
+  --border: #2a3240;
+  --primary: var(--brand-red);
+  --primary-foreground: #ffffff;
+  --destructive: #ef4444;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
+  --color-card-elevated: var(--card-elevated);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
-  --color-brand-primary: var(--brand-primary);
-  --color-brand-primary-soft: var(--brand-primary-soft);
-  --color-brand-secondary: var(--brand-secondary);
-  --color-brand-secondary-soft: var(--brand-secondary-soft);
+  --color-brand-red: var(--brand-red);
+  --color-brand-red-hover: var(--brand-red-hover);
+  --color-brand-red-active: var(--brand-red-active);
   --radius-xl: var(--radius);
+
+  /* spacing scale */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
 }
 
 *,
@@ -89,11 +86,7 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   font-family: var(--font-latin);
-  background:
-    radial-gradient(circle at 5% 5%, rgba(15, 71, 105, 0.14), transparent 40%),
-    radial-gradient(circle at 92% 8%, rgba(40, 170, 179, 0.12), transparent 32%),
-    radial-gradient(circle at 50% 100%, rgba(15, 71, 105, 0.09), transparent 34%),
-    var(--background);
+  background: var(--background);
   color: var(--foreground);
   text-align: start;
   overflow-x: hidden;
@@ -105,8 +98,6 @@ html[dir="rtl"] body {
   font-family: var(--font-arabic);
 }
 
-
-
 a {
   transition: all 0.2s ease;
 }
@@ -117,13 +108,12 @@ a {
 
 @keyframes idea-highlight-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(39, 197, 216, 0.5);
+    box-shadow: 0 0 0 0 rgba(237, 33, 36, 0.5);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(39, 197, 216, 0.15);
+    box-shadow: 0 0 0 8px rgba(237, 33, 36, 0.15);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(39, 197, 216, 0);
+    box-shadow: 0 0 0 0 rgba(237, 33, 36, 0);
   }
 }
-

@@ -100,8 +100,8 @@ export function VoteButton({ideaId, votes: initialVotes, supportPercentage: init
           "min-h-[48px] min-w-[48px]",
           "max-sm:px-3.5 max-sm:py-2 max-sm:text-sm",
           voted
-            ? "border-transparent bg-gradient-to-br from-[#0F4C75] to-[#27C5D8] text-white shadow-md"
-            : "border-[#0F4C75]/25 bg-white text-[#0F4C75] hover:border-[#0F4C75]/50 hover:shadow-md",
+            ? "border-transparent bg-primary text-primary-foreground shadow-md"
+            : "border-primary/25 bg-white text-primary hover:border-primary/50 hover:shadow-md",
         )}
       >
         {pending ? (

@@ -119,7 +119,7 @@ export function MemoryCard({
                 />
               </div>
             ) : (
-              <div className="flex aspect-[4/3] w-full items-center justify-center rounded-t-2xl bg-gradient-to-br from-brand-primary/10 via-brand-primary/5 to-muted">
+              <div className="flex aspect-[4/3] w-full items-center justify-center rounded-t-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-muted">
                 <div className="flex flex-col items-center gap-2 text-muted-foreground/60">
                   <Archive size={36} strokeWidth={1.5} />
                   <span className="text-xs font-medium">{t("storyMemory")}</span>
@@ -129,7 +129,7 @@ export function MemoryCard({
           </Link>
 
           <div className="absolute start-3 top-3">
-            <Badge className="bg-card/90 px-2.5 py-1 text-xs text-brand-primary shadow-sm backdrop-blur sm:text-sm">
+            <Badge className="bg-card/90 px-2.5 py-1 text-xs text-primary shadow-sm backdrop-blur sm:text-sm">
               {memory.decade ?? memory.year ?? "?"}
             </Badge>
           </div>
