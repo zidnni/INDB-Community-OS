@@ -1,6 +1,6 @@
 "use client";
 
-import {CheckCircle2, Film, ImagePlus, Loader2, X} from "lucide-react";
+import {CheckCircle2, Film, ImagePlus, Loader2, RefreshCw, X} from "lucide-react";
 import {useTranslations} from "next-intl";
 import {useCallback, useRef, useState} from "react";
 import {toast} from "sonner";
@@ -42,20 +42,27 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind}: MediaUpl
   const [newItems, setNewItems] = useState<MediaItem[]>([]);
   const [removedExisting, setRemovedExisting] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [replaceTarget, setReplaceTarget] = useState<
+    | {kind: "existing"; storagePath: string}
+    | {kind: "new"; id: string}
+    | null
+  >(null);
+  const [replacingKey, setReplacingKey] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const replaceInputRef = useRef<HTMLInputElement>(null);
 
-  const hasVideo = newItems.some((f) => f.type === "video") || (existingMedia ?? []).some(
-    (f) => f.type === "video" && !removedExisting.includes(f.storagePath),
+  const hasVideo = newItems.some((item) => item.type === "video") || (existingMedia ?? []).some(
+    (item) => item.type === "video" && !removedExisting.includes(item.storagePath),
   );
-  const hasImage = newItems.some((f) => f.type === "image") || (existingMedia ?? []).some(
-    (f) => f.type === "image" && !removedExisting.includes(f.storagePath),
+  const hasImage = newItems.some((item) => item.type === "image") || (existingMedia ?? []).some(
+    (item) => item.type === "image" && !removedExisting.includes(item.storagePath),
   );
 
   const getImageCount = useCallback(() => {
-    const newImages = newItems.filter((f) => f.type === "image" && !f.failed).length;
+    const newImages = newItems.filter((item) => item.type === "image" && !item.failed).length;
     const existingImages = (existingMedia ?? []).filter(
-      (f) => f.type === "image" && !removedExisting.includes(f.storagePath),
+      (item) => item.type === "image" && !removedExisting.includes(item.storagePath),
     ).length;
     return newImages + existingImages;
   }, [newItems, existingMedia, removedExisting]);
@@ -119,6 +126,60 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind}: MediaUpl
     e.target.value = "";
   }
 
+  function startReplace(target: {kind: "existing"; storagePath: string} | {kind: "new"; id: string}) {
+    if (uploading) return;
+    setReplaceTarget(target);
+    window.setTimeout(() => replaceInputRef.current?.click(), 0);
+  }
+
+  async function handleReplaceImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !replaceTarget) return;
+
+    const key = replaceTarget.kind === "existing"
+      ? `existing-${replaceTarget.storagePath}`
+      : `new-${replaceTarget.id}`;
+
+    setUploading(true);
+    setReplacingKey(key);
+
+    try {
+      const result = await uploadMediaItem(file, uploadKind);
+      const replacement: MediaItem = {
+        id: `replace-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+        type: "image",
+        url: result.url,
+        storagePath: result.storagePath,
+        mimeType: result.mimeType,
+        uploading: false,
+      };
+
+      if (replaceTarget.kind === "existing") {
+        const nextRemoved = removedExisting.includes(replaceTarget.storagePath)
+          ? removedExisting
+          : [...removedExisting, replaceTarget.storagePath];
+        const updatedItems = [...newItems, replacement];
+        setRemovedExisting(nextRemoved);
+        setNewItems(updatedItems);
+        onMediaChange(updatedItems, nextRemoved);
+      } else {
+        const updatedItems = newItems.map((item) => (
+          item.id === replaceTarget.id ? {...replacement, id: replaceTarget.id} : item
+        ));
+        setNewItems(updatedItems);
+        notifyChange(updatedItems);
+      }
+    } catch (error) {
+      const msg = error instanceof ImageUploadError ? t(error.code) : t("failed");
+      toast.error(msg);
+    } finally {
+      setUploading(false);
+      setReplacingKey(null);
+      setReplaceTarget(null);
+    }
+  }
+
   async function handleVideoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -173,7 +234,7 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind}: MediaUpl
   }
 
   function removeNewItem(id: string) {
-    const updated = newItems.filter((f) => f.id !== id);
+    const updated = newItems.filter((item) => item.id !== id);
     setNewItems(updated);
     notifyChange(updated);
   }
@@ -202,6 +263,14 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind}: MediaUpl
           />
         </label>
 
+        <input
+          ref={replaceInputRef}
+          type="file"
+          accept={ACCEPTED_IMAGE_EXTENSIONS}
+          className="hidden"
+          onChange={(e) => void handleReplaceImageSelect(e)}
+        />
+
         <label className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-3.5 text-sm font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground">
           <Film size={18} />
           {t("chooseVideo")}
@@ -227,18 +296,40 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind}: MediaUpl
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {visibleExisting.map((item) => (
             <div key={item.storagePath} className="group relative aspect-square overflow-hidden rounded-xl bg-muted">
-              {item.type === "video" ? (
+              {replacingKey === `existing-${item.storagePath}` ? (
+                <div className="flex h-full w-full flex-col items-center justify-center gap-2">
+                  <Loader2 size={24} className="animate-spin text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">{t("uploading")}</span>
+                </div>
+              ) : item.type === "video" ? (
                 <video src={item.url} className="h-full w-full object-cover" />
               ) : (
                 <img src={item.url} alt="" className="h-full w-full object-cover" />
               )}
-              <button
-                type="button"
-                onClick={() => removeExisting(item.storagePath)}
-                className="absolute end-1.5 top-1.5 rounded-full bg-background/80 p-1 text-foreground opacity-0 transition hover:bg-background group-hover:opacity-100"
-              >
-                <X size={12} />
-              </button>
+              {item.type === "image" && replacingKey !== `existing-${item.storagePath}` ? (
+                <div className="absolute end-1.5 top-1.5 flex gap-1 opacity-0 transition group-hover:opacity-100">
+                  <button
+                    type="button"
+                    onClick={() => startReplace({kind: "existing", storagePath: item.storagePath})}
+                    disabled={uploading}
+                    className="rounded-full bg-background/80 p-1 text-foreground transition hover:bg-background disabled:opacity-60"
+                    aria-label={t("replace")}
+                    title={t("replace")}
+                  >
+                    <RefreshCw size={12} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeExisting(item.storagePath)}
+                    disabled={uploading}
+                    className="rounded-full bg-background/80 p-1 text-foreground transition hover:bg-background disabled:opacity-60"
+                    aria-label={t("remove")}
+                    title={t("remove")}
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ) : null}
             </div>
           ))}
 
@@ -261,10 +352,25 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind}: MediaUpl
               )}
               {!item.uploading && !item.failed ? (
                 <div className="absolute end-1.5 top-1.5 flex gap-1">
+                  {item.type === "image" ? (
+                    <button
+                      type="button"
+                      onClick={() => startReplace({kind: "new", id: item.id})}
+                      disabled={uploading}
+                      className="rounded-full bg-background/80 p-1 text-foreground transition hover:bg-background disabled:opacity-60"
+                      aria-label={t("replace")}
+                      title={t("replace")}
+                    >
+                      {replacingKey === `new-${item.id}` ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+                    </button>
+                  ) : null}
                   <button
                     type="button"
                     onClick={() => removeNewItem(item.id)}
-                    className="rounded-full bg-background/80 p-1 text-foreground transition hover:bg-background"
+                    disabled={uploading}
+                    className="rounded-full bg-background/80 p-1 text-foreground transition hover:bg-background disabled:opacity-60"
+                    aria-label={t("remove")}
+                    title={t("remove")}
                   >
                     <X size={12} />
                   </button>

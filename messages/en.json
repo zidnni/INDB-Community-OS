@@ -568,6 +568,8 @@
     "success": "Uploaded successfully.",
     "chooseImage": "Add photos",
     "chooseVideo": "Add video",
+    "replace": "Replace image",
+    "remove": "Remove image",
     "failed": "Failed to upload.",
     "compressionFailed": "Failed to prepare image for upload.",
     "notAuthenticated": "Please log in before uploading.",

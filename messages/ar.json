@@ -568,6 +568,8 @@
     "success": "تم الرفع بنجاح.",
     "chooseImage": "إضافة صور",
     "chooseVideo": "إضافة فيديو",
+    "replace": "استبدال الصورة",
+    "remove": "إزالة الصورة",
     "failed": "فشل الرفع.",
     "compressionFailed": "فشل تجهيز الصورة للرفع.",
     "notAuthenticated": "يرجى تسجيل الدخول قبل الرفع.",

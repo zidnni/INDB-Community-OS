@@ -568,6 +568,8 @@
     "success": "Téléversé avec succès.",
     "chooseImage": "Ajouter des photos",
     "chooseVideo": "Ajouter une vidéo",
+    "replace": "Remplacer l’image",
+    "remove": "Supprimer l’image",
     "failed": "Échec du téléversement.",
     "compressionFailed": "Échec de la préparation de l'image.",
     "notAuthenticated": "Veuillez vous connecter avant de téléverser.",
