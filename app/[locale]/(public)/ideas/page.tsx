@@ -47,7 +47,7 @@ export default async function IdeasPage({
   searchParams,
 }: {
   params: Promise<{locale: string}>;
-  searchParams: Promise<{ideaUpdated?: string; ideaDeleted?: string}>;
+  searchParams: Promise<{ideaSubmitted?: string; ideaUpdated?: string; ideaDeleted?: string}>;
 }) {
   const {locale} = await params;
   const sp = await searchParams;
@@ -76,7 +76,7 @@ export default async function IdeasPage({
 
   return (
     <div className="space-y-3 sm:space-y-4">
-      <IdeasToastHandler ideaUpdated={!!sp.ideaUpdated} ideaDeleted={!!sp.ideaDeleted} />
+      <IdeasToastHandler ideaSubmitted={!!sp.ideaSubmitted} ideaUpdated={!!sp.ideaUpdated} ideaDeleted={!!sp.ideaDeleted} />
 
       <div className="rounded-2xl border border-border/70 bg-card p-3.5 sm:p-4">
         <div className="flex items-start justify-between gap-3">

@@ -5,13 +5,22 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 export function IdeasToastHandler({
+  ideaSubmitted,
   ideaUpdated,
   ideaDeleted,
 }: {
+  ideaSubmitted: boolean;
   ideaUpdated: boolean;
   ideaDeleted: boolean;
 }) {
   const t = useTranslations("Ideas");
+  const ideaFormT = useTranslations("IdeaForm");
+
+  useEffect(() => {
+    if (ideaSubmitted) {
+      toast.success(ideaFormT("successMessage"));
+    }
+  }, [ideaSubmitted, ideaFormT]);
 
   useEffect(() => {
     if (ideaUpdated) {

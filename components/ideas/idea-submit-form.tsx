@@ -115,8 +115,6 @@ export function IdeaSubmitForm({
         toast.error(result.error || t("errors.submitFailed"));
         return;
       }
-
-      toast.success(t("successMessage"));
     } catch {
       toast.error(t("errors.submitFailed"));
       return;
@@ -124,7 +122,7 @@ export function IdeaSubmitForm({
       setSubmitting(false);
     }
 
-    router.push("/ideas");
+    router.push(isEditing ? "/ideas?ideaUpdated=1" : "/ideas?ideaSubmitted=1");
   }
 
   function handleCancel() {
