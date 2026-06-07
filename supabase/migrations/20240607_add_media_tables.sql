@@ -1,4 +1,5 @@
 -- Migration: Add post_media, memory_media, idea_media tables for multi-image/video support
+-- + Storage RLS policies for direct browser uploads
 
 -- Drop old memory_media table if it exists (restructured)
 drop table if exists public.memory_media;
@@ -121,4 +122,71 @@ create policy "Users can delete own idea media"
       select 1 from public.ideas
       where id = idea_id and author_id = auth.uid()
     )
+  );
+
+-- Storage RLS: allow authenticated users to upload files to their own folder
+-- post-media bucket
+create policy "Authenticated users can upload post media"
+  on storage.objects for insert
+  to authenticated
+  with check (
+    bucket_id = 'post-media'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+create policy "Anyone can view post media files"
+  on storage.objects for select
+  to anon, authenticated
+  using (bucket_id = 'post-media');
+
+create policy "Users can delete own post media files"
+  on storage.objects for delete
+  to authenticated
+  using (
+    bucket_id = 'post-media'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- memory-archive bucket
+create policy "Authenticated users can upload memory media"
+  on storage.objects for insert
+  to authenticated
+  with check (
+    bucket_id = 'memory-archive'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+create policy "Anyone can view memory media files"
+  on storage.objects for select
+  to anon, authenticated
+  using (bucket_id = 'memory-archive');
+
+create policy "Users can delete own memory media files"
+  on storage.objects for delete
+  to authenticated
+  using (
+    bucket_id = 'memory-archive'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- idea-media bucket
+create policy "Authenticated users can upload idea media"
+  on storage.objects for insert
+  to authenticated
+  with check (
+    bucket_id = 'idea-media'
+    and (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+create policy "Anyone can view idea media files"
+  on storage.objects for select
+  to anon, authenticated
+  using (bucket_id = 'idea-media');
+
+create policy "Users can delete own idea media files"
+  on storage.objects for delete
+  to authenticated
+  using (
+    bucket_id = 'idea-media'
+    and (storage.foldername(name))[1] = auth.uid()::text
   );

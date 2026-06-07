@@ -124,3 +124,11 @@ function isAllowedVideoFile(file: File) {
     ALLOWED_VIDEO_EXTENSIONS_LIST.includes(extension as (typeof ALLOWED_VIDEO_EXTENSIONS_LIST)[number])
   );
 }
+
+export function getMediaType(file: File): "image" | "video" {
+  return isVideoFile(file) ? "video" : "image";
+}
+
+export function getMimeType(file: File): string {
+  return file.type || (isVideoFile(file) ? "video/mp4" : "image/jpeg");
+}

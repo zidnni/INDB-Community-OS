@@ -62,9 +62,12 @@ export function PostEditForm({
       <CardContent>
         <form
           action={async (formData: FormData) => {
-            mediaItems.forEach((item, index) => {
-              formData.append(`media_${index}`, item.file);
-            });
+            const uploaded = mediaItems.filter((m) => !m.failed && m.url);
+            if (uploaded.length > 0) {
+              formData.set("mediaData", JSON.stringify(
+                uploaded.map((m) => ({url: m.url, storagePath: m.storagePath, type: m.type, mime_type: m.mimeType ?? ""})),
+              ));
+            }
             if (removedMediaPaths.length > 0) {
               formData.set("removedMedia", JSON.stringify(removedMediaPaths));
             }

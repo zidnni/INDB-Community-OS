@@ -1,26 +1,28 @@
 "use client";
 
-import {Film, ImagePlus, X} from "lucide-react";
+import {CheckCircle2, Film, ImagePlus, Loader2, X} from "lucide-react";
 import {useTranslations} from "next-intl";
 import {useCallback, useRef, useState} from "react";
 import {toast} from "sonner";
 
-import {prepareImageForUpload, ImageUploadError} from "@/lib/images/client-compression";
+import {uploadMediaItem} from "@/lib/images/client-upload";
+import {ImageUploadError} from "@/lib/images/client-compression";
 import {
   ACCEPTED_IMAGE_EXTENSIONS,
   ACCEPTED_VIDEO_EXTENSIONS,
   MEDIA_LIMITS,
-  isImageFile,
   isVideoFile,
   validateVideoFile,
 } from "@/lib/images/upload-config";
 
 export interface MediaItem {
   id: string;
-  file: File;
-  preview: string;
   type: "image" | "video";
+  url: string;
+  storagePath: string;
+  mimeType?: string;
   uploading?: boolean;
+  failed?: boolean;
 }
 
 export interface ExistingMediaItem {
@@ -31,27 +33,36 @@ export interface ExistingMediaItem {
 
 interface MediaUploadProps {
   existingMedia?: ExistingMediaItem[];
-  onMediaChange: (files: MediaItem[], removedStoragePaths: string[]) => void;
+  onMediaChange: (items: MediaItem[], removedStoragePaths: string[]) => void;
   uploadKind: "post" | "memory" | "idea";
 }
 
 export function MediaUpload({existingMedia, onMediaChange, uploadKind}: MediaUploadProps) {
   const t = useTranslations("ImageUpload");
-  const [newFiles, setNewFiles] = useState<MediaItem[]>([]);
+  const [newItems, setNewItems] = useState<MediaItem[]>([]);
   const [removedExisting, setRemovedExisting] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
-  const totalCount = newFiles.length + (existingMedia?.length ?? 0) - removedExisting.length;
-  const hasVideo = newFiles.some((f) => f.type === "video") || (existingMedia ?? []).some((f) => f.type === "video" && !removedExisting.includes(f.storagePath));
-  const hasImage = newFiles.some((f) => f.type === "image") || (existingMedia ?? []).some((f) => f.type === "image" && !removedExisting.includes(f.storagePath));
+  const hasVideo = newItems.some((f) => f.type === "video") || (existingMedia ?? []).some(
+    (f) => f.type === "video" && !removedExisting.includes(f.storagePath),
+  );
+  const hasImage = newItems.some((f) => f.type === "image") || (existingMedia ?? []).some(
+    (f) => f.type === "image" && !removedExisting.includes(f.storagePath),
+  );
 
   const getImageCount = useCallback(() => {
-    const newImages = newFiles.filter((f) => f.type === "image").length;
-    const existingImages = (existingMedia ?? []).filter((f) => f.type === "image" && !removedExisting.includes(f.storagePath)).length;
+    const newImages = newItems.filter((f) => f.type === "image" && !f.failed).length;
+    const existingImages = (existingMedia ?? []).filter(
+      (f) => f.type === "image" && !removedExisting.includes(f.storagePath),
+    ).length;
     return newImages + existingImages;
-  }, [newFiles, existingMedia, removedExisting]);
+  }, [newItems, existingMedia, removedExisting]);
+
+  function notifyChange(items: MediaItem[]) {
+    onMediaChange(items, removedExisting);
+  }
 
   async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -65,35 +76,49 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind}: MediaUpl
     }
 
     setUploading(true);
-    const processed: MediaItem[] = [];
 
-    for (const file of files) {
+    const placeholders: MediaItem[] = files.map((file) => ({
+      id: `new-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      type: "image" as const,
+      url: "",
+      storagePath: "",
+      uploading: true,
+    }));
+
+    setNewItems((prev) => [...prev, ...placeholders]);
+    notifyChange([...newItems, ...placeholders]);
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const placeholderId = placeholders[i].id;
+
       try {
-        const prepared = await prepareImageForUpload(file, uploadKind);
-        processed.push({
-          id: `new-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-          file: prepared,
-          preview: URL.createObjectURL(prepared),
-          type: "image",
-        });
+        const result = await uploadMediaItem(file, uploadKind);
+
+        setNewItems((prev) =>
+          prev.map((item) =>
+            item.id === placeholderId
+              ? {...item, url: result.url, storagePath: result.storagePath, mimeType: result.mimeType, uploading: false}
+              : item,
+          ),
+        );
       } catch (error) {
-        if (error instanceof ImageUploadError) {
-          toast.error(t(error.code));
-        } else {
-          toast.error(t("failed"));
-        }
+        const msg = error instanceof ImageUploadError ? t(error.code) : t("failed");
+        toast.error(msg);
+
+        setNewItems((prev) =>
+          prev.map((item) =>
+            item.id === placeholderId ? {...item, uploading: false, failed: true} : item,
+          ),
+        );
       }
     }
 
-    setNewFiles((prev) => [...prev, ...processed]);
     setUploading(false);
     e.target.value = "";
-
-    // Store files in a data attribute for the form
-    notifyChange([...newFiles, ...processed]);
   }
 
-  function handleVideoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleVideoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -110,39 +135,50 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind}: MediaUpl
       return;
     }
 
-    const item: MediaItem = {
+    const placeholder: MediaItem = {
       id: `new-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-      file,
-      preview: URL.createObjectURL(file),
       type: "video",
+      url: "",
+      storagePath: "",
+      uploading: true,
     };
 
-    // Replace any existing video in new files
-    const filtered = newFiles.filter((f) => f.type !== "video");
-    setNewFiles([...filtered, item]);
-    notifyChange([...filtered, item]);
+    const filtered = newItems.filter((f) => f.type !== "video");
+    setNewItems([...filtered, placeholder]);
+    notifyChange([...filtered, placeholder]);
+
+    try {
+      const result = await uploadMediaItem(file, uploadKind);
+
+      setNewItems((prev) =>
+        prev.map((item) =>
+          item.id === placeholder.id
+            ? {...item, url: result.url, storagePath: result.storagePath, mimeType: result.mimeType, uploading: false}
+            : item,
+        ),
+      );
+    } catch {
+      toast.error(t("failed"));
+
+      setNewItems((prev) =>
+        prev.map((item) =>
+          item.id === placeholder.id ? {...item, uploading: false, failed: true} : item,
+        ),
+      );
+    }
+
     e.target.value = "";
   }
 
-  function removeNewFile(id: string) {
-    const item = newFiles.find((f) => f.id === id);
-    if (item) {
-      URL.revokeObjectURL(item.preview);
-    }
-    const updated = newFiles.filter((f) => f.id !== id);
-    setNewFiles(updated);
+  function removeNewItem(id: string) {
+    const updated = newItems.filter((f) => f.id !== id);
+    setNewItems(updated);
     notifyChange(updated);
   }
 
   function removeExisting(storagePath: string) {
     setRemovedExisting((prev) => [...prev, storagePath]);
-    // Notify parent with current state
-    const stillExisting = (existingMedia ?? []).filter((e) => !removedExisting.includes(e.storagePath) && e.storagePath !== storagePath);
-    onMediaChange(newFiles, [...removedExisting, storagePath]);
-  }
-
-  function notifyChange(files: MediaItem[]) {
-    onMediaChange(files, removedExisting);
+    onMediaChange(newItems, [...removedExisting, storagePath]);
   }
 
   const visibleExisting = (existingMedia ?? []).filter((e) => !removedExisting.includes(e.storagePath));
@@ -172,16 +208,20 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind}: MediaUpl
             type="file"
             accept={ACCEPTED_VIDEO_EXTENSIONS}
             className="hidden"
-            disabled={uploading || hasImage || newFiles.some((f) => f.type === "video")}
+            disabled={uploading || hasImage || newItems.some((f) => f.type === "video")}
             onChange={(e) => void handleVideoSelect(e)}
           />
         </label>
 
-        {uploading ? <span className="flex items-center text-sm text-muted-foreground">{t("uploading")}</span> : null}
+        {uploading ? (
+          <span className="flex items-center gap-1 text-sm text-muted-foreground">
+            <Loader2 size={14} className="animate-spin" />
+            {t("uploading")}
+          </span>
+        ) : null}
       </div>
 
-      {/* Existing media preview */}
-      {visibleExisting.length > 0 || newFiles.length > 0 ? (
+      {visibleExisting.length > 0 || newItems.length > 0 ? (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {visibleExisting.map((item) => (
             <div key={item.storagePath} className="group relative aspect-square overflow-hidden rounded-xl bg-muted">
@@ -200,20 +240,35 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind}: MediaUpl
             </div>
           ))}
 
-          {newFiles.map((item) => (
+          {newItems.map((item) => (
             <div key={item.id} className="group relative aspect-square overflow-hidden rounded-xl bg-muted">
-              {item.type === "video" ? (
-                <video src={item.preview} className="h-full w-full object-cover" />
+              {item.uploading ? (
+                <div className="flex h-full w-full flex-col items-center justify-center gap-2">
+                  <Loader2 size={24} className="animate-spin text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">{t("uploading")}</span>
+                </div>
+              ) : item.failed ? (
+                <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-destructive/10">
+                  <X size={20} className="text-destructive" />
+                  <span className="text-xs text-destructive">{t("failed")}</span>
+                </div>
+              ) : item.type === "video" ? (
+                <video src={item.url} className="h-full w-full object-cover" />
               ) : (
-                <img src={item.preview} alt="" className="h-full w-full object-cover" />
+                <img src={item.url} alt="" className="h-full w-full object-cover" />
               )}
-              <button
-                type="button"
-                onClick={() => removeNewFile(item.id)}
-                className="absolute end-1.5 top-1.5 rounded-full bg-background/80 p-1 text-foreground opacity-0 transition hover:bg-background group-hover:opacity-100"
-              >
-                <X size={12} />
-              </button>
+              {!item.uploading && !item.failed ? (
+                <div className="absolute end-1.5 top-1.5 flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => removeNewItem(item.id)}
+                    className="rounded-full bg-background/80 p-1 text-foreground transition hover:bg-background"
+                  >
+                    <X size={12} />
+                  </button>
+                  <CheckCircle2 size={14} className="text-green-500" />
+                </div>
+              ) : null}
             </div>
           ))}
         </div>

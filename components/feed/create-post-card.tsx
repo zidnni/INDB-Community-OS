@@ -57,12 +57,15 @@ export function CreatePostCard({avatarUrl, profileName}: {avatarUrl?: string | n
 
     const formData = new FormData(e.currentTarget);
 
-    // Append media files with sequential keys
-    mediaItems.forEach((item, index) => {
-      formData.append(`media_${index}`, item.file);
-    });
+    // Send uploaded media metadata as JSON (files already uploaded directly to Supabase)
+    const uploaded = mediaItems.filter((m) => !m.failed && m.url);
+    if (uploaded.length > 0) {
+      formData.set("mediaData", JSON.stringify(
+        uploaded.map((m) => ({url: m.url, storagePath: m.storagePath, type: m.type, mime_type: m.mimeType ?? ""})),
+      ));
+    }
 
-    // Append removed media paths
+    // Send removed media paths
     if (removedMediaPaths.length > 0) {
       formData.set("removedMedia", JSON.stringify(removedMediaPaths));
     }
