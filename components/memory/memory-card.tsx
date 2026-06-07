@@ -16,6 +16,7 @@ import {useCurrentUser} from "@/hooks/use-current-user";
 import {Link, useRouter} from "@/lib/i18n/routing";
 import {createClient} from "@/lib/supabase/client";
 import type {MemoryReactionType, MemoryWithContributor} from "@/types/database";
+import {MediaGallery} from "@/components/shared/media-gallery";
 
 function timeAgo(dateStr: string, locale: string): string {
   const now = Date.now();
@@ -110,7 +111,12 @@ export function MemoryCard({
       <Card className="flex h-full min-w-0 flex-col overflow-visible border-border/70 shadow-[0_16px_36px_rgba(8,33,56,0.10)]">
         <div className="relative">
           <Link href={`/memory/${memory.id}`} className="block">
-            {memory.media_url ? (
+            {memory.media && memory.media.length > 0 ? (
+              <MediaGallery
+                items={memory.media.map((m) => ({url: m.url, type: m.type}))}
+                className="aspect-[4/3]"
+              />
+            ) : memory.media_url ? (
               <div className="aspect-[4/3] w-full overflow-hidden rounded-t-2xl bg-muted">
                 <img
                   src={memory.media_url}

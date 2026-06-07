@@ -19,7 +19,7 @@ function LogoutButton({label, loading}: {label: string; loading: string}) {
   );
 }
 
-export function AuthNav({locale, isLoggedIn, avatarUrl}: {locale: string; isLoggedIn: boolean; avatarUrl?: string | null}) {
+export function AuthNav({locale, isLoggedIn, avatarUrl, profileName}: {locale: string; isLoggedIn: boolean; avatarUrl?: string | null; profileName?: string}) {
   const t = useTranslations("Navbar");
 
   if (!isLoggedIn) {
@@ -43,7 +43,7 @@ export function AuthNav({locale, isLoggedIn, avatarUrl}: {locale: string; isLogg
     <div className="flex items-center gap-1">
       <Link href="/profile">
         <Button variant="ghost" size="icon" className="rounded-full">
-          <UserAvatar label={t("memberAvatarLabel")} avatarUrl={avatarUrl} className="h-9 w-9" />
+          <UserAvatar label={profileName ?? "?"} avatarUrl={avatarUrl} className="h-9 w-9" />
         </Button>
       </Link>
       <form action={signOutAction}>

@@ -9,6 +9,9 @@ import {withLocale} from "@/lib/i18n/paths";
 import {
   type ImageUploadKind,
   validateCompressedImageFile,
+  validateVideoFile,
+  isVideoFile,
+  isImageFile,
 } from "@/lib/images/upload-config";
 import {createClient} from "@/lib/supabase/server";
 import {toggleFollow} from "@/lib/data/follows";
@@ -32,6 +35,17 @@ import {
   registerSchema,
 } from "@/lib/validations/community";
 import type {CommentWithAuthor, IdeaCommentWithAuthor, MemoryCommentWithAuthor, MemoryReactionType, ReactionType} from "@/types/database";
+import {
+  deletePostMedia,
+  deleteMemoryMedia,
+  deleteIdeaMedia,
+  deletePostMediaByStoragePaths,
+  deleteMemoryMediaByStoragePaths,
+  deleteIdeaMediaByStoragePaths,
+  insertPostMedia,
+  insertMemoryMedia,
+  insertIdeaMedia,
+} from "@/lib/data/media";
 
 function normalizeLocale(value: FormDataEntryValue | null) {
   const locale = typeof value === "string" ? value : routing.defaultLocale;
@@ -168,10 +182,12 @@ async function uploadFile(
   file: File,
   bucket: string,
   userId: string,
-): Promise<string | null> {
+  pathPrefix?: string,
+): Promise<{url: string | null; storagePath: string | null}> {
   const supabase = await createClient();
   const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-  const filePath = `${userId}/memories/${Date.now()}-${safeFileName}`;
+  const prefix = pathPrefix ?? "memories";
+  const filePath = `${userId}/${prefix}/${Date.now()}-${safeFileName}`;
 
   if (process.env.NODE_ENV === "development") {
     console.log("[uploadFile] starting upload", {
@@ -191,7 +207,7 @@ async function uploadFile(
     if (process.env.NODE_ENV === "development") {
       console.log("[uploadFile] upload failed", {error: uploadError.message, statusCode: uploadError.statusCode});
     }
-    return null;
+    return {url: null, storagePath: null};
   }
 
   const {data: publicUrlData} = supabase.storage.from(bucket).getPublicUrl(filePath);
@@ -200,7 +216,7 @@ async function uploadFile(
     console.log("[uploadFile] upload success", {publicUrl: publicUrlData.publicUrl});
   }
 
-  return publicUrlData.publicUrl;
+  return {url: publicUrlData.publicUrl, storagePath: filePath};
 }
 
 async function uploadImageFile(
@@ -222,8 +238,8 @@ async function uploadImageFile(
     return {error: t(validationError)};
   }
 
-  const url = await uploadFile(file, bucket, userId);
-  if (!url) {
+  const result = await uploadFile(file, bucket, userId);
+  if (!result.url) {
     if (process.env.NODE_ENV === "development") {
       console.log("[uploadImageFile] uploadFile returned null");
     }
@@ -231,16 +247,48 @@ async function uploadImageFile(
   }
 
   if (process.env.NODE_ENV === "development") {
-    console.log("[uploadImageFile] success", {url});
+    console.log("[uploadImageFile] success", {url: result.url});
   }
 
-  return {url};
+  return {url: result.url};
+}
+
+async function uploadMediaFile(
+  file: File,
+  bucket: string,
+  userId: string,
+  pathPrefix: string,
+): Promise<{url?: string; storagePath?: string; error?: string}> {
+  if (isVideoFile(file)) {
+    const validationError = validateVideoFile(file);
+    if (validationError) {
+      return {error: validationError};
+    }
+  } else if (isImageFile(file)) {
+    // Images are compressed client-side, so we just check if it's valid
+  } else {
+    return {error: "invalidType"};
+  }
+
+  const result = await uploadFile(file, bucket, userId, pathPrefix);
+  if (!result.url) {
+    return {error: "failed"};
+  }
+
+  return {url: result.url, storagePath: result.storagePath ?? undefined};
+}
+
+function getMediaType(file: File): "image" | "video" {
+  return isVideoFile(file) ? "video" : "image";
+}
+
+function getMimeType(file: File): string {
+  return file.type || (isVideoFile(file) ? "video/mp4" : "image/jpeg");
 }
 
 export async function createPostAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
   const returnPath = getReturnPath(formData, "/feed");
-  const imageT = await getTranslations({locale, namespace: "ImageUpload"});
   const supabase = await createClient();
 
   const {
@@ -262,26 +310,75 @@ export async function createPostAction(formData: FormData) {
     redirect(toPath(locale, appendParam(returnPath, "error", "Invalid post content")));
   }
 
-  let image_url: string | null = null;
-  const imageFile = formData.get("imageFile");
-  if (imageFile instanceof File && imageFile.size > 0) {
-    const uploaded = await uploadImageFile(imageFile, "post-media", user.id, "post", imageT);
-    if (uploaded.error) {
-      redirect(toPath(locale, appendParam(returnPath, "error", uploaded.error)));
+  // Handle media files from the multi-media upload
+  const mediaEntries: Array<{file: File; index: number}> = [];
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith("media_") && value instanceof File && value.size > 0) {
+      const index = parseInt(key.replace("media_", ""), 10);
+      mediaEntries.push({file: value, index});
     }
-    image_url = uploaded.url ?? null;
+  }
+  mediaEntries.sort((a, b) => a.index - b.index);
+
+  const uploadedMedia: Array<{
+    url: string;
+    storagePath: string;
+    type: "image" | "video";
+    mime_type: string;
+    position: number;
+  }> = [];
+
+  for (const {file, index} of mediaEntries) {
+    const result = await uploadMediaFile(file, "post-media", user.id, "posts");
+    if (result.error) {
+      redirect(toPath(locale, appendParam(returnPath, "error", result.error)));
+    }
+    if (result.url && result.storagePath) {
+      uploadedMedia.push({
+        url: result.url,
+        storagePath: result.storagePath,
+        type: getMediaType(file),
+        mime_type: getMimeType(file),
+        position: index,
+      });
+    }
+  }
+
+  // Keep backward compatible single image_url
+  let image_url: string | null = null;
+  const firstImage = uploadedMedia.find((m) => m.type === "image");
+  if (firstImage) {
+    image_url = firstImage.url;
   }
   if (!image_url) {
     image_url = (formData.get("imageUrl") as string | null) || null;
   }
 
-  await supabase.from("posts").insert({
-    author_id: user.id,
-    content: parsed.data.content,
-    type: (formData.get("type") as string) || "community",
-    category_id: parsed.data.categoryId || null,
-    image_url,
-  });
+  const {data: newPost} = await supabase
+    .from("posts")
+    .insert({
+      author_id: user.id,
+      content: parsed.data.content,
+      type: (formData.get("type") as string) || "community",
+      category_id: parsed.data.categoryId || null,
+      image_url,
+    })
+    .select("id")
+    .single();
+
+  // Insert media records
+  if (newPost && uploadedMedia.length > 0) {
+    await insertPostMedia(
+      uploadedMedia.map((m) => ({
+        post_id: newPost.id,
+        url: m.url,
+        type: m.type,
+        mime_type: m.mime_type,
+        storage_path: m.storagePath,
+        position: m.position,
+      })),
+    );
+  }
 
   revalidatePath(toPath(locale, returnPath));
   redirect(toPath(locale, appendParam(returnPath, "postCreated", "1")));
@@ -289,7 +386,6 @@ export async function createPostAction(formData: FormData) {
 
 export async function updatePostAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
-  const imageT = await getTranslations({locale, namespace: "ImageUpload"});
   const supabase = await createClient();
 
   const {
@@ -325,16 +421,86 @@ export async function updatePostAction(formData: FormData) {
     redirect(toPath(locale, `/post/edit?id=${encodeURIComponent(postId)}&error=invalid`));
   }
 
-  const imageFile = formData.get("imageFile");
-  const hasImage = imageFile instanceof File && imageFile.size > 0;
-  let image_url = existing.image_url;
+  // Handle removed media
+  const removedMediaStr = formData.get("removedMedia");
+  let removedStoragePaths: string[] = [];
+  if (typeof removedMediaStr === "string" && removedMediaStr) {
+    try {
+      removedStoragePaths = JSON.parse(removedMediaStr);
+    } catch {}
+  }
+  if (removedStoragePaths.length > 0) {
+    await deletePostMediaByStoragePaths(removedStoragePaths);
+  }
 
-  if (hasImage) {
-    const uploaded = await uploadImageFile(imageFile, "post-media", user.id, "post", imageT);
-    if (uploaded.error) {
-      redirect(toPath(locale, `/post/edit?id=${encodeURIComponent(postId)}&error=${encodeURIComponent(uploaded.error)}`));
+  // Handle new media files
+  const mediaEntries: Array<{file: File; index: number}> = [];
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith("media_") && value instanceof File && value.size > 0) {
+      const index = parseInt(key.replace("media_", ""), 10);
+      mediaEntries.push({file: value, index});
     }
-    image_url = uploaded.url ?? image_url;
+  }
+  mediaEntries.sort((a, b) => a.index - b.index);
+
+  const uploadedMedia: Array<{
+    url: string;
+    storagePath: string;
+    type: "image" | "video";
+    mime_type: string;
+    position: number;
+  }> = [];
+
+  for (const {file, index} of mediaEntries) {
+    const result = await uploadMediaFile(file, "post-media", user.id, "posts");
+    if (result.error) {
+      redirect(toPath(locale, `/post/edit?id=${encodeURIComponent(postId)}&error=${encodeURIComponent(result.error)}`));
+    }
+    if (result.url && result.storagePath) {
+      uploadedMedia.push({
+        url: result.url,
+        storagePath: result.storagePath,
+        type: getMediaType(file),
+        mime_type: getMimeType(file),
+        position: index,
+      });
+    }
+  }
+
+  // Re-fetch existing media to find max position
+  const {data: existingMedia} = await supabase
+    .from("post_media")
+    .select("position")
+    .eq("post_id", postId)
+    .order("position", {ascending: false})
+    .limit(1);
+
+  let nextPosition = (existingMedia?.[0]?.position ?? -1) + 1;
+  if (uploadedMedia.length > 0) {
+    await insertPostMedia(
+      uploadedMedia.map((m) => ({
+        post_id: postId,
+        url: m.url,
+        type: m.type,
+        mime_type: m.mime_type,
+        storage_path: m.storagePath,
+        position: nextPosition++,
+      })),
+    );
+  }
+
+  // Update backward-compatible image_url
+  const {data: allMedia} = await supabase
+    .from("post_media")
+    .select("url, type")
+    .eq("post_id", postId)
+    .order("position", {ascending: true});
+  let image_url = existing.image_url;
+  const firstImage = allMedia?.find((m) => m.type === "image");
+  if (firstImage) {
+    image_url = firstImage.url;
+  } else if (removedStoragePaths.length > 0 && !allMedia?.length) {
+    image_url = null;
   }
 
   await supabase
@@ -712,24 +878,56 @@ export async function submitMemoryAction(
     return {success: false, error: errorMsg};
   }
 
-  const mediaFile = formData.get("media");
-  const hasMedia = mediaFile instanceof File && mediaFile.size > 0;
-  let media_url: string | null = null;
+  // Handle media files
+  const mediaEntries: Array<{file: File; index: number}> = [];
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith("media_") && value instanceof File && value.size > 0) {
+      const index = parseInt(key.replace("media_", ""), 10);
+      mediaEntries.push({file: value, index});
+    }
+  }
+  mediaEntries.sort((a, b) => a.index - b.index);
 
-  if (hasMedia) {
-    let uploaded: {url?: string; error?: string};
+  const uploadedMedia: Array<{
+    url: string;
+    storagePath: string;
+    type: "image" | "video";
+    mime_type: string;
+    position: number;
+  }> = [];
+
+  for (const {file, index} of mediaEntries) {
+    let uploaded: {url?: string; storagePath?: string; error?: string};
     try {
-      uploaded = await uploadImageFile(mediaFile, "memory-archive", user.id, "memory", imageT);
+      uploaded = await uploadMediaFile(file, "memory-archive", user.id, "memories");
     } catch {
       return {success: false, error: imageT("failed")};
     }
     if (uploaded.error) {
       return {success: false, error: uploaded.error};
     }
-    media_url = uploaded.url ?? null;
+    if (uploaded.url && uploaded.storagePath) {
+      uploadedMedia.push({
+        url: uploaded.url,
+        storagePath: uploaded.storagePath,
+        type: getMediaType(file),
+        mime_type: getMimeType(file),
+        position: index,
+      });
+    }
   }
 
-  const media_type = hasMedia ? "image" : null;
+  // Keep backward compatible media_url
+  let media_url: string | null = null;
+  let media_type: string | null = null;
+  const firstImage = uploadedMedia.find((m) => m.type === "image");
+  if (firstImage) {
+    media_url = firstImage.url;
+    media_type = "image";
+  } else if (uploadedMedia.length > 0) {
+    media_url = uploadedMedia[0].url;
+    media_type = uploadedMedia[0].type;
+  }
 
   const tags = parsed.data.tags
     ? parsed.data.tags.split(",").map((t: string) => t.trim()).filter(Boolean)
@@ -747,7 +945,7 @@ export async function submitMemoryAction(
         year: parsed.data.year ? Number(parsed.data.year) : null,
         location: parsed.data.location || null,
         media_url,
-        media_type,
+        media_type: media_type ?? "image",
         verification_status: "approved",
         tags: tags.length > 0 ? tags : null,
       })
@@ -761,6 +959,24 @@ export async function submitMemoryAction(
     return {success: false, error: errorsT("submitFailed")};
   }
 
+  // Insert media records
+  if (memory && uploadedMedia.length > 0) {
+    try {
+      await insertMemoryMedia(
+        uploadedMedia.map((m) => ({
+          memory_id: memory.id,
+          url: m.url,
+          type: m.type,
+          mime_type: m.mime_type,
+          storage_path: m.storagePath,
+          position: m.position,
+        })),
+      );
+    } catch {
+      return {success: false, error: errorsT("submitFailed")};
+    }
+  }
+
   revalidatePath(toPath(locale, "/memory"));
 
   return {success: true, memoryId: memory.id};
@@ -769,7 +985,6 @@ export async function submitMemoryAction(
 export async function submitIdeaAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
   const errorsT = await getTranslations({locale, namespace: "Errors"});
-  const imageT = await getTranslations({locale, namespace: "ImageUpload"});
   const supabase = await createClient();
 
   const {
@@ -792,28 +1007,74 @@ export async function submitIdeaAction(formData: FormData) {
     redirect(toPath(locale, `/ideas/submit?error=${encodeURIComponent(errorMsg)}`));
   }
 
-  const imageFile = formData.get("imageFile");
-  const hasImage = imageFile instanceof File && imageFile.size > 0;
-  let image_url: string | null = null;
-
-  if (hasImage) {
-    const uploaded = await uploadImageFile(imageFile, "idea-media", user.id, "post", imageT);
-    if (uploaded.error) {
-      redirect(toPath(locale, appendParam("/ideas/submit", "error", uploaded.error)));
+  // Handle media files
+  const mediaEntries: Array<{file: File; index: number}> = [];
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith("media_") && value instanceof File && value.size > 0) {
+      const index = parseInt(key.replace("media_", ""), 10);
+      mediaEntries.push({file: value, index});
     }
-    image_url = uploaded.url ?? null;
+  }
+  mediaEntries.sort((a, b) => a.index - b.index);
+
+  const uploadedMedia: Array<{
+    url: string;
+    storagePath: string;
+    type: "image" | "video";
+    mime_type: string;
+    position: number;
+  }> = [];
+
+  for (const {file, index} of mediaEntries) {
+    const result = await uploadMediaFile(file, "idea-media", user.id, "ideas");
+    if (result.error) {
+      redirect(toPath(locale, appendParam("/ideas/submit", "error", result.error)));
+    }
+    if (result.url && result.storagePath) {
+      uploadedMedia.push({
+        url: result.url,
+        storagePath: result.storagePath,
+        type: getMediaType(file),
+        mime_type: getMimeType(file),
+        position: index,
+      });
+    }
   }
 
-  const {error: insertError} = await supabase.from("ideas").insert({
-    author_id: user.id,
-    title: parsed.data.title,
-    description: parsed.data.description,
-    category_id: parsed.data.categoryId ?? null,
-    image_url,
-  });
+  // Keep backward compatible image_url
+  let image_url: string | null = null;
+  const firstImage = uploadedMedia.find((m) => m.type === "image");
+  if (firstImage) {
+    image_url = firstImage.url;
+  }
 
-  if (insertError) {
-    redirect(toPath(locale, appendParam("/ideas/submit", "error", insertError.message)));
+  const {data: newIdea, error: insertError} = await supabase
+    .from("ideas")
+    .insert({
+      author_id: user.id,
+      title: parsed.data.title,
+      description: parsed.data.description,
+      category_id: parsed.data.categoryId ?? null,
+      image_url,
+    })
+    .select("id")
+    .single();
+
+  if (insertError || !newIdea) {
+    redirect(toPath(locale, appendParam("/ideas/submit", "error", insertError?.message ?? "Submit failed")));
+  }
+
+  if (uploadedMedia.length > 0) {
+    await insertIdeaMedia(
+      uploadedMedia.map((m) => ({
+        idea_id: newIdea.id,
+        url: m.url,
+        type: m.type,
+        mime_type: m.mime_type,
+        storage_path: m.storagePath,
+        position: m.position,
+      })),
+    );
   }
 
   revalidatePath(toPath(locale, "/ideas"));
@@ -823,7 +1084,6 @@ export async function submitIdeaAction(formData: FormData) {
 export async function updateIdeaAction(formData: FormData) {
   const locale = normalizeLocale(formData.get("locale"));
   const errorsT = await getTranslations({locale, namespace: "Errors"});
-  const imageT = await getTranslations({locale, namespace: "ImageUpload"});
   const supabase = await createClient();
 
   const {
@@ -861,16 +1121,85 @@ export async function updateIdeaAction(formData: FormData) {
     redirect(toPath(locale, `/ideas/submit?id=${encodeURIComponent(ideaId)}&error=${encodeURIComponent(errorMsg)}`));
   }
 
-  const imageFile = formData.get("imageFile");
-  const hasImage = imageFile instanceof File && imageFile.size > 0;
-  let image_url = existing.image_url;
+  // Handle removed media
+  const removedMediaStr = formData.get("removedMedia");
+  let removedStoragePaths: string[] = [];
+  if (typeof removedMediaStr === "string" && removedMediaStr) {
+    try {
+      removedStoragePaths = JSON.parse(removedMediaStr);
+    } catch {}
+  }
+  if (removedStoragePaths.length > 0) {
+    await deleteIdeaMediaByStoragePaths(removedStoragePaths);
+  }
 
-  if (hasImage) {
-    const uploaded = await uploadImageFile(imageFile, "idea-media", user.id, "post", imageT);
-    if (uploaded.error) {
-      redirect(toPath(locale, `/ideas/submit?id=${encodeURIComponent(ideaId)}&error=${encodeURIComponent(uploaded.error)}`));
+  // Handle new media files
+  const mediaEntries: Array<{file: File; index: number}> = [];
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith("media_") && value instanceof File && value.size > 0) {
+      const index = parseInt(key.replace("media_", ""), 10);
+      mediaEntries.push({file: value, index});
     }
-    image_url = uploaded.url ?? image_url;
+  }
+  mediaEntries.sort((a, b) => a.index - b.index);
+
+  const uploadedMedia: Array<{
+    url: string;
+    storagePath: string;
+    type: "image" | "video";
+    mime_type: string;
+    position: number;
+  }> = [];
+
+  for (const {file, index} of mediaEntries) {
+    const result = await uploadMediaFile(file, "idea-media", user.id, "ideas");
+    if (result.error) {
+      redirect(toPath(locale, `/ideas/submit?id=${encodeURIComponent(ideaId)}&error=${encodeURIComponent(result.error)}`));
+    }
+    if (result.url && result.storagePath) {
+      uploadedMedia.push({
+        url: result.url,
+        storagePath: result.storagePath,
+        type: getMediaType(file),
+        mime_type: getMimeType(file),
+        position: index,
+      });
+    }
+  }
+
+  const {data: existingMedia} = await supabase
+    .from("idea_media")
+    .select("position")
+    .eq("idea_id", ideaId)
+    .order("position", {ascending: false})
+    .limit(1);
+
+  let nextPosition = (existingMedia?.[0]?.position ?? -1) + 1;
+  if (uploadedMedia.length > 0) {
+    await insertIdeaMedia(
+      uploadedMedia.map((m) => ({
+        idea_id: ideaId,
+        url: m.url,
+        type: m.type,
+        mime_type: m.mime_type,
+        storage_path: m.storagePath,
+        position: nextPosition++,
+      })),
+    );
+  }
+
+  // Update backward-compatible image_url
+  const {data: allMedia} = await supabase
+    .from("idea_media")
+    .select("url, type")
+    .eq("idea_id", ideaId)
+    .order("position", {ascending: true});
+  let image_url = existing.image_url;
+  const firstImage = allMedia?.find((m) => m.type === "image");
+  if (firstImage) {
+    image_url = firstImage.url;
+  } else if (removedStoragePaths.length > 0 && !allMedia?.length) {
+    image_url = null;
   }
 
   const {error: updateError} = await supabase
@@ -921,6 +1250,7 @@ export async function deleteIdeaAction(
     .eq("entity_type", "idea")
     .eq("entity_id", ideaId);
 
+  await deleteIdeaMedia(ideaId);
   await supabase.from("ideas").delete().eq("id", ideaId);
 
   revalidatePath("/", "layout");
@@ -957,6 +1287,8 @@ export async function deletePostAction(formData: FormData) {
     redirect(toPath(locale, returnPath));
   }
 
+  // Clean up media (storage files + DB records) before deleting the post
+  await deletePostMedia(postId);
   await supabase.from("posts").delete().eq("id", postId);
 
   revalidatePath(toPath(locale, returnPath));
@@ -1676,6 +2008,8 @@ export async function deleteMemoryAction(
     .eq("entity_type", "memory")
     .eq("entity_id", memoryId);
 
+  // Clean up media
+  await deleteMemoryMedia(memoryId);
   await supabase.from("memories").delete().eq("id", memoryId);
 
   revalidatePath("/", "layout");
@@ -1728,22 +2062,92 @@ export async function updateMemoryAction(
     return {success: false, error: errorMsg};
   }
 
-  const mediaFile = formData.get("media");
-  const hasMedia = mediaFile instanceof File && mediaFile.size > 0;
-  let media_url = existing.media_url;
-  let media_type = existing.media_type;
-
-  if (hasMedia) {
-    let uploaded: {url?: string; error?: string};
+  // Handle removed media
+  const removedMediaStr = formData.get("removedMedia");
+  let removedStoragePaths: string[] = [];
+  if (typeof removedMediaStr === "string" && removedMediaStr) {
     try {
-      uploaded = await uploadImageFile(mediaFile, "memory-archive", user.id, "memory", imageT);
+      removedStoragePaths = JSON.parse(removedMediaStr);
+    } catch {}
+  }
+  if (removedStoragePaths.length > 0) {
+    await deleteMemoryMediaByStoragePaths(removedStoragePaths);
+  }
+
+  // Handle new media files
+  const mediaEntries: Array<{file: File; index: number}> = [];
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith("media_") && value instanceof File && value.size > 0) {
+      const index = parseInt(key.replace("media_", ""), 10);
+      mediaEntries.push({file: value, index});
+    }
+  }
+  mediaEntries.sort((a, b) => a.index - b.index);
+
+  const uploadedMedia: Array<{
+    url: string;
+    storagePath: string;
+    type: "image" | "video";
+    mime_type: string;
+    position: number;
+  }> = [];
+
+  for (const {file, index} of mediaEntries) {
+    let uploaded: {url?: string; storagePath?: string; error?: string};
+    try {
+      uploaded = await uploadMediaFile(file, "memory-archive", user.id, "memories");
     } catch {
       return {success: false, error: imageT("failed")};
     }
     if (uploaded.error) {
       return {success: false, error: uploaded.error};
     }
-    media_url = uploaded.url ?? media_url;
+    if (uploaded.url && uploaded.storagePath) {
+      uploadedMedia.push({
+        url: uploaded.url,
+        storagePath: uploaded.storagePath,
+        type: getMediaType(file),
+        mime_type: getMimeType(file),
+        position: index,
+      });
+    }
+  }
+
+  const {data: existingMedia} = await supabase
+    .from("memory_media")
+    .select("position")
+    .eq("memory_id", memoryId)
+    .order("position", {ascending: false})
+    .limit(1);
+
+  let nextPosition = (existingMedia?.[0]?.position ?? -1) + 1;
+  if (uploadedMedia.length > 0) {
+    await insertMemoryMedia(
+      uploadedMedia.map((m) => ({
+        memory_id: memoryId,
+        url: m.url,
+        type: m.type,
+        mime_type: m.mime_type,
+        storage_path: m.storagePath,
+        position: nextPosition++,
+      })),
+    );
+  }
+
+  // Update backward-compatible media_url
+  const {data: allMedia} = await supabase
+    .from("memory_media")
+    .select("url, type")
+    .eq("memory_id", memoryId)
+    .order("position", {ascending: true});
+  let media_url = existing.media_url;
+  let media_type = existing.media_type;
+  const firstMedia = allMedia?.[0];
+  if (firstMedia) {
+    media_url = firstMedia.url;
+    media_type = firstMedia.type;
+  } else if (removedStoragePaths.length > 0 && !allMedia?.length) {
+    media_url = null;
     media_type = "image";
   }
 

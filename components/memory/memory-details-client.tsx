@@ -14,6 +14,7 @@ import {useCurrentUser} from "@/hooks/use-current-user";
 import {Link, useRouter} from "@/lib/i18n/routing";
 import {createClient} from "@/lib/supabase/client";
 import type {MemoryReactionType, MemoryWithContributor} from "@/types/database";
+import {MediaGallery} from "@/components/shared/media-gallery";
 
 export function MemoryDetailsClient({
   memory,
@@ -65,7 +66,12 @@ export function MemoryDetailsClient({
   return (
     <div className="space-y-5">
       <Card className="overflow-hidden border-border/70 shadow-[0_16px_38px_rgba(8,33,56,0.12)]">
-        {memory.media_url ? (
+        {memory.media && memory.media.length > 0 ? (
+          <MediaGallery
+            items={memory.media.map((m) => ({url: m.url, type: m.type}))}
+            className="max-h-96"
+          />
+        ) : memory.media_url ? (
           <div className="relative h-72 w-full sm:h-80 md:h-96">
             <img src={memory.media_url} alt={memory.title} className="h-full w-full object-cover" />
           </div>

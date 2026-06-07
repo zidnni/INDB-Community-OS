@@ -39,9 +39,11 @@ export default async function FeedPage({
 
   const posts = await getPosts(currentUserId);
 
+  const profileName = profile?.full_name ?? profile?.username ?? user?.email ?? "?";
+
   return (
     <div className="space-y-3 sm:space-y-4">
-      <CreatePostCard avatarUrl={profile?.avatar_url} />
+      <CreatePostCard avatarUrl={profile?.avatar_url} profileName={profileName} />
 
       {posts.length > 0 ? (
         <div className="space-y-3 sm:space-y-4">

@@ -7,7 +7,7 @@ import {
   Newspaper,
   UserRound,
 } from "lucide-react";
-import {useTranslations} from "next-intl";
+import {useLocale, useTranslations} from "next-intl";
 
 import {Logo} from "@/components/layout/Logo";
 import {Link, usePathname} from "@/lib/i18n/routing";
@@ -23,12 +23,26 @@ const navItems = [
 
 export function Sidebar() {
   const t = useTranslations("Navigation");
+  const locale = useLocale();
   const pathname = usePathname();
+
+  const brandTitle = locale === "ar" ? "مجتمع INDB" : "INDB Community";
+  const brandTagline = locale === "ar" ? "نحب نواذيبو" : locale === "fr" ? "Je t'aime NDB" : "I Love NDB";
 
   return (
     <div className="sticky top-22 space-y-4">
-      <div className="rounded-2xl border border-border/70 bg-card p-4 shadow-[0_12px_30px_rgba(7,31,54,0.08)]">
-        <Logo size="md" />
+      <div className="rounded-2xl border border-border/70 bg-card shadow-[0_12px_30px_rgba(7,31,54,0.08)]">
+        <div className="flex items-center gap-3 p-4" dir={locale === "ar" ? "rtl" : undefined}>
+          <Logo size="sm" className="shrink-0" />
+          <div className="flex flex-col leading-tight">
+            <span className="text-sm font-semibold text-foreground">
+              {brandTitle}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {brandTagline}
+            </span>
+          </div>
+        </div>
       </div>
 
       <nav className="rounded-2xl border border-border/70 bg-card p-2 shadow-[0_12px_30px_rgba(7,31,54,0.08)]">

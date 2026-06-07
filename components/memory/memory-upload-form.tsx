@@ -1,18 +1,17 @@
 "use client";
 
 import {useTranslations} from "next-intl";
-import {ImagePlus, Loader2, X} from "lucide-react";
+import {Loader2} from "lucide-react";
 import {useRef, useState} from "react";
 import {useRouter} from "@/lib/i18n/routing";
 import {toast} from "sonner";
 
+import {MediaUpload, type MediaItem, type ExistingMediaItem} from "@/components/shared/media-upload";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
 import {submitMemoryAction, updateMemoryAction} from "@/app/[locale]/server-actions";
-import {prepareImageForUpload, ImageUploadError} from "@/lib/images/client-compression";
-import {ACCEPTED_IMAGE_EXTENSIONS} from "@/lib/images/upload-config";
 import type {MemoryWithContributor} from "@/types/database";
 
 export function MemoryUploadForm({
@@ -23,15 +22,13 @@ export function MemoryUploadForm({
   existingMemory?: MemoryWithContributor | null;
 }) {
   const t = useTranslations("MemoryForm");
-  const imageT = useTranslations("ImageUpload");
   const confirmT = useTranslations("ConfirmDialog");
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const isEditing = !!existingMemory;
 
-  const [imagePreview, setImagePreview] = useState<string | null>(existingMemory?.media_url ?? null);
-  const [mediaFile, setMediaFile] = useState<File | null>(null);
-  const [imageUploading, setImageUploading] = useState(false);
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
+  const [removedMediaPaths, setRemovedMediaPaths] = useState<string[]>([]);
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -39,52 +36,40 @@ export function MemoryUploadForm({
   const [titleError, setTitleError] = useState<string | null>(null);
   const [descError, setDescError] = useState<string | null>(null);
 
+  // Map existing media for the upload component
+  const existingMediaItems: ExistingMediaItem[] | undefined = existingMemory?.media?.map((m) => ({
+    storagePath: m.storage_path,
+    url: m.url,
+    type: m.type,
+  }));
+
   const markDirty = () => {
     if (!dirty) setDirty(true);
   };
 
-  function getUploadErrorMessage(error: unknown) {
-    if (error instanceof ImageUploadError) {
-      return imageT(error.code);
-    }
-    return imageT("failed");
-  }
-
-  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImageUploading(true);
+  function handleMediaChange(files: MediaItem[], removed: string[]) {
+    setMediaItems(files);
+    setRemovedMediaPaths(removed);
     markDirty();
-    try {
-      const preparedFile = await prepareImageForUpload(file, "memory");
-      setMediaFile(preparedFile);
-      setImagePreview(URL.createObjectURL(preparedFile));
-    } catch (error) {
-      toast.error(getUploadErrorMessage(error));
-      e.target.value = "";
-    } finally {
-      setImageUploading(false);
-    }
-  }
-
-  function handleRemoveImage() {
-    setImagePreview(null);
-    setMediaFile(null);
-    const input = document.querySelector<HTMLInputElement>('input[name="media"]');
-    if (input) input.value = "";
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (submitting || imageUploading) return;
+    if (submitting) return;
 
     const form = e.currentTarget;
     const formData = new FormData(form);
 
-    if (mediaFile) {
-      formData.set("media", mediaFile);
+    // Append media files
+    mediaItems.forEach((item, index) => {
+      formData.append(`media_${index}`, item.file);
+    });
+
+    // Append removed media paths
+    if (removedMediaPaths.length > 0) {
+      formData.set("removedMedia", JSON.stringify(removedMediaPaths));
     }
+
     formData.set("locale", locale);
 
     const title = (formData.get("title") as string)?.trim();
@@ -121,12 +106,12 @@ export function MemoryUploadForm({
         return;
       }
 
-      toast.error(result.error || imageT("failed"));
+      toast.error(result.error || "Failed");
     } catch (error) {
       if (process.env.NODE_ENV === "development") {
         console.error("[MemoryUploadForm] submit error:", error);
       }
-      toast.error(imageT("failed"));
+      toast.error("Failed");
     } finally {
       setSubmitting(false);
     }
@@ -235,31 +220,11 @@ export function MemoryUploadForm({
               onChange={markDirty}
             />
 
-            <label className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-3 text-sm text-muted-foreground hover:text-foreground">
-              <ImagePlus size={18} />
-              {imageUploading ? imageT("uploading") : imageT("chooseImage")}
-              <input
-                name="media"
-                type="file"
-                accept={ACCEPTED_IMAGE_EXTENSIONS}
-                className="hidden"
-                onChange={(e) => void handleImageChange(e)}
-              />
-            </label>
-            <p className="text-xs text-muted-foreground/70">{t("imageHelper")}</p>
-
-            {imagePreview ? (
-              <div className="relative overflow-hidden rounded-xl bg-muted">
-                <img src={imagePreview} alt="" className="max-h-56 w-full object-contain" />
-                <button
-                  type="button"
-                  onClick={handleRemoveImage}
-                  className="absolute end-2 top-2 rounded-full bg-background/80 p-1 text-foreground hover:bg-background"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ) : null}
+            <MediaUpload
+              existingMedia={existingMediaItems}
+              onMediaChange={handleMediaChange}
+              uploadKind="memory"
+            />
 
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2">
               <Button
@@ -273,7 +238,7 @@ export function MemoryUploadForm({
               </Button>
               <Button
                 type="submit"
-                disabled={submitting || imageUploading}
+                disabled={submitting}
                 className="w-full sm:w-auto"
               >
                 {submitting ? (

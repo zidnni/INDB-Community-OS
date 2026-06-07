@@ -43,6 +43,11 @@ export default async function EditPostPage({
         type: post.type,
         category_id: post.category_id,
         image_url: post.image_url,
+        media: post.media?.map((m) => ({
+          storage_path: m.storage_path,
+          url: m.url,
+          type: m.type,
+        })),
       };
     }
   }

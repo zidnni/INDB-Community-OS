@@ -1,5 +1,5 @@
 import {createClient} from "@/lib/supabase/server";
-import type {PostWithAuthor} from "@/types/database";
+import type {PostMediaRow, PostWithAuthor} from "@/types/database";
 
 async function attachUserReactions(
   posts: PostWithAuthor[],
@@ -29,7 +29,6 @@ async function attachUserReactions(
     counts[row.reaction_type] = (counts[row.reaction_type] ?? 0) + 1;
   }
 
-  // Check saved posts for current user
   const savedSet = new Set<string>();
   if (currentUserId) {
     const {data: savedData} = await supabase
@@ -52,6 +51,31 @@ async function attachUserReactions(
   return posts;
 }
 
+async function attachPostMedia(posts: PostWithAuthor[]): Promise<PostWithAuthor[]> {
+  if (posts.length === 0) return posts;
+  const supabase = await createClient();
+  const postIds = posts.map((p) => p.id);
+
+  const {data: mediaRows} = await supabase
+    .from("post_media")
+    .select("*")
+    .in("post_id", postIds)
+    .order("position", {ascending: true});
+
+  const mediaMap = new Map<string, PostMediaRow[]>();
+  for (const row of mediaRows ?? []) {
+    const list = mediaMap.get(row.post_id) ?? [];
+    list.push(row as PostMediaRow);
+    mediaMap.set(row.post_id, list);
+  }
+
+  for (const post of posts) {
+    post.media = mediaMap.get(post.id) ?? [];
+  }
+
+  return posts;
+}
+
 export async function getPosts(
   currentUserId?: string | null,
 ): Promise<PostWithAuthor[]> {
@@ -67,7 +91,9 @@ export async function getPosts(
     .eq("status", "published")
     .order("created_at", {ascending: false});
 
-  return attachUserReactions((data ?? []) as unknown as PostWithAuthor[], currentUserId);
+  const posts = (data ?? []) as unknown as PostWithAuthor[];
+  await attachPostMedia(posts);
+  return attachUserReactions(posts, currentUserId);
 }
 
 export async function getPostById(
@@ -86,14 +112,11 @@ export async function getPostById(
     .eq("id", id)
     .single();
 
-  const posts = data
-    ? (await attachUserReactions(
-        [data] as unknown as PostWithAuthor[],
-        currentUserId,
-      ))
-    : [];
-
-  return posts[0] ?? null;
+  if (!data) return null;
+  const posts = [data] as unknown as PostWithAuthor[];
+  await attachPostMedia(posts);
+  const result = await attachUserReactions(posts, currentUserId);
+  return result[0] ?? null;
 }
 
 export async function getUserPosts(
@@ -112,7 +135,9 @@ export async function getUserPosts(
     .eq("author_id", userId)
     .order("created_at", {ascending: false});
 
-  return attachUserReactions((data ?? []) as unknown as PostWithAuthor[], currentUserId);
+  const posts = (data ?? []) as unknown as PostWithAuthor[];
+  await attachPostMedia(posts);
+  return attachUserReactions(posts, currentUserId);
 }
 
 export async function getPostsCount(): Promise<number> {

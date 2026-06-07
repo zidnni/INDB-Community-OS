@@ -89,7 +89,18 @@ export function ProfileClient({
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="h-full w-full bg-gradient-to-br from-primary/80 via-primary/60 to-primary/80" />
+            <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-card">
+              <div className="absolute inset-0 flex items-center justify-center opacity-[0.07] dark:opacity-[0.04]">
+                <img
+                  src="/images/logondb.jpeg"
+                  alt=""
+                  className="h-2/3 w-2/3 object-contain"
+                />
+              </div>
+              <span className="relative select-none text-5xl font-bold tracking-wider text-primary/10 dark:text-primary/[0.07] sm:text-7xl">
+                {initials}
+              </span>
+            </div>
           )}
           <button
             onClick={() => setEditModalOpen(true)}
@@ -116,8 +127,17 @@ export function ProfileClient({
                     className="h-28 w-28 rounded-full border-4 border-card object-cover sm:h-36 sm:w-36"
                   />
                 ) : (
-                  <div className="flex h-28 w-28 items-center justify-center rounded-full border-4 border-card bg-muted text-3xl font-bold sm:h-36 sm:w-36 sm:text-4xl">
-                    {initials}
+                  <div className="relative flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-4 border-card bg-muted sm:h-36 sm:w-36">
+                    <div className="absolute inset-0 flex items-center justify-center opacity-[0.08] dark:opacity-[0.05]">
+                      <img
+                        src="/images/logondb.jpeg"
+                        alt=""
+                        className="h-3/4 w-3/4 object-contain"
+                      />
+                    </div>
+                    <span className="relative select-none text-3xl font-bold tracking-wider text-primary/20 dark:text-primary/[0.12] sm:text-4xl">
+                      {initials}
+                    </span>
                   </div>
                 )}
                 <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/0 transition group-hover:bg-black/30">

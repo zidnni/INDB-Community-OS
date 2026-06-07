@@ -1,19 +1,28 @@
 "use client";
 
 import {useState} from "react";
-import {motion} from "framer-motion";
-import {CalendarDays, ImagePlus, Images, Lightbulb, X} from "lucide-react";
+import {ImagePlus, X} from "lucide-react";
 import {useLocale, useTranslations} from "next-intl";
-import {toast} from "sonner";
 
 import {UserAvatar} from "@/components/layout/user-avatar";
+import {MediaUpload, type MediaItem} from "@/components/shared/media-upload";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent} from "@/components/ui/card";
 import {Textarea} from "@/components/ui/textarea";
-import {usePathname} from "@/lib/i18n/routing";
+import {Link, usePathname} from "@/lib/i18n/routing";
 import {createPostAction} from "@/app/[locale]/server-actions";
-import {prepareImageForUpload, ImageUploadError} from "@/lib/images/client-compression";
-import {ACCEPTED_IMAGE_EXTENSIONS} from "@/lib/images/upload-config";
+
+const PLACEHOLDER: Record<string, string> = {
+  ar: "ما الجديد في نواذيبو؟",
+  fr: "Quoi de neuf à Nouadhibou ?",
+  en: "What\u2019s new in Nouadhibou?",
+};
+
+const SECONDARY_LINKS: Record<string, {memory: string; idea: string}> = {
+  ar: {memory: "شارك ذكرى", idea: "اقترح فكرة"},
+  fr: {memory: "Partager un souvenir", idea: "Proposer une idée"},
+  en: {memory: "Share a memory", idea: "Suggest an idea"},
+};
 
 function SubmitButton({label, loading, pending}: {label: string; loading: string; pending: boolean}) {
   return (
@@ -23,41 +32,22 @@ function SubmitButton({label, loading, pending}: {label: string; loading: string
   );
 }
 
-export function CreatePostCard({avatarUrl}: {avatarUrl?: string | null}) {
+export function CreatePostCard({avatarUrl, profileName}: {avatarUrl?: string | null; profileName?: string}) {
   const t = useTranslations("FeedComposer");
-  const imageT = useTranslations("ImageUpload");
   const locale = useLocale();
   const pathname = usePathname();
   const [showForm, setShowForm] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imageUploading, setImageUploading] = useState(false);
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
+  const [removedMediaPaths, setRemovedMediaPaths] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const returnPath = pathname || "/feed";
 
-  function getUploadErrorMessage(error: unknown) {
-    if (error instanceof ImageUploadError) {
-      return imageT(error.code);
-    }
+  const placeholder = PLACEHOLDER[locale] ?? PLACEHOLDER.en;
+  const links = SECONDARY_LINKS[locale] ?? SECONDARY_LINKS.en;
 
-    return imageT("failed");
-  }
-
-  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImageUploading(true);
-    try {
-      const preparedFile = await prepareImageForUpload(file, "post");
-      setImageFile(preparedFile);
-      setImagePreview(URL.createObjectURL(preparedFile));
-    } catch (error) {
-      toast.error(getUploadErrorMessage(error));
-      e.target.value = "";
-    } finally {
-      setImageUploading(false);
-    }
+  function handleMediaChange(files: MediaItem[], removed: string[]) {
+    setMediaItems(files);
+    setRemovedMediaPaths(removed);
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -65,8 +55,15 @@ export function CreatePostCard({avatarUrl}: {avatarUrl?: string | null}) {
     setSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
-    if (imageFile) {
-      formData.set("imageFile", imageFile);
+
+    // Append media files with sequential keys
+    mediaItems.forEach((item, index) => {
+      formData.append(`media_${index}`, item.file);
+    });
+
+    // Append removed media paths
+    if (removedMediaPaths.length > 0) {
+      formData.set("removedMedia", JSON.stringify(removedMediaPaths));
     }
 
     try {
@@ -79,36 +76,45 @@ export function CreatePostCard({avatarUrl}: {avatarUrl?: string | null}) {
   if (!showForm) {
     return (
       <Card id="create-post" className="border-border/70">
-        <CardContent className="space-y-3.5 p-4 sm:space-y-4 sm:p-5">
+        <CardContent className="space-y-3 p-4 sm:space-y-4 sm:p-5">
           <div className="flex items-start gap-3">
-            <UserAvatar label={t("title")} avatarUrl={avatarUrl} className="h-11 w-11 shrink-0" />
+            <UserAvatar label={profileName ?? "?"} avatarUrl={avatarUrl} className="h-11 w-11 shrink-0" />
             <button
               type="button"
               onClick={() => setShowForm(true)}
-              className="min-h-24 w-full rounded-2xl border border-border/80 bg-muted/35 px-4 py-3 text-start text-base leading-6 text-muted-foreground transition hover:border-primary/40 hover:bg-muted/55 sm:min-h-28"
-              aria-label={t("socialPrompt")}
+              className="flex min-h-[56px] w-full items-center rounded-2xl border border-border/80 bg-muted/35 px-4 py-3 text-start text-base leading-6 text-muted-foreground transition hover:border-primary/40 hover:bg-muted/55"
             >
-              {t("socialPrompt")}
+              {placeholder}
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {quickActions.map((action, index) => (
-              <motion.button
-                key={action.key}
-                type="button"
-                onClick={() => setShowForm(true)}
-                initial={{opacity: 0, y: 10}}
-                animate={{opacity: 1, y: 0}}
-                transition={{delay: index * 0.05, duration: 0.2}}
-                whileHover={{y: -2}}
-                whileTap={{scale: 0.98}}
-                className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-border/80 bg-card px-4 text-sm font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
-              >
-                <action.icon size={18} />
-                {t(`quickActions.${action.key}`)}
-              </motion.button>
-            ))}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-t border-border/60 pt-3">
+            <button
+              type="button"
+              onClick={() => setShowForm(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
+            >
+              <ImagePlus size={16} />
+              {t("quickActions.image")}
+            </button>
+
+            <span className="text-muted-foreground/30">|</span>
+
+            <Link
+              href="/memory/submit"
+              className="text-xs text-muted-foreground transition hover:text-primary"
+            >
+              {links.memory}
+            </Link>
+
+            <span className="text-muted-foreground/20">·</span>
+
+            <Link
+              href="/ideas/submit"
+              className="text-xs text-muted-foreground transition hover:text-primary"
+            >
+              {links.idea}
+            </Link>
           </div>
         </CardContent>
       </Card>
@@ -119,76 +125,52 @@ export function CreatePostCard({avatarUrl}: {avatarUrl?: string | null}) {
     <Card id="create-post" className="border-border/70">
       <CardContent className="space-y-3.5 p-4 sm:space-y-4 sm:p-5">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold">{t("socialPrompt")}</p>
+          <p className="text-sm font-semibold text-foreground">{placeholder}</p>
           <button
             type="button"
             onClick={() => setShowForm(false)}
-            className="rounded-full p-1 text-muted-foreground hover:bg-muted"
+            className="rounded-full p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
           >
             <X size={18} />
           </button>
         </div>
+
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-3" encType="multipart/form-data">
           <input type="hidden" name="locale" value={locale} />
           <input type="hidden" name="returnTo" value={returnPath} />
-          <Textarea name="content" placeholder={t("socialPrompt")} required />
-          <div className="flex items-center gap-2">
-            <select
-              name="type"
-              className="h-10 rounded-xl border border-border bg-card px-3 text-sm max-sm:text-base"
-              defaultValue="community"
-            >
-              <option value="community">{t("quickActions.text")}</option>
-              <option value="news">Local news</option>
-              <option value="memory">{t("quickActions.memory")}</option>
-              <option value="idea">{t("quickActions.idea")}</option>
-              <option value="event">{t("quickActions.event")}</option>
-              <option value="project">Project</option>
-            </select>
-            <label className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-3 text-sm text-muted-foreground hover:text-foreground">
-                <ImagePlus size={18} />
-              {t("quickActions.image")}
-              <input
-                name="imageFile"
-                type="file"
-                accept={ACCEPTED_IMAGE_EXTENSIONS}
-                className="hidden"
-                onChange={(e) => void handleImageChange(e)}
-              />
-            </label>
+          <input type="hidden" name="type" value="community" />
+
+          <div className="flex items-start gap-3">
+            <UserAvatar label={profileName ?? "?"} avatarUrl={avatarUrl} className="mt-1 h-11 w-11 shrink-0" />
+            <Textarea
+              name="content"
+              placeholder={placeholder}
+              required
+              className="min-h-[100px] resize-none"
+            />
           </div>
-          {imagePreview ? (
-            <div className="relative overflow-hidden rounded-xl bg-muted">
-              <img src={imagePreview} alt="" className="max-h-48 w-full object-contain" />
-              <button
-                type="button"
-                onClick={() => {
-                  setImagePreview(null);
-                  setImageFile(null);
-                  const input = document.querySelector<HTMLInputElement>('input[name="imageFile"]');
-                  if (input) input.value = "";
-                }}
-                className="absolute end-2 top-2 rounded-full bg-background/80 p-1 text-foreground hover:bg-background"
-              >
-                <X size={14} />
-              </button>
+
+          <MediaUpload
+            onMediaChange={handleMediaChange}
+            uploadKind="post"
+          />
+
+          <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-3">
+            <div className="flex gap-3 text-xs text-muted-foreground">
+              <Link href="/memory/submit" className="transition hover:text-primary">{links.memory}</Link>
+              <span>·</span>
+              <Link href="/ideas/submit" className="transition hover:text-primary">{links.idea}</Link>
             </div>
-          ) : null}
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="min-h-11" disabled={submitting || imageUploading}>
-              {t("cancel")}
-            </Button>
-            <SubmitButton label={t("post")} loading={imageUploading ? imageT("uploading") : t("posting")} pending={submitting || imageUploading} />
+
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="ghost" onClick={() => setShowForm(false)} className="min-h-10" disabled={submitting}>
+                {t("cancel")}
+              </Button>
+              <SubmitButton label={t("post")} loading={t("posting")} pending={submitting} />
+            </div>
           </div>
         </form>
       </CardContent>
     </Card>
   );
 }
-
-const quickActions = [
-  {key: "photo", icon: ImagePlus},
-  {key: "event", icon: CalendarDays},
-  {key: "memory", icon: Images},
-  {key: "idea", icon: Lightbulb},
-] as const;

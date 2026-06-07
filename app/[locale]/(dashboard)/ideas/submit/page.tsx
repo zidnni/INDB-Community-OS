@@ -60,6 +60,11 @@ export default async function SubmitIdeaPage({
         description: idea.description,
         category_id: idea.category_id,
         image_url: idea.image_url,
+        media: idea.media?.map((m) => ({
+          storage_path: m.storage_path,
+          url: m.url,
+          type: m.type,
+        })),
       };
     }
   }

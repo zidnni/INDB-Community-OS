@@ -555,15 +555,16 @@
     "submitFailed": "Something went wrong while submitting"
   },
   "ImageUpload": {
-    "tooLarge": "Image is too large. Please choose a smaller image.",
-    "invalidType": "Please choose a JPG, PNG, or WebP image.",
-    "uploading": "Uploading image...",
-    "success": "Image uploaded successfully.",
-    "chooseImage": "Add image",
-    "failed": "Failed to upload image.",
+    "tooLarge": "File is too large. Please choose a smaller file.",
+    "invalidType": "Please choose a valid file (JPG, PNG, WebP, MP4, WebM, MOV).",
+    "uploading": "Uploading...",
+    "success": "Uploaded successfully.",
+    "chooseImage": "Add photos",
+    "chooseVideo": "Add video",
+    "failed": "Failed to upload.",
     "compressionFailed": "Failed to prepare image for upload.",
-    "notAuthenticated": "Please log in before uploading an image.",
-    "noFile": "Please choose an image to upload."
+    "notAuthenticated": "Please log in before uploading.",
+    "noFile": "Please choose a file to upload."
   },
   "Brand": {
     "title": "INDB Community OS",

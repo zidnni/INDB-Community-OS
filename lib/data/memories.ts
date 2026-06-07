@@ -1,5 +1,30 @@
 import {createClient} from "@/lib/supabase/server";
-import type {MemoryCommentWithAuthor, MemoryWithContributor} from "@/types/database";
+import type {MemoryCommentWithAuthor, MemoryMediaRow, MemoryWithContributor} from "@/types/database";
+
+async function attachMemoryMedia(memories: MemoryWithContributor[]): Promise<MemoryWithContributor[]> {
+  if (memories.length === 0) return memories;
+  const supabase = await createClient();
+  const memoryIds = memories.map((m) => m.id);
+
+  const {data: mediaRows} = await supabase
+    .from("memory_media")
+    .select("*")
+    .in("memory_id", memoryIds)
+    .order("position", {ascending: true});
+
+  const mediaMap = new Map<string, MemoryMediaRow[]>();
+  for (const row of mediaRows ?? []) {
+    const list = mediaMap.get(row.memory_id) ?? [];
+    list.push(row as MemoryMediaRow);
+    mediaMap.set(row.memory_id, list);
+  }
+
+  for (const memory of memories) {
+    memory.media = mediaMap.get(memory.id) ?? [];
+  }
+
+  return memories;
+}
 
 export async function getVisibleMemories(): Promise<MemoryWithContributor[]> {
   return getApprovedMemories();
@@ -17,7 +42,8 @@ export async function getApprovedMemories(): Promise<MemoryWithContributor[]> {
     .eq("verification_status", "approved")
     .order("year", {ascending: false});
 
-  return (data ?? []) as unknown as MemoryWithContributor[];
+  const memories = (data ?? []) as unknown as MemoryWithContributor[];
+  return attachMemoryMedia(memories);
 }
 
 export async function getMemoryById(id: string): Promise<MemoryWithContributor | null> {
@@ -32,7 +58,10 @@ export async function getMemoryById(id: string): Promise<MemoryWithContributor |
     .eq("id", id)
     .single();
 
-  return data as unknown as MemoryWithContributor | null;
+  if (!data) return null;
+  const memories = [data] as unknown as MemoryWithContributor[];
+  await attachMemoryMedia(memories);
+  return memories[0] ?? null;
 }
 
 export async function getPendingMemoriesCount(): Promise<number> {
@@ -90,5 +119,6 @@ export async function getUserMemories(userId: string): Promise<MemoryWithContrib
     .eq("contributor_id", userId)
     .order("created_at", {ascending: false});
 
-  return (data ?? []) as unknown as MemoryWithContributor[];
+  const memories = (data ?? []) as unknown as MemoryWithContributor[];
+  return attachMemoryMedia(memories);
 }

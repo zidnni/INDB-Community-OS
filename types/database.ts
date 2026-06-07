@@ -37,6 +37,17 @@ export interface CategoryRow {
   created_at: string;
 }
 
+export interface PostMediaRow {
+  id: string;
+  post_id: string;
+  url: string;
+  type: "image" | "video";
+  mime_type: string;
+  storage_path: string;
+  position: number;
+  created_at: string;
+}
+
 export interface PostRow {
   id: string;
   author_id: string | null;
@@ -96,6 +107,17 @@ export interface UserFollowRow {
   created_at: string;
 }
 
+export interface IdeaMediaRow {
+  id: string;
+  idea_id: string;
+  url: string;
+  type: "image" | "video";
+  mime_type: string;
+  storage_path: string;
+  position: number;
+  created_at: string;
+}
+
 export interface MemoryRow {
   id: string;
   contributor_id: string | null;
@@ -115,11 +137,11 @@ export interface MemoryRow {
 export interface MemoryMediaRow {
   id: string;
   memory_id: string;
-  uploader_id: string | null;
-  bucket: string;
-  file_path: string;
-  media_type: string;
-  caption: string | null;
+  url: string;
+  type: "image" | "video";
+  mime_type: string;
+  storage_path: string;
+  position: number;
   created_at: string;
 }
 
@@ -237,6 +259,7 @@ export interface PostWithAuthor extends PostRow {
   user_reaction?: ReactionType | null;
   reaction_counts?: Record<string, number>;
   user_saved?: boolean;
+  media?: PostMediaRow[];
 }
 
 export interface MemoryReactionRow {
@@ -266,6 +289,7 @@ export interface SavedMemoryRow {
 
 export interface MemoryWithContributor extends MemoryRow {
   contributor: Pick<ProfileRow, "id" | "username" | "full_name" | "avatar_url"> | null;
+  media?: MemoryMediaRow[];
 }
 
 export interface MemoryCommentWithAuthor extends MemoryCommentRow {
@@ -275,6 +299,7 @@ export interface MemoryCommentWithAuthor extends MemoryCommentRow {
 export interface IdeaWithAuthor extends IdeaRow {
   author: Pick<ProfileRow, "id" | "username" | "full_name" | "avatar_url"> | null;
   category: Pick<CategoryRow, "id" | "slug" | "name_en" | "name_fr" | "name_ar"> | null;
+  media?: IdeaMediaRow[];
 }
 
 export interface IdeaWithSupport extends IdeaWithAuthor {

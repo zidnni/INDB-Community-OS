@@ -555,15 +555,16 @@
     "submitFailed": "Une erreur est survenue lors de l'envoi"
   },
   "ImageUpload": {
-    "tooLarge": "L’image est trop volumineuse. Veuillez choisir une image plus petite.",
-    "invalidType": "Veuillez choisir une image JPG, PNG ou WebP.",
-    "uploading": "Téléversement de l’image...",
-    "success": "Image téléversée avec succès.",
-    "chooseImage": "Ajouter une image",
-    "failed": "Échec du téléversement de l’image.",
-    "compressionFailed": "Échec de la préparation de l’image.",
-    "notAuthenticated": "Veuillez vous connecter avant de téléverser une image.",
-    "noFile": "Veuillez choisir une image à téléverser."
+    "tooLarge": "Le fichier est trop volumineux. Veuillez choisir un fichier plus petit.",
+    "invalidType": "Veuillez choisir un fichier valide (JPG, PNG, WebP, MP4, WebM, MOV).",
+    "uploading": "Téléversement...",
+    "success": "Téléversé avec succès.",
+    "chooseImage": "Ajouter des photos",
+    "chooseVideo": "Ajouter une vidéo",
+    "failed": "Échec du téléversement.",
+    "compressionFailed": "Échec de la préparation de l'image.",
+    "notAuthenticated": "Veuillez vous connecter avant de téléverser.",
+    "noFile": "Veuillez choisir un fichier à téléverser."
   },
   "Brand": {
     "title": "INDB Community OS",

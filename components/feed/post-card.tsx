@@ -19,6 +19,7 @@ import {Link, usePathname} from "@/lib/i18n/routing";
 import {withLocale} from "@/lib/i18n/paths";
 import {createClient} from "@/lib/supabase/client";
 import type {PostWithAuthor, CommentWithAuthor} from "@/types/database";
+import {MediaGallery} from "@/components/shared/media-gallery";
 import {detectContentLanguage, type ContentLanguage} from "@/lib/i18n/detectContentLanguage";
 import {translateContent} from "@/lib/i18n/translateContent";
 import {
@@ -328,7 +329,11 @@ export function PostCard({
             ) : null}
           </div>
 
-          {post.image_url ? (
+          {post.media && post.media.length > 0 ? (
+            <MediaGallery
+              items={post.media.map((m) => ({url: m.url, type: m.type}))}
+            />
+          ) : post.image_url ? (
             <div className="overflow-hidden rounded-2xl border border-border/70">
               <img
                 src={post.image_url}

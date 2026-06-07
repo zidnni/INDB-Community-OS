@@ -15,6 +15,7 @@ import {useCurrentUser} from "@/hooks/use-current-user";
 import {Link, useRouter} from "@/lib/i18n/routing";
 import {cn} from "@/lib/utils/cn";
 import type {IdeaBadge, IdeaWithAuthor} from "@/types/database";
+import {MediaGallery} from "@/components/shared/media-gallery";
 
 const badgeTranslationKeys: Record<IdeaBadge, string> = {
   new_idea: "badgeNewIdea",
@@ -184,7 +185,12 @@ export function IdeaCard({idea, totalUsers, currentUserId}: IdeaCardProps) {
       transition={{duration: 0.28, ease: "easeOut"}}
     >
       <Card className="w-full overflow-hidden border-border/70 shadow-[0_14px_34px_rgba(8,33,56,0.08)]">
-        {idea.image_url ? (
+        {idea.media && idea.media.length > 0 ? (
+          <MediaGallery
+            items={idea.media.map((m) => ({url: m.url, type: m.type}))}
+            className="max-h-48"
+          />
+        ) : idea.image_url ? (
           <div className="relative h-48 w-full overflow-hidden">
             <img src={idea.image_url} alt={idea.title} className="h-full w-full object-cover" />
           </div>

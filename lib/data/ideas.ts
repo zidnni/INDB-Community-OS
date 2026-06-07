@@ -1,7 +1,32 @@
 import {createClient} from "@/lib/supabase/server";
 import {calculateIdeaSupport} from "@/lib/ideas/support";
 import {getTotalActiveUsers} from "@/lib/data/stats";
-import type {IdeaCommentWithAuthor, IdeaWithAuthor, IdeaWithSupport} from "@/types/database";
+import type {IdeaCommentWithAuthor, IdeaMediaRow, IdeaWithAuthor, IdeaWithSupport} from "@/types/database";
+
+async function attachIdeaMedia(ideas: IdeaWithAuthor[]): Promise<IdeaWithAuthor[]> {
+  if (ideas.length === 0) return ideas;
+  const supabase = await createClient();
+  const ideaIds = ideas.map((i) => i.id);
+
+  const {data: mediaRows} = await supabase
+    .from("idea_media")
+    .select("*")
+    .in("idea_id", ideaIds)
+    .order("position", {ascending: true});
+
+  const mediaMap = new Map<string, IdeaMediaRow[]>();
+  for (const row of mediaRows ?? []) {
+    const list = mediaMap.get(row.idea_id) ?? [];
+    list.push(row as IdeaMediaRow);
+    mediaMap.set(row.idea_id, list);
+  }
+
+  for (const idea of ideas) {
+    idea.media = mediaMap.get(idea.id) ?? [];
+  }
+
+  return ideas;
+}
 
 export async function getIdeas(): Promise<{ideas: IdeaWithSupport[]; totalUsers: number}> {
   const supabase = await createClient();
@@ -16,6 +41,7 @@ export async function getIdeas(): Promise<{ideas: IdeaWithSupport[]; totalUsers:
     .order("created_at", {ascending: false});
 
   const ideas = (data ?? []) as unknown as IdeaWithAuthor[];
+  await attachIdeaMedia(ideas);
   const totalUsers = await getTotalActiveUsers();
 
   const withSupport: IdeaWithSupport[] = ideas.map((idea) => {
@@ -45,7 +71,8 @@ export async function getUserIdeas(userId: string): Promise<IdeaWithAuthor[]> {
     .eq("author_id", userId)
     .order("created_at", {ascending: false});
 
-  return (data ?? []) as unknown as IdeaWithAuthor[];
+  const ideas = (data ?? []) as unknown as IdeaWithAuthor[];
+  return attachIdeaMedia(ideas);
 }
 
 export async function getIdeaById(id: string): Promise<IdeaWithAuthor | null> {
@@ -61,7 +88,10 @@ export async function getIdeaById(id: string): Promise<IdeaWithAuthor | null> {
     .eq("id", id)
     .single();
 
-  return (data as unknown as IdeaWithAuthor) ?? null;
+  if (!data) return null;
+  const ideas = [data] as unknown as IdeaWithAuthor[];
+  await attachIdeaMedia(ideas);
+  return ideas[0] ?? null;
 }
 
 export async function getIdeaComments(ideaId: string): Promise<IdeaCommentWithAuthor[]> {

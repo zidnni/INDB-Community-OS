@@ -555,15 +555,16 @@
     "submitFailed": "حدث خطأ أثناء الإرسال"
   },
   "ImageUpload": {
-    "tooLarge": "الصورة كبيرة جدًا. يرجى اختيار صورة أصغر.",
-    "invalidType": "يرجى اختيار صورة JPG أو PNG أو WebP.",
-    "uploading": "جارٍ رفع الصورة...",
-    "success": "تم رفع الصورة بنجاح.",
-    "chooseImage": "إضافة صورة",
-    "failed": "فشل رفع الصورة.",
+    "tooLarge": "الملف كبير جدًا. يرجى اختيار ملف أصغر.",
+    "invalidType": "يرجى اختيار ملف صالح (JPG, PNG, WebP, MP4, WebM, MOV).",
+    "uploading": "جارٍ الرفع...",
+    "success": "تم الرفع بنجاح.",
+    "chooseImage": "إضافة صور",
+    "chooseVideo": "إضافة فيديو",
+    "failed": "فشل الرفع.",
     "compressionFailed": "فشل تجهيز الصورة للرفع.",
-    "notAuthenticated": "يرجى تسجيل الدخول قبل رفع الصورة.",
-    "noFile": "يرجى اختيار صورة لرفعها."
+    "notAuthenticated": "يرجى تسجيل الدخول قبل الرفع.",
+    "noFile": "يرجى اختيار ملف لرفعه."
   },
   "Brand": {
     "title": "INDB Community OS",
