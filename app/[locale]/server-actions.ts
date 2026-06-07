@@ -6,13 +6,7 @@ import {getTranslations} from "next-intl/server";
 
 import {routing} from "@/lib/i18n/routing";
 import {withLocale} from "@/lib/i18n/paths";
-import {
-  type ImageUploadKind,
-  validateCompressedImageFile,
-  validateVideoFile,
-  isVideoFile,
-  isImageFile,
-} from "@/lib/images/upload-config";
+import {type ImageUploadKind, validateCompressedImageFile} from "@/lib/images/upload-config";
 import {createClient} from "@/lib/supabase/server";
 import {toggleFollow} from "@/lib/data/follows";
 import {
@@ -253,34 +247,11 @@ async function uploadImageFile(
   return {url: result.url};
 }
 
-async function uploadMediaFile(
-  file: File,
-  bucket: string,
-  userId: string,
-  pathPrefix: string,
-): Promise<{url?: string; storagePath?: string; error?: string}> {
-  if (isVideoFile(file)) {
-    const validationError = validateVideoFile(file);
-    if (validationError) {
-      return {error: validationError};
-    }
-  } else if (isImageFile(file)) {
-    // Images are compressed client-side, so we just check if it's valid
-  } else {
-    return {error: "invalidType"};
-  }
-
-  const result = await uploadFile(file, bucket, userId, pathPrefix);
-  if (!result.url) {
-    return {error: "failed"};
-  }
-
-  return {url: result.url, storagePath: result.storagePath ?? undefined};
-}
-
-export async function createPostAction(formData: FormData) {
+export async function createPostAction(
+  formData: FormData,
+): Promise<{success: true; id: string} | {success: false; error: string}> {
   const locale = normalizeLocale(formData.get("locale"));
-  const returnPath = getReturnPath(formData, "/feed");
+  const errorsT = await getTranslations({locale, namespace: "Errors"});
   const supabase = await createClient();
 
   const {
@@ -288,8 +259,7 @@ export async function createPostAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    const next = encodeURIComponent(returnPath);
-    redirect(toPath(locale, `/login?next=${next}`));
+    return {success: false, error: errorsT("submitFailed")};
   }
 
   const categoryIdRaw = formData.get("categoryId");
@@ -299,7 +269,7 @@ export async function createPostAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirect(toPath(locale, appendParam(returnPath, "error", "Invalid post content")));
+    return {success: false, error: errorsT("invalidPost")};
   }
 
   // Read pre-uploaded media metadata (files already uploaded directly to Supabase via browser)
@@ -333,8 +303,12 @@ export async function createPostAction(formData: FormData) {
     .select("id")
     .single();
 
+  if (!newPost) {
+    return {success: false, error: errorsT("submitFailed")};
+  }
+
   // Insert media records
-  if (newPost && uploadedMedia.length > 0) {
+  if (uploadedMedia.length > 0) {
     await insertPostMedia(
       uploadedMedia.map((m, i) => ({
         post_id: newPost.id,
@@ -347,12 +321,16 @@ export async function createPostAction(formData: FormData) {
     );
   }
 
-  revalidatePath(toPath(locale, returnPath));
-  redirect(toPath(locale, appendParam(returnPath, "postCreated", "1")));
+  revalidatePath("/", "layout");
+
+  return {success: true, id: newPost.id};
 }
 
-export async function updatePostAction(formData: FormData) {
+export async function updatePostAction(
+  formData: FormData,
+): Promise<{success: true} | {success: false; error: string}> {
   const locale = normalizeLocale(formData.get("locale"));
+  const errorsT = await getTranslations({locale, namespace: "Errors"});
   const supabase = await createClient();
 
   const {
@@ -360,12 +338,12 @@ export async function updatePostAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(toPath(locale, "/login"));
+    return {success: false, error: errorsT("submitFailed")};
   }
 
   const postId = formData.get("postId");
   if (typeof postId !== "string") {
-    redirect(toPath(locale, "/feed"));
+    return {success: false, error: errorsT("invalidPost")};
   }
 
   const {data: existing} = await supabase
@@ -375,7 +353,7 @@ export async function updatePostAction(formData: FormData) {
     .single();
 
   if (!existing || existing.author_id !== user.id) {
-    redirect(toPath(locale, "/feed"));
+    return {success: false, error: errorsT("submitFailed")};
   }
 
   const categoryIdRaw = formData.get("categoryId");
@@ -385,7 +363,7 @@ export async function updatePostAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    redirect(toPath(locale, `/post/edit?id=${encodeURIComponent(postId)}&error=invalid`));
+    return {success: false, error: errorsT("invalidPost")};
   }
 
   // Handle removed media
@@ -455,8 +433,9 @@ export async function updatePostAction(formData: FormData) {
     })
     .eq("id", postId);
 
-  revalidatePath(toPath(locale, "/feed"));
-  redirect(toPath(locale, "/feed?postUpdated=1"));
+  revalidatePath("/", "layout");
+
+  return {success: true};
 }
 
 export async function addCommentAction(formData: FormData) {
@@ -896,7 +875,9 @@ export async function submitMemoryAction(
   return {success: true, memoryId: memory.id};
 }
 
-export async function submitIdeaAction(formData: FormData) {
+export async function submitIdeaAction(
+  formData: FormData,
+): Promise<{success: true; id: string} | {success: false; error: string}> {
   const locale = normalizeLocale(formData.get("locale"));
   const errorsT = await getTranslations({locale, namespace: "Errors"});
   const supabase = await createClient();
@@ -906,7 +887,7 @@ export async function submitIdeaAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(toPath(locale, "/login"));
+    return {success: false, error: errorsT("submitFailed")};
   }
 
   const rawCategoryId = formData.get("categoryId");
@@ -918,7 +899,7 @@ export async function submitIdeaAction(formData: FormData) {
 
   if (!parsed.success) {
     const errorMsg = getValidationError(parsed, errorsT, "invalidIdea");
-    redirect(toPath(locale, `/ideas/submit?error=${encodeURIComponent(errorMsg)}`));
+    return {success: false, error: errorMsg};
   }
 
   // Read pre-uploaded media metadata
@@ -950,7 +931,7 @@ export async function submitIdeaAction(formData: FormData) {
     .single();
 
   if (insertError || !newIdea) {
-    redirect(toPath(locale, appendParam("/ideas/submit", "error", insertError?.message ?? "Submit failed")));
+    return {success: false, error: errorsT("submitFailed")};
   }
 
   if (uploadedMedia.length > 0) {
@@ -966,11 +947,14 @@ export async function submitIdeaAction(formData: FormData) {
     );
   }
 
-  revalidatePath(toPath(locale, "/ideas"));
-  redirect(toPath(locale, "/ideas?ideaSubmitted=1"));
+  revalidatePath("/", "layout");
+
+  return {success: true, id: newIdea.id};
 }
 
-export async function updateIdeaAction(formData: FormData) {
+export async function updateIdeaAction(
+  formData: FormData,
+): Promise<{success: true} | {success: false; error: string}> {
   const locale = normalizeLocale(formData.get("locale"));
   const errorsT = await getTranslations({locale, namespace: "Errors"});
   const supabase = await createClient();
@@ -980,12 +964,12 @@ export async function updateIdeaAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect(toPath(locale, "/login"));
+    return {success: false, error: errorsT("submitFailed")};
   }
 
   const ideaId = formData.get("ideaId");
   if (typeof ideaId !== "string") {
-    redirect(toPath(locale, "/ideas"));
+    return {success: false, error: errorsT("invalidIdea")};
   }
 
   const {data: existing} = await supabase
@@ -995,7 +979,7 @@ export async function updateIdeaAction(formData: FormData) {
     .single();
 
   if (!existing || existing.author_id !== user.id) {
-    redirect(toPath(locale, "/ideas"));
+    return {success: false, error: errorsT("submitFailed")};
   }
 
   const rawCategoryId = formData.get("categoryId");
@@ -1007,7 +991,7 @@ export async function updateIdeaAction(formData: FormData) {
 
   if (!parsed.success) {
     const errorMsg = getValidationError(parsed, errorsT, "invalidIdea");
-    redirect(toPath(locale, `/ideas/submit?id=${encodeURIComponent(ideaId)}&error=${encodeURIComponent(errorMsg)}`));
+    return {success: false, error: errorMsg};
   }
 
   // Handle removed media
@@ -1077,11 +1061,12 @@ export async function updateIdeaAction(formData: FormData) {
     .eq("id", ideaId);
 
   if (updateError) {
-    redirect(toPath(locale, `/ideas/submit?id=${encodeURIComponent(ideaId)}&error=${encodeURIComponent(updateError.message)}`));
+    return {success: false, error: updateError.message};
   }
 
-  revalidatePath(toPath(locale, "/ideas"));
-  redirect(toPath(locale, "/ideas?ideaUpdated=1"));
+  revalidatePath("/", "layout");
+
+  return {success: true};
 }
 
 export async function deleteIdeaAction(

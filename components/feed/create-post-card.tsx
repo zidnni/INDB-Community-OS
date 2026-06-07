@@ -10,7 +10,7 @@ import {MediaUpload, type MediaItem} from "@/components/shared/media-upload";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent} from "@/components/ui/card";
 import {Textarea} from "@/components/ui/textarea";
-import {Link, usePathname} from "@/lib/i18n/routing";
+import {Link, usePathname, useRouter} from "@/lib/i18n/routing";
 import {createPostAction} from "@/app/[locale]/server-actions";
 
 const PLACEHOLDER: Record<string, string> = {
@@ -35,8 +35,10 @@ function SubmitButton({label, loading, pending}: {label: string; loading: string
 
 export function CreatePostCard({avatarUrl, profileName}: {avatarUrl?: string | null; profileName?: string}) {
   const t = useTranslations("FeedComposer");
+  const toastT = useTranslations("Toasts");
   const locale = useLocale();
   const pathname = usePathname();
+  const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [removedMediaPaths, setRemovedMediaPaths] = useState<string[]>([]);
@@ -71,9 +73,16 @@ export function CreatePostCard({avatarUrl, profileName}: {avatarUrl?: string | n
     }
 
     try {
-      await createPostAction(formData);
+      const result = await createPostAction(formData);
+      if (result.success) {
+        setShowForm(false);
+        toast.success(toastT("postCreated"));
+        router.refresh();
+        return;
+      }
+      toast.error(result.error ?? t("errors.submitFailed"));
     } catch {
-      toast.error(t("postFailed") ?? "Failed to create post");
+      toast.error(t("errors.submitFailed"));
     } finally {
       setSubmitting(false);
     }

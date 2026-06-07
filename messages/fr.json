@@ -216,8 +216,13 @@
     "socialPrompt": "Quoi de neuf à Nouadhibou ?",
     "editTitle": "Modifier la publication",
     "save": "Enregistrer",
+    "saving": "Enregistrement...",
     "notFound": "Publication introuvable",
-    "notFoundDescription": "La publication que vous essayez de modifier n'existe pas."
+    "notFoundDescription": "La publication que vous essayez de modifier n'existe pas.",
+    "errors": {
+      "submitFailed": "Impossible de publier la publication. Veuillez réessayer.",
+      "postFailed": "Impossible de publier la publication. Veuillez réessayer."
+    }
   },
   "Memory": {
     "title": "Archives",
@@ -346,7 +351,8 @@
     "errors": {
       "title": "Veuillez saisir un titre valide.",
       "description": "Veuillez décrire l'idée plus clairement.",
-      "category": "Veuillez choisir une catégorie."
+      "category": "Veuillez choisir une catégorie.",
+      "submitFailed": "Impossible de soumettre l'idée. Veuillez réessayer."
     },
     "submitting": "Envoi...",
     "submit": "Soumettre l'idée",
@@ -528,6 +534,7 @@
   },
   "Toasts": {
     "postCreated": "Publication créée",
+    "postUpdated": "Publication mise à jour",
     "commentAdded": "Commentaire ajouté",
     "commentDeleted": "Commentaire supprimé",
     "postDeleted": "Publication supprimée",

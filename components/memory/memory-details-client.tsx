@@ -15,6 +15,7 @@ import {Link, useRouter} from "@/lib/i18n/routing";
 import {createClient} from "@/lib/supabase/client";
 import type {MemoryReactionType, MemoryWithContributor} from "@/types/database";
 import {MediaGallery} from "@/components/shared/media-gallery";
+import {ImageLightbox} from "@/components/media/image-lightbox";
 
 export function MemoryDetailsClient({
   memory,
@@ -31,6 +32,7 @@ export function MemoryDetailsClient({
   const [userReaction, setUserReaction] = useState<MemoryReactionType | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -73,7 +75,9 @@ export function MemoryDetailsClient({
           />
         ) : memory.media_url ? (
           <div className="relative h-72 w-full sm:h-80 md:h-96">
-            <img src={memory.media_url} alt={memory.title} className="h-full w-full object-cover" />
+            <button type="button" onClick={() => setLightboxOpen(true)} className="block h-full w-full cursor-pointer">
+              <img src={memory.media_url} alt={memory.title} className="h-full w-full object-cover" />
+            </button>
           </div>
         ) : (
           <div className="flex h-72 w-full items-center justify-center bg-gradient-to-br from-primary/10 via-primary/5 to-muted sm:h-80">
@@ -83,6 +87,14 @@ export function MemoryDetailsClient({
             </div>
           </div>
         )}
+        {memory.media_url && (!memory.media || memory.media.length === 0) ? (
+          <ImageLightbox
+            images={[memory.media_url]}
+            initialIndex={0}
+            open={lightboxOpen}
+            onOpenChange={setLightboxOpen}
+          />
+        ) : null}
 
         <CardHeader className="space-y-3">
           <div className="flex flex-wrap items-start justify-between gap-2">

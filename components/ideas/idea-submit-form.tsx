@@ -107,13 +107,22 @@ export function IdeaSubmitForm({
     setSubmitting(true);
 
     try {
-      if (isEditing) {
-        await updateIdeaAction(formData);
-      } else {
-        await submitIdeaAction(formData);
+      const result = isEditing
+        ? await updateIdeaAction(formData)
+        : await submitIdeaAction(formData);
+
+      if (result.success) {
+        toast.success(t("successMessage"));
+        router.push("/ideas");
+        router.refresh();
+        return;
       }
+
+      toast.error(result.error || t("errors.submitFailed"));
     } catch {
-      toast.error(t("errors.submitFailed") ?? "Failed to submit");
+      toast.error(t("errors.submitFailed"));
+    } finally {
+      setSubmitting(false);
     }
   }
 

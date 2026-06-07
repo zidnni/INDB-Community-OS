@@ -216,8 +216,13 @@
     "socialPrompt": "What's happening in Nouadhibou?",
     "editTitle": "Edit post",
     "save": "Save",
+    "saving": "Saving...",
     "notFound": "Post not found",
-    "notFoundDescription": "The post you are trying to edit does not exist."
+    "notFoundDescription": "The post you are trying to edit does not exist.",
+    "errors": {
+      "submitFailed": "Could not publish post. Please try again.",
+      "postFailed": "Could not publish post. Please try again."
+    }
   },
   "Memory": {
     "title": "Memory Archive",
@@ -346,7 +351,8 @@
     "errors": {
       "title": "Please enter a valid idea title.",
       "description": "Please describe the idea clearly.",
-      "category": "Please choose a category."
+      "category": "Please choose a category.",
+      "submitFailed": "Could not submit idea. Please try again."
     },
     "submitting": "Submitting...",
     "submit": "Submit idea",
@@ -528,6 +534,7 @@
   },
   "Toasts": {
     "postCreated": "Post created",
+    "postUpdated": "Post updated",
     "commentAdded": "Comment added",
     "commentDeleted": "Comment deleted",
     "postDeleted": "Post deleted",

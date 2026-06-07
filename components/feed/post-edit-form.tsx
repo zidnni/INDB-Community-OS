@@ -8,6 +8,7 @@ import {MediaUpload, type MediaItem, type ExistingMediaItem} from "@/components/
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Textarea} from "@/components/ui/textarea";
+import {useRouter} from "@/lib/i18n/routing";
 import {updatePostAction} from "@/app/[locale]/server-actions";
 
 export function PostEditForm({
@@ -25,8 +26,11 @@ export function PostEditForm({
   } | null;
 }) {
   const t = useTranslations("FeedComposer");
+  const toastT = useTranslations("Toasts");
+  const router = useRouter();
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [removedMediaPaths, setRemovedMediaPaths] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
 
   const isEditing = !!initialData;
 
@@ -61,7 +65,11 @@ export function PostEditForm({
       </CardHeader>
       <CardContent>
         <form
-          action={async (formData: FormData) => {
+          onSubmit={async (e: React.FormEvent<HTMLFormElement>) => {
+            e.preventDefault();
+            if (submitting) return;
+            setSubmitting(true);
+            const formData = new FormData(e.currentTarget);
             const uploaded = mediaItems.filter((m) => !m.failed && m.url);
             if (uploaded.length > 0) {
               formData.set("mediaData", JSON.stringify(
@@ -72,9 +80,18 @@ export function PostEditForm({
               formData.set("removedMedia", JSON.stringify(removedMediaPaths));
             }
             try {
-              await updatePostAction(formData);
+              const result = await updatePostAction(formData);
+              if (result.success) {
+                toast.success(toastT("postUpdated"));
+                router.push("/feed");
+                router.refresh();
+                return;
+              }
+              toast.error(result.error ?? t("errors.submitFailed"));
             } catch {
-              toast.error("Failed to update post");
+              toast.error(t("errors.submitFailed"));
+            } finally {
+              setSubmitting(false);
             }
           }}
           className="space-y-3"
@@ -104,8 +121,8 @@ export function PostEditForm({
             uploadKind="post"
           />
 
-          <Button type="submit" className="min-h-11 w-full">
-            {t("save") ?? "Save"}
+          <Button type="submit" disabled={submitting} className="min-h-11 w-full">
+            {submitting ? t("saving") ?? "Saving..." : t("save") ?? "Save"}
           </Button>
         </form>
       </CardContent>

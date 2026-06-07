@@ -20,6 +20,7 @@ import {withLocale} from "@/lib/i18n/paths";
 import {createClient} from "@/lib/supabase/client";
 import type {PostWithAuthor, CommentWithAuthor} from "@/types/database";
 import {MediaGallery} from "@/components/shared/media-gallery";
+import {ImageLightbox} from "@/components/media/image-lightbox";
 import {detectContentLanguage, type ContentLanguage} from "@/lib/i18n/detectContentLanguage";
 import {translateContent} from "@/lib/i18n/translateContent";
 import {
@@ -96,6 +97,7 @@ export function PostCard({
   const [commentsCount, setCommentsCount] = useState(post.comments_count);
   const [isSaved, setIsSaved] = useState(post.user_saved ?? false);
   const [savesCount, setSavesCount] = useState(post.saves_count);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const authorName = post.author?.full_name ?? post.author?.username ?? t("unknownAuthor");
   const authorProfileHref = post.author?.username ? `/profile/${post.author.username}` : null;
@@ -335,12 +337,22 @@ export function PostCard({
             />
           ) : post.image_url ? (
             <div className="overflow-hidden rounded-2xl border border-border/70">
-              <img
-                src={post.image_url}
-                alt={post.content}
-                className="h-56 w-full object-cover transition duration-300 hover:scale-[1.02] sm:h-72"
-              />
+              <button type="button" onClick={() => setLightboxOpen(true)} className="block w-full cursor-pointer text-start">
+                <img
+                  src={post.image_url}
+                  alt={post.content}
+                  className="h-56 w-full object-cover transition duration-300 hover:scale-[1.02] sm:h-72"
+                />
+              </button>
             </div>
+          ) : null}
+          {post.image_url ? (
+            <ImageLightbox
+              images={[post.image_url]}
+              initialIndex={0}
+              open={lightboxOpen}
+              onOpenChange={setLightboxOpen}
+            />
           ) : null}
 
           <div className="flex items-center gap-1 border-t border-border/60 pt-2">

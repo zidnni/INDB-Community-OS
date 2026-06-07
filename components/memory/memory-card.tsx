@@ -17,6 +17,7 @@ import {Link, useRouter} from "@/lib/i18n/routing";
 import {createClient} from "@/lib/supabase/client";
 import type {MemoryReactionType, MemoryWithContributor} from "@/types/database";
 import {MediaGallery} from "@/components/shared/media-gallery";
+import {ImageLightbox} from "@/components/media/image-lightbox";
 
 function timeAgo(dateStr: string, locale: string): string {
   const now = Date.now();
@@ -56,6 +57,7 @@ export function MemoryCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -118,11 +120,17 @@ export function MemoryCard({
               />
             ) : memory.media_url ? (
               <div className="aspect-[4/3] w-full overflow-hidden rounded-t-2xl bg-muted">
-                <img
-                  src={memory.media_url}
-                  alt={memory.title}
-                  className="h-full w-full object-cover transition duration-300 hover:scale-[1.02]"
-                />
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLightboxOpen(true); }}
+                  className="block h-full w-full cursor-pointer"
+                >
+                  <img
+                    src={memory.media_url}
+                    alt={memory.title}
+                    className="h-full w-full object-cover transition duration-300 hover:scale-[1.02]"
+                  />
+                </button>
               </div>
             ) : (
               <div className="flex aspect-[4/3] w-full items-center justify-center rounded-t-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-muted">
@@ -133,6 +141,14 @@ export function MemoryCard({
               </div>
             )}
           </Link>
+          {memory.media_url && (!memory.media || memory.media.length === 0) ? (
+            <ImageLightbox
+              images={[memory.media_url]}
+              initialIndex={0}
+              open={lightboxOpen}
+              onOpenChange={setLightboxOpen}
+            />
+          ) : null}
 
           <div className="absolute start-3 top-3">
             <Badge className="bg-card/90 px-2.5 py-1 text-xs text-primary shadow-sm backdrop-blur sm:text-sm">

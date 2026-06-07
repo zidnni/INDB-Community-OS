@@ -16,6 +16,7 @@ import {Link, useRouter} from "@/lib/i18n/routing";
 import {cn} from "@/lib/utils/cn";
 import type {IdeaBadge, IdeaWithAuthor} from "@/types/database";
 import {MediaGallery} from "@/components/shared/media-gallery";
+import {ImageLightbox} from "@/components/media/image-lightbox";
 
 const badgeTranslationKeys: Record<IdeaBadge, string> = {
   new_idea: "badgeNewIdea",
@@ -77,6 +78,7 @@ export function IdeaCard({idea, totalUsers, currentUserId}: IdeaCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const descRef = useRef<HTMLParagraphElement>(null);
 
@@ -192,8 +194,18 @@ export function IdeaCard({idea, totalUsers, currentUserId}: IdeaCardProps) {
           />
         ) : idea.image_url ? (
           <div className="relative h-48 w-full overflow-hidden">
-            <img src={idea.image_url} alt={idea.title} className="h-full w-full object-cover" />
+            <button type="button" onClick={() => setLightboxOpen(true)} className="block h-full w-full cursor-pointer">
+              <img src={idea.image_url} alt={idea.title} className="h-full w-full object-cover" />
+            </button>
           </div>
+        ) : null}
+        {idea.image_url ? (
+          <ImageLightbox
+            images={[idea.image_url]}
+            initialIndex={0}
+            open={lightboxOpen}
+            onOpenChange={setLightboxOpen}
+          />
         ) : null}
         <CardHeader className="pb-2.5">
           <div className="flex items-start justify-between gap-2">
