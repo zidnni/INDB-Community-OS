@@ -110,7 +110,27 @@
     "toggle": "Toggle theme"
   },
   "Search": {
-    "placeholder": "Search memories, ideas, people..."
+    "title": "Search",
+    "placeholder": "Search the community",
+    "clear": "Clear search",
+    "noResults": "No results found",
+    "viewAll": "View all results",
+    "searching": "Searching...",
+    "error": "Could not complete search",
+    "minLength": "Type at least 2 characters to search.",
+    "resultsFor": "Results for “{query}”",
+    "sections": {
+      "posts": "Posts",
+      "ideas": "Ideas",
+      "memories": "Memories",
+      "people": "People"
+    },
+    "types": {
+      "post": "Post",
+      "idea": "Idea",
+      "memory": "Memory",
+      "profile": "Person"
+    }
   },
   "Notifications": {
     "button": "Notifications",

@@ -110,7 +110,27 @@
     "toggle": "تبديل السمة"
   },
   "Search": {
-    "placeholder": "بحث"
+    "title": "بحث",
+    "placeholder": "ابحث في المجتمع",
+    "clear": "مسح البحث",
+    "noResults": "لا توجد نتائج",
+    "viewAll": "عرض كل النتائج",
+    "searching": "جاري البحث...",
+    "error": "تعذر إكمال البحث",
+    "minLength": "اكتب حرفين على الأقل للبحث.",
+    "resultsFor": "نتائج البحث عن «{query}»",
+    "sections": {
+      "posts": "المنشورات",
+      "ideas": "الأفكار",
+      "memories": "الذكريات",
+      "people": "الأشخاص"
+    },
+    "types": {
+      "post": "منشور",
+      "idea": "فكرة",
+      "memory": "ذكرى",
+      "profile": "شخص"
+    }
   },
   "Notifications": {
     "button": "الإشعارات",

@@ -55,6 +55,9 @@ export async function Navbar({locale}: {locale: string}) {
             <LanguageSwitcher />
           </div>
         </div>
+        <div className="pb-2 md:hidden">
+          <SearchBar />
+        </div>
 
         <div className="hidden h-16 items-center justify-between gap-3 md:flex">
           <div className="flex items-center gap-3">

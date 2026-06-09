@@ -110,7 +110,27 @@
     "toggle": "Changer le thème"
   },
   "Search": {
-    "placeholder": "Rechercher des souvenirs, des idées, des personnes..."
+    "title": "Recherche",
+    "placeholder": "Rechercher dans la communauté",
+    "clear": "Effacer la recherche",
+    "noResults": "Aucun résultat",
+    "viewAll": "Voir tous les résultats",
+    "searching": "Recherche...",
+    "error": "Impossible d’effectuer la recherche",
+    "minLength": "Saisissez au moins 2 caractères pour rechercher.",
+    "resultsFor": "Résultats pour « {query} »",
+    "sections": {
+      "posts": "Publications",
+      "ideas": "Idées",
+      "memories": "Souvenirs",
+      "people": "Personnes"
+    },
+    "types": {
+      "post": "Publication",
+      "idea": "Idée",
+      "memory": "Souvenir",
+      "profile": "Personne"
+    }
   },
   "Notifications": {
     "button": "Notifications",
