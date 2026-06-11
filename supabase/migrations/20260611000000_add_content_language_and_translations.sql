@@ -63,5 +63,18 @@ create policy "content_translations_public_read"
   to anon, authenticated
   using (true);
 
+-- Authenticated users can insert/update cached translations (server action)
+drop policy if exists "content_translations_insert_update" on public.content_translations;
+create policy "content_translations_insert_update"
+  on public.content_translations for insert
+  to authenticated
+  with check (true);
+
+create policy "content_translations_update"
+  on public.content_translations for update
+  to authenticated
+  using (true)
+  with check (true);
+
 -- Server-side insert/update via service_role (no direct user insert)
 -- Service role bypasses RLS, so this is fine

@@ -1,5 +1,6 @@
 "use server";
 
+import {createAdminClient} from "@/lib/supabase/admin";
 import {createClient} from "@/lib/supabase/server";
 import {detectContentLanguage} from "@/lib/i18n/detectContentLanguage";
 import type {ContentLanguage} from "@/types/database";
@@ -31,8 +32,9 @@ async function saveTranslation(
   originalHash: string,
   translatedText: string,
 ): Promise<void> {
-  const supabase = await createClient();
-  await supabase.from("content_translations").upsert(
+  const admin = createAdminClient();
+  const supabase = admin ?? await createClient();
+  const {error} = await supabase.from("content_translations").upsert(
     {
       content_type: contentType,
       content_id: contentId,
@@ -43,26 +45,45 @@ async function saveTranslation(
     },
     {onConflict: "content_type,content_id,target_lang"},
   );
+  if (error) {
+    console.error("translateContentAction: saveTranslation failed", error);
+  }
 }
 
 function hashText(text: string): string {
   return crypto.createHash("sha256").update(text).digest("hex");
 }
 
+const GOOGLE_SUPPORTED_LANGS = new Set(["ar", "bg", "bn", "ca", "cs", "da", "de", "el", "en", "es", "et", "fi", "fr", "gu", "he", "hi", "hr", "hu", "id", "it", "ja", "kn", "ko", "lt", "lv", "ml", "mr", "ms", "nl", "no", "pl", "pt", "ro", "ru", "sk", "sl", "sr", "sv", "sw", "ta", "te", "th", "tl", "tr", "uk", "ur", "vi", "zh"]);
+
 async function callTranslationApi(
   text: string,
-  sourceLang: string,
+  _sourceLang: string,
   targetLang: string,
 ): Promise<string | null> {
+  if (!GOOGLE_SUPPORTED_LANGS.has(targetLang)) {
+    console.error("translateContentAction: Google Translate does not support", targetLang);
+    return null;
+  }
   try {
-    const {default: translate} = await import("translate");
-    const result = await translate(text, {
-      from: sourceLang,
-      to: targetLang,
-      engine: "google",
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      body: new URLSearchParams({q: text}),
     });
-    return typeof result === "string" ? result : null;
-  } catch {
+    if (!res.ok) {
+      console.error("translateContentAction: Google Translate returned", res.status);
+      return null;
+    }
+    const data = await res.json();
+    const translated: string = (data?.[0] ?? [])
+      .map((part: unknown) => Array.isArray(part) ? part[0] : "")
+      .filter(Boolean)
+      .join("");
+    return translated || null;
+  } catch (e) {
+    console.error("translateContentAction: API call failed", e);
     return null;
   }
 }
@@ -102,6 +123,7 @@ export async function translateContentAction(
   );
 
   if (!apiResult) {
+    console.error("translateContentAction: API returned null for", {contentType, contentId, sourceLang, targetLang: targetLang as ContentLanguage});
     throw new Error("Translation unavailable");
   }
 
