@@ -27,11 +27,8 @@ export function TranslateButton({text, contentType, contentId, className = ""}: 
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/translate", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({contentType, contentId, text, targetLang: locale}),
-      });
+      const params = new URLSearchParams({text, target: locale, type: contentType, id: contentId});
+      const res = await fetch("/api/translate?" + params.toString());
       const result = await res.json();
       if (result.error) {
         setError(result.error);
@@ -39,8 +36,8 @@ export function TranslateButton({text, contentType, contentId, className = ""}: 
       }
       setTranslated(result.translatedText);
       setShowingTranslation(true);
-    } catch {
-      setError("unexpected error");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Request failed");
     } finally {
       setLoading(false);
     }
