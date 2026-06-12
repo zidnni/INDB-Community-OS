@@ -73,6 +73,17 @@
 *::before,
 *::after {
   border-color: var(--border);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a,
+input,
+select,
+textarea,
+[role="button"],
+summary {
+  touch-action: manipulation;
 }
 
 html {
