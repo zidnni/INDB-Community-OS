@@ -44,6 +44,7 @@ export const memorySchema = z.object({
   decade: z.string().max(60).optional().or(z.literal("")),
   year: z.string().optional().or(z.literal("")),
   location: z.string().max(120).optional().or(z.literal("")),
+  category: z.string().max(60).optional().or(z.literal("")),
   tags: z.string().optional().or(z.literal("")),
 });
 

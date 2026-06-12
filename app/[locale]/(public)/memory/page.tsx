@@ -48,7 +48,7 @@ export default async function MemoryPage({
         <h1 className="text-xl font-semibold">{t("title")}</h1>
         <p className="text-sm text-muted-foreground">{t("description")}</p>
         <div className="mt-3">
-          <Link href="/timeline">
+          <Link href="/memory/timeline">
             <Button variant="outline" className="min-h-11">
               {t("openTimeline")}
             </Button>

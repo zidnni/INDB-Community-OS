@@ -3,7 +3,7 @@ import type {MemoryCommentWithAuthor, MemoryMediaRow, MemoryReactionType, Memory
 
 const DEFAULT_PAGE_SIZE = 20;
 
-async function attachMemoryMedia(memories: MemoryWithContributor[]): Promise<MemoryWithContributor[]> {
+export async function attachMemoryMedia(memories: MemoryWithContributor[]): Promise<MemoryWithContributor[]> {
   if (memories.length === 0) return memories;
   const supabase = await createClient();
   const memoryIds = memories.map((m) => m.id);

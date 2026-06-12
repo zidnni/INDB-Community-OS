@@ -168,6 +168,7 @@ export interface MemoryRow {
   decade: string | null;
   year: number | null;
   location: string | null;
+  category: string | null;
   media_url: string | null;
   media_type: string;
   verification_status: MemoryVerificationStatus;

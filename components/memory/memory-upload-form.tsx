@@ -12,6 +12,7 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
 import {submitMemoryAction, updateMemoryAction} from "@/app/[locale]/server-actions";
+import {TIMELINE_CATEGORIES} from "@/lib/data/timeline-constants";
 import type {MemoryWithContributor} from "@/types/database";
 
 export function MemoryUploadForm({
@@ -217,6 +218,22 @@ export function MemoryUploadForm({
               defaultValue={existingMemory?.location ?? ""}
               onChange={markDirty}
             />
+
+            <div>
+              <select
+                name="category"
+                defaultValue={existingMemory?.category ?? ""}
+                onChange={markDirty}
+                className="h-11 w-full rounded-xl border border-border/70 bg-card px-3 text-sm text-foreground shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+              >
+                <option value="">{t("fields.category")}</option>
+                {TIMELINE_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <Input
               name="tags"

@@ -26,6 +26,7 @@ import {
 import {toggleReaction, getPostReactionDetails} from "@/lib/data/reactions";
 import {getIdeaVoteDetails} from "@/lib/data/ideas";
 import {getMemoryReactionDetails} from "@/lib/data/memories";
+import {getTimelineMemoriesByYear} from "@/lib/data/memory-timeline";
 import {
   commentSchema,
   communityShareSchema,
@@ -858,6 +859,7 @@ export async function submitMemoryAction(
     decade: formData.get("decade"),
     year: formData.get("year"),
     location: formData.get("location"),
+    category: formData.get("category"),
     tags: formData.get("tags"),
   });
 
@@ -905,6 +907,7 @@ export async function submitMemoryAction(
         decade: parsed.data.decade || null,
         year: parsed.data.year ? Number(parsed.data.year) : null,
         location: parsed.data.location || null,
+        category: parsed.data.category || null,
         media_url,
         media_type: media_type ?? "image",
         verification_status: "approved",
@@ -2039,6 +2042,7 @@ export async function updateMemoryAction(
     decade: formData.get("decade"),
     year: formData.get("year"),
     location: formData.get("location"),
+    category: formData.get("category"),
     tags: formData.get("tags"),
   });
 
@@ -2119,6 +2123,7 @@ export async function updateMemoryAction(
         decade: parsed.data.decade || null,
         year: parsed.data.year ? Number(parsed.data.year) : null,
         location: parsed.data.location || null,
+        category: parsed.data.category || null,
         media_url,
         media_type,
         tags: tags.length > 0 ? tags : null,
@@ -2184,6 +2189,24 @@ export async function shareMemoryAction(
   }
 
   return {success: true};
+}
+
+export async function loadMoreTimelineMemoriesAction({
+  year,
+  category,
+  sort,
+  page = 1,
+}: {
+  year: number;
+  category?: string;
+  sort?: string;
+  page?: number;
+}) {
+  const result = await getTimelineMemoriesByYear({year, category, sort, page});
+  return {
+    memories: result.memories,
+    hasNextPage: result.hasNextPage,
+  };
 }
 
 async function getStrictAdminUserId() {
