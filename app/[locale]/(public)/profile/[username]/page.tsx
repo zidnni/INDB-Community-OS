@@ -1,20 +1,15 @@
-import {CalendarDays, Heart, MapPin, UserRound} from "lucide-react";
+import {CalendarDays, Heart, MapPin} from "lucide-react";
 import type {Metadata} from "next";
 import Image from "next/image";
 import {notFound} from "next/navigation";
 import {getTranslations} from "next-intl/server";
 
-import {PostCard} from "@/components/feed/post-card";
-import {FadlaCard} from "@/components/fadla/fadla-card";
-import {ProfileAbout} from "@/components/profile/profile-about";
 import {ProfileCompleteness} from "@/components/profile/profile-completeness";
+import {ProfileTabsContent} from "@/components/profile/profile-tabs-content";
 import {FollowSummary} from "@/components/profile/follow-summary";
-import {MemoryCard} from "@/components/memory/memory-card";
-import {IdeaCard} from "@/components/ideas/idea-card";
-import {EmptyState} from "@/components/shared/empty-state";
 import {Badge} from "@/components/ui/badge";
 import {Card, CardContent} from "@/components/ui/card";
-import {getCommentsByPost} from "@/lib/data/comments";
+import {getCommentsForPosts} from "@/lib/data/comments";
 import {getContributionRankKey} from "@/lib/contribution";
 import {getFullProfileDetails} from "@/lib/data/profile-details";
 import {getFollowStats, isFollowing} from "@/lib/data/follows";
@@ -88,21 +83,11 @@ export default async function PublicProfilePage({
   const joinDate = formatJoinDate(profile.created_at, locale);
   const contributionScore = profile.contribution_score ?? 0;
   const contributionRank = getContributionRankKey(contributionScore);
+  const commentsByPost = allPosts.length > 0 ? await getCommentsForPosts(allPosts.map((p) => p.id)) : {};
+
   const currentTab = activeTab === "posts" ? "posts" : activeTab === "memories" ? "memories" : activeTab === "ideas" ? "ideas" : activeTab === "shares" ? "shares" : "about";
 
   const t = await getTranslations({locale, namespace: "Profile"});
-  const emptyPosts = await getTranslations({locale, namespace: "EmptyStates.posts"});
-  const emptyMemories = await getTranslations({locale, namespace: "EmptyStates.memories"});
-  const emptyIdeas = await getTranslations({locale, namespace: "EmptyStates.ideas"});
-  const emptyFadla = await getTranslations({locale, namespace: "EmptyStates.fadla"});
-
-  const tabs = [
-    {key: "about", label: t("tabs.about"), count: null},
-    {key: "posts", label: t("tabs.posts"), count: allPosts.length},
-    {key: "memories", label: t("tabs.memories"), count: memories.length},
-    {key: "ideas", label: t("tabs.ideas"), count: ideas.length},
-    {key: "shares", label: t("tabs.shares"), count: shares.length},
-  ] as const;
 
   return (
     <div className="space-y-4">
@@ -234,136 +219,30 @@ export default async function PublicProfilePage({
         />
       )}
 
-      <div className="flex gap-1 overflow-x-auto rounded-2xl border border-border/70 bg-card p-1 shadow-[0_8px_24px_rgba(8,33,56,0.06)]">
-        {tabs.map((tab) => (
-          <Link
-            key={tab.key}
-            href={`/profile/${username}?tab=${tab.key}`}
-            className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
-              currentTab === tab.key
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            }`}
-          >
-            {tab.label}
-            {tab.count !== null ? (
-              <span className={`rounded-full px-2 py-0.5 text-xs ${
-                currentTab === tab.key
-                  ? "bg-primary-foreground/20 text-primary-foreground"
-                  : "bg-muted-foreground/10 text-muted-foreground"
-              }`}>
-                {tab.count}
-              </span>
-            ) : null}
-          </Link>
-        ))}
-      </div>
-
-      {currentTab === "posts" ? (
-        allPosts.length > 0 ? (
-          <div className="space-y-3 sm:space-y-4">
-            {await Promise.all(
-              allPosts.map(async (post) => {
-                const comments = await getCommentsByPost(post.id);
-                return <PostCard key={post.id} post={post} comments={comments} currentUserId={currentUserId} />;
-              }),
-            )}
-          </div>
-        ) : (
-          <EmptyState
-            icon={UserRound}
-            title={emptyPosts("title")}
-            description={emptyPosts("description")}
-            ctaLabel={emptyPosts("cta")}
-            ctaHref="/feed"
-          />
-        )
-      ) : null}
-
-      {currentTab === "memories" ? (
-        memories.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {memories.map((memory) => (
-              <MemoryCard key={memory.id} memory={memory} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            icon={UserRound}
-            title={emptyMemories("title")}
-            description={emptyMemories("description")}
-            ctaLabel={emptyMemories("cta")}
-            ctaHref="/memory/submit"
-          />
-        )
-      ) : null}
-
-      {currentTab === "ideas" ? (
-        ideas.length > 0 ? (
-          <div className="space-y-3 sm:space-y-4">
-            {ideas.map((idea) => (
-              <IdeaCard key={idea.id} idea={idea} currentUserId={currentUserId} />
-            ))}
-
-          </div>
-        ) : (
-          <EmptyState
-            icon={UserRound}
-            title={emptyIdeas("title")}
-            description={emptyIdeas("description")}
-            ctaLabel={emptyIdeas("cta")}
-            ctaHref="/ideas/submit"
-          />
-        )
-      ) : null}
-
-      {currentTab === "shares" ? (
-        shares.length > 0 ? (
-          <div className="grid gap-4 lg:grid-cols-2">
-            {shares.map((share) => (
-              <FadlaCard
-                key={share.id}
-                share={share}
-                currentUserId={currentUserId}
-                locale={locale}
-                compact
-              />
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            icon={UserRound}
-            title={emptyFadla("title")}
-            description={emptyFadla("description")}
-            ctaLabel={emptyFadla("cta")}
-            ctaHref="/fadla"
-          />
-        )
-      ) : null}
-
-      {currentTab === "about" ? (
-        <ProfileAbout
-          profile={{
-            id: profile.id,
-            full_name: profile.full_name,
-            username: profile.username,
-            avatar_url: profile.avatar_url,
-            bio: profile.bio,
-            city: profile.city,
-            hometown: profile.hometown ?? null,
-            languages_spoken: profile.languages_spoken ?? [],
-            contribution_score: contributionScore,
-            created_at: profile.created_at,
-          }}
-          work={profileDetails.work}
-          education={profileDetails.education}
-          interests={profileDetails.interests}
-          hobbies={profileDetails.hobbies}
-          links={profileDetails.links}
-          travel={profileDetails.travel}
-          isOwnProfile={currentUserId === profile.id}
-        />
-      ) : null}
+      <ProfileTabsContent
+        locale={locale}
+        currentUserId={currentUserId}
+        allPosts={allPosts}
+        memories={memories}
+        ideas={ideas}
+        shares={shares}
+        commentsByPost={commentsByPost}
+        profile={{
+          id: profile.id,
+          full_name: profile.full_name,
+          username: profile.username,
+          avatar_url: profile.avatar_url,
+          bio: profile.bio,
+          city: profile.city,
+          hometown: profile.hometown ?? null,
+          languages_spoken: profile.languages_spoken ?? [],
+          contribution_score: contributionScore,
+          created_at: profile.created_at,
+        }}
+        profileDetails={profileDetails}
+        isOwnProfile={currentUserId === profile.id}
+        initialTab={currentTab}
+      />
     </div>
   );
 }
