@@ -68,13 +68,19 @@ function getNotificationIcon(type: string) {
   }
 }
 
-export function NotificationDropdown({locale}: {locale: string}) {
+export function NotificationDropdown({
+  locale,
+  initialUnreadCount = 0,
+}: {
+  locale: string;
+  initialUnreadCount?: number;
+}) {
   const t = useTranslations("Notifications");
   const router = useRouter();
   const supabase = useRef(createClient()).current;
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationWithActor[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
@@ -89,6 +95,12 @@ export function NotificationDropdown({locale}: {locale: string}) {
   }, []);
 
   useEffect(() => {
+    if (initialUnreadCount !== undefined) {
+      setUnreadCount(initialUnreadCount);
+    }
+  }, [initialUnreadCount]);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function fetchInitialCount() {
@@ -97,7 +109,7 @@ export function NotificationDropdown({locale}: {locale: string}) {
 
       const {count} = await supabase
         .from("notifications")
-        .select("*", {count: "exact", head: true})
+        .select("id", {count: "exact", head: true})
         .eq("user_id", user.id)
         .eq("read", false);
 
@@ -130,15 +142,9 @@ export function NotificationDropdown({locale}: {locale: string}) {
       if (cancelled) return;
       if (!error) {
         const rows = ((data as unknown as NotificationWithActor[]) ?? []);
-        setNotifications(rows.slice(0, PAGE_SIZE).map((notification) => ({...notification, read: true})));
+        setNotifications(rows.slice(0, PAGE_SIZE));
         setHasMore(rows.length > PAGE_SIZE);
       }
-      await supabase
-        .from("notifications")
-        .update({read: true})
-        .eq("user_id", user.id)
-        .eq("read", false);
-      setUnreadCount(0);
       setLoading(false);
     }
 
@@ -157,7 +163,7 @@ export function NotificationDropdown({locale}: {locale: string}) {
 
       const {count} = await supabase
         .from("notifications")
-        .select("*", {count: "exact", head: true})
+        .select("id", {count: "exact", head: true})
         .eq("user_id", user.id)
         .eq("read", false);
 
@@ -187,12 +193,10 @@ export function NotificationDropdown({locale}: {locale: string}) {
                 .single();
 
               if (data) {
-                await supabase.from("notifications").update({read: true}).eq("id", payload.new.id);
-                setNotifications((prev) => [{...(data as unknown as NotificationWithActor), read: true}, ...prev].slice(0, PAGE_SIZE));
+                setNotifications((prev) => [data as unknown as NotificationWithActor, ...prev].slice(0, PAGE_SIZE));
               }
-            } else {
-              setUnreadCount((c) => c + 1);
             }
+            setUnreadCount((c) => c + 1);
           },
         )
         .subscribe();
@@ -304,7 +308,7 @@ export function NotificationDropdown({locale}: {locale: string}) {
 
     if (!error) {
       const rows = ((data as unknown as NotificationWithActor[]) ?? []);
-      setNotifications((prev) => [...prev, ...rows.slice(0, PAGE_SIZE).map((notification) => ({...notification, read: true}))]);
+      setNotifications((prev) => [...prev, ...rows.slice(0, PAGE_SIZE)]);
       setHasMore(rows.length > PAGE_SIZE);
     }
     setLoadingMore(false);
@@ -324,7 +328,7 @@ export function NotificationDropdown({locale}: {locale: string}) {
     setNotifications((prev) => prev.map((n) => ({...n, read: true})));
   }
 
-  const hasUnread = notifications.some((n) => !n.read);
+  const hasUnread = unreadCount > 0;
 
   function renderNotificationItem(n: NotificationWithActor) {
     const Icon = getNotificationIcon(n.type);
