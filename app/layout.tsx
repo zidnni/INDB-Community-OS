@@ -62,6 +62,11 @@ export default async function RootLayout({
     <html lang={locale} dir={dir} suppressHydrationWarning>
       <body className="antialiased">
         {children}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `document.addEventListener("touchstart",function(e){var t=e.target.closest("button,a,[role=button],summary");if(t)t.classList.add("touch-pressed")},{passive:true});document.addEventListener("touchend",function(e){var t=e.target.closest("button,a,[role=button],summary");if(t)setTimeout(function(){t.classList.remove("touch-pressed")},120)},{passive:true});`,
+          }}
+        />
         {process.env.NODE_ENV === "development" ? (
           <script
             dangerouslySetInnerHTML={{

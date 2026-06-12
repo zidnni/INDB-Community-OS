@@ -128,3 +128,9 @@ a {
     box-shadow: 0 0 0 0 rgba(237, 33, 36, 0);
   }
 }
+
+.touch-pressed {
+  transform: scale(0.97) !important;
+  filter: brightness(0.92) !important;
+  transition: transform 0.05s ease, filter 0.05s ease !important;
+}
