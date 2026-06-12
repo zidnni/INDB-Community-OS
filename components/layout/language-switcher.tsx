@@ -53,7 +53,7 @@ export function LanguageSwitcher() {
           aria-label={t("label")}
           onChange={(event) => changeLanguage(event.target.value as (typeof locales)[number])}
           disabled={isPending}
-          className="min-h-11 max-w-[8.5rem] rounded-full border border-border bg-card px-3 text-xs font-medium text-foreground outline-none ring-primary/35 transition focus:ring"
+          className="min-h-9 max-w-[4.5rem] rounded-full border border-border bg-card px-2 text-[11px] font-medium text-foreground outline-none ring-primary/35 transition focus:ring"
         >
           {locales.map((item) => (
             <option key={item} value={item}>

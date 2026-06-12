@@ -33,7 +33,7 @@ const SECONDARY_LINKS: Record<string, {memory: string; idea: string}> = {
 
 function SubmitButton({label, loading, pending}: {label: string; loading: string; pending: boolean}) {
   return (
-    <Button type="submit" className="min-h-11" disabled={pending}>
+    <Button type="submit" className="min-h-11 max-sm:min-h-12 max-sm:flex-1 max-sm:text-base" disabled={pending}>
       {pending ? loading : label}
     </Button>
   );
@@ -189,8 +189,8 @@ export function CreatePostCard({avatarUrl, profileName}: {avatarUrl?: string | n
               <Link href="/ideas/submit" className="transition hover:text-primary">{links.idea}</Link>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Button type="button" variant="ghost" onClick={() => setShowForm(false)} className="min-h-10" disabled={submitting}>
+            <div className="flex items-center gap-2 max-sm:w-full max-sm:flex-row-reverse">
+              <Button type="button" variant="ghost" onClick={() => setShowForm(false)} className="min-h-10 max-sm:min-h-12 max-sm:flex-1 max-sm:text-base" disabled={submitting}>
                 {t("cancel")}
               </Button>
               <SubmitButton label={t("post")} loading={mediaUploading ? imageUploadT("uploading") : t("posting")} pending={submitting || mediaUploading} />

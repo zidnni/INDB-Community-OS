@@ -433,58 +433,65 @@ export function NotificationDropdown({
         ) : null}
       </Button>
 
-      {/* Mobile: full-screen panel */}
+      {/* Mobile: bottom sheet panel */}
       {open && mounted ? createPortal(
-        <div ref={mobilePanelRef} className="fixed inset-0 z-[9999] flex flex-col bg-background md:hidden">
+        <>
           <div
-            className="flex items-center justify-between border-b border-border/60 bg-background px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)]"
+            className="fixed inset-0 z-[9998] bg-black/40 animate-fade-in md:hidden"
+            onClick={() => setOpen(false)}
+          />
+          <div
+            ref={mobilePanelRef}
+            className="fixed inset-x-0 bottom-0 z-[9999] flex max-h-[85vh] flex-col rounded-t-2xl bg-background shadow-2xl animate-slide-up md:hidden"
           >
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
-            >
-              <X size={20} />
-            </button>
-            <h2 className="text-base font-semibold">{t("title")}</h2>
-            {hasUnread ? (
+            <div className="flex items-center justify-between border-b border-border/60 px-4 pb-3 pt-4">
               <button
                 type="button"
-                onClick={handleMarkAllRead}
-                className="flex h-9 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-primary transition hover:bg-primary/10"
+                onClick={() => setOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition active:bg-muted/80"
               >
-                <CheckCheck size={18} />
-                {t("markAllRead")}
+                <X size={20} />
               </button>
-            ) : (
-              <div className="w-20" />
-            )}
+              <h2 className="text-base font-semibold">{t("title")}</h2>
+              {hasUnread ? (
+                <button
+                  type="button"
+                  onClick={handleMarkAllRead}
+                  className="flex h-9 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-primary transition active:bg-primary/10"
+                >
+                  <CheckCheck size={18} />
+                  {t("markAllRead")}
+                </button>
+              ) : (
+                <div className="w-20" />
+              )}
+            </div>
+            <div className="flex-1 overflow-y-auto pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+              {loading && notifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+                  <BellRing size={36} className="mb-4 animate-pulse text-muted-foreground/30" />
+                  <p className="text-sm">{t("loading")}</p>
+                </div>
+              ) : notifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+                  <BellRing size={48} className="mb-5 text-muted-foreground/25" />
+                  <p className="text-sm">{t("empty")}</p>
+                </div>
+              ) : (
+                <>
+                  {notifications.map(renderNotificationItem)}
+                  {hasMore ? (
+                    <div className="px-4 py-3">
+                      <Button type="button" variant="outline" className="w-full" onClick={handleLoadMore} disabled={loadingMore}>
+                        {loadingMore ? t("loading") : t("loadMore")}
+                      </Button>
+                    </div>
+                  ) : null}
+                </>
+              )}
+            </div>
           </div>
-          <div className="flex-1 overflow-y-auto pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
-            {loading && notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
-                <BellRing size={36} className="mb-4 animate-pulse text-muted-foreground/30" />
-                <p className="text-sm">{t("loading")}</p>
-              </div>
-            ) : notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
-                <BellRing size={48} className="mb-5 text-muted-foreground/25" />
-                <p className="text-sm">{t("empty")}</p>
-              </div>
-            ) : (
-              <>
-                {notifications.map(renderNotificationItem)}
-                {hasMore ? (
-                  <div className="px-4 py-3">
-                    <Button type="button" variant="outline" className="w-full" onClick={handleLoadMore} disabled={loadingMore}>
-                      {loadingMore ? t("loading") : t("loadMore")}
-                    </Button>
-                  </div>
-                ) : null}
-              </>
-            )}
-          </div>
-        </div>,
+        </>,
         document.body,
       ) : null}
 

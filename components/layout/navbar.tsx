@@ -29,37 +29,39 @@ export async function Navbar({locale}: {locale: string}) {
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border/70 bg-background/90 pt-[var(--safe-top)] backdrop-blur-xl">
-      <div className="mx-auto w-full max-w-7xl ps-[max(0.75rem,var(--safe-left))] pe-[max(0.75rem,var(--safe-right))] sm:px-4">
-        <div className="grid min-h-14 grid-cols-[auto_1fr_auto] items-center gap-2 md:hidden">
-          {isLoggedIn ? (
-            <Link href="/profile" className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full">
-              <UserAvatar label={profileName} avatarUrl={avatarUrl} className="h-10 w-10" />
-            </Link>
-          ) : (
-            <span className="min-h-11 min-w-11" aria-hidden />
-          )}
+    <header className="sticky top-0 z-30 border-b border-border/70 bg-background/90 pt-[max(0px,env(safe-area-inset-top))] backdrop-blur-xl">
+      <div className="mx-auto w-full max-w-7xl px-3 sm:px-4">
+        <div className="flex h-12 items-center justify-between gap-1 md:hidden">
+          <div className="flex items-center gap-0.5">
+            {isLoggedIn ? (
+              <Link href="/profile" className="flex min-h-11 min-w-11 items-center justify-center rounded-full active:scale-95 transition-transform duration-100">
+                <UserAvatar label={profileName} avatarUrl={avatarUrl} className="h-9 w-9" />
+              </Link>
+            ) : (
+              <span className="min-h-11 min-w-11" />
+            )}
+          </div>
 
-          <Link href="/" className="inline-flex items-center justify-self-center">
+          <Link href="/" className="flex items-center">
             <Logo size="sm" priority />
           </Link>
 
-          <div className="flex items-center justify-self-end gap-1">
-            <ThemeToggle />
+          <div className="flex items-center gap-0">
             <NotificationDropdown locale={locale} initialUnreadCount={initialUnreadCount} />
             <LanguageSwitcher />
+            <ThemeToggle />
           </div>
         </div>
         {!isLoggedIn ? (
-          <div className="grid grid-cols-2 gap-2 pb-2 md:hidden">
-            <Link href="/register" className="min-w-0">
-              <Button variant="outline" size="sm" className="h-10 w-full min-w-0 px-2 text-xs font-semibold sm:text-sm">
-                <span className="truncate">{t("createAccount")}</span>
+          <div className="flex gap-2 pb-2 md:hidden">
+            <Link href="/register" className="flex-1">
+              <Button variant="outline" size="sm" className="h-9 w-full px-2 text-xs font-semibold">
+                {t("createAccount")}
               </Button>
             </Link>
-            <Link href="/login" className="min-w-0">
-              <Button variant="outline" size="sm" className="h-10 w-full min-w-0 px-2 text-xs font-semibold sm:text-sm">
-                <span className="truncate">{t("login")}</span>
+            <Link href="/login" className="flex-1">
+              <Button variant="outline" size="sm" className="h-9 w-full px-2 text-xs font-semibold">
+                {t("login")}
               </Button>
             </Link>
           </div>

@@ -337,8 +337,8 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind, allowVide
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
-        <label className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-3.5 text-sm font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground">
-          <ImagePlus size={18} />
+        <label className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-3.5 text-sm font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground max-sm:h-12 max-sm:px-4 max-sm:text-base max-sm:flex-1">
+          <ImagePlus size={20} />
           {t("chooseImage")}
           <input
             ref={imageInputRef}
@@ -360,8 +360,8 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind, allowVide
         />
 
         {allowVideo ? (
-          <label className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-3.5 text-sm font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground">
-            <Film size={18} />
+          <label className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-3.5 text-sm font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground max-sm:h-12 max-sm:px-4 max-sm:text-base max-sm:flex-1">
+            <Film size={20} />
             {t("chooseVideo")}
             <input
               ref={videoInputRef}
@@ -375,8 +375,8 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind, allowVide
         ) : null}
 
         {uploading ? (
-          <span className="flex items-center gap-1 text-sm text-muted-foreground">
-            <Loader2 size={14} className="animate-spin" />
+          <span className="flex items-center gap-1.5 text-sm text-muted-foreground max-sm:text-base max-sm:py-2">
+            <Loader2 size={16} className="animate-spin" />
             {uploadProgress?.type === "image" && uploadProgress.total > 1
               ? t("uploadingImagesProgress", {
                   current: Math.min(uploadProgress.total, uploadProgress.completed + 1),

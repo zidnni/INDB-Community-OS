@@ -9,12 +9,10 @@
   --font-latin: "Inter", "Segoe UI", "Helvetica Neue", "Arial", sans-serif;
   --font-arabic: "Cairo", "Noto Sans Arabic", "Tahoma", "Segoe UI", sans-serif;
 
-  /* Brand */
   --brand-red: #ed2124;
   --brand-red-hover: #c91b1e;
   --brand-red-active: #a91517;
 
-  /* Light mode */
   --background: #f5f7fa;
   --foreground: #111827;
   --card: #ffffff;
@@ -57,7 +55,6 @@
   --color-brand-red-active: var(--brand-red-active);
   --radius-xl: var(--radius);
 
-  /* spacing scale */
   --spacing-1: 4px;
   --spacing-2: 8px;
   --spacing-3: 12px;
@@ -74,6 +71,7 @@
 *::after {
   border-color: var(--border);
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 button,
@@ -84,6 +82,7 @@ textarea,
 [role="button"],
 summary {
   touch-action: manipulation;
+  -webkit-touch-callout: none;
 }
 
 html {
@@ -91,6 +90,8 @@ html {
   scroll-behavior: smooth;
   width: 100%;
   max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -103,6 +104,9 @@ body {
   overflow-x: hidden;
   width: 100%;
   max-width: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 html[dir="rtl"] body {
@@ -133,4 +137,76 @@ a {
   transform: scale(0.97) !important;
   filter: brightness(0.92) !important;
   transition: transform 0.05s ease, filter 0.05s ease !important;
+}
+
+@supports (padding: max(0px)) {
+  .safe-area-bottom {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));
+  }
+}
+
+@supports (padding: max(0px)) {
+  .safe-area-top {
+    padding-top: max(0.75rem, env(safe-area-inset-top, 0.75rem));
+  }
+}
+
+@media (max-width: 767px) {
+  ::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  [data-sonner-toaster] {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  [data-sonner-toast] {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    border-radius: 14px !important;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

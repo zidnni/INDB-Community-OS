@@ -13,6 +13,11 @@ export const metadata: Metadata = {
     icon: "/images/logondb.jpeg",
     apple: "/images/logondb.jpeg",
   },
+  appleWebApp: {
+    capable: true,
+    title: "INDB",
+    statusBarStyle: "default",
+  },
   openGraph: {
     title: "I love NDB | INDB Community OS",
     description:
@@ -36,6 +41,13 @@ export const metadata: Metadata = {
     description:
       "Nouadhibou community platform for civic memory, participation, and solutions.",
     images: ["/images/logondb.jpeg"],
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+    "theme-color": "#f5f7fa",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-title": "INDB",
+    "apple-mobile-web-app-status-bar-style": "default",
   },
 };
 

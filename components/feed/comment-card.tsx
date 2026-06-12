@@ -7,6 +7,7 @@ import {toast} from "sonner";
 
 import {UserAvatar} from "@/components/layout/user-avatar";
 import {Button} from "@/components/ui/button";
+import {Textarea} from "@/components/ui/textarea";
 import {TranslateButton} from "@/components/shared/translate-button";
 import {detectContentLanguage, type ContentLanguage} from "@/lib/i18n/detectContentLanguage";
 import {Link} from "@/lib/i18n/routing";
@@ -147,11 +148,11 @@ export function CommentCard({
         </div>
         {editing ? (
           <div className="mt-2 space-y-2">
-            <textarea
+            <Textarea
               value={editValue}
-              onChange={(event) => setEditValue(event.target.value)}
+              onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) => setEditValue(event.target.value)}
               rows={2}
-              className="w-full resize-none rounded-xl border border-border/60 bg-card px-3 py-2 text-sm text-foreground outline-none ring-primary/30 focus:ring"
+              className="min-h-[60px] resize-none"
             />
             <div className="flex items-center gap-2">
               <Button type="button" size="sm" onClick={handleSave} disabled={isPending || !editValue.trim()}>
@@ -177,11 +178,11 @@ export function CommentCard({
             type="button"
             variant="ghost"
             size="icon"
-            className="h-6 w-6 text-muted-foreground"
+            className="h-8 w-8 text-muted-foreground max-sm:h-9 max-sm:w-9"
             onClick={() => setMenuOpen((previous) => !previous)}
             disabled={isPending}
           >
-            {isPending ? <Loader2 size={12} className="animate-spin" /> : <MoreHorizontal size={13} />}
+            {isPending ? <Loader2 size={14} className="animate-spin" /> : <MoreHorizontal size={16} />}
           </Button>
           {menuOpen ? (
             <div className="absolute end-0 top-full z-20 mt-1 min-w-[170px] rounded-xl border border-border/60 bg-card py-1 shadow-lg">
