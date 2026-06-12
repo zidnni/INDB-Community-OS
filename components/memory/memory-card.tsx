@@ -247,7 +247,7 @@ export function MemoryCard({
             <TranslateButton text={memory.description ?? memory.title} contentType="memory" contentId={memory.id} className="mt-1" />
           ) : null}
 
-          <div id={`memory-${memory.id}-reactions`} className="scroll-mt-24 mt-auto border-t border-border/60 pt-3">
+          <div className="scroll-mt-24 mt-auto border-t border-border/60 pt-3">
             <MemoryActions
               memoryId={memory.id}
               locale={locale}
@@ -257,6 +257,7 @@ export function MemoryCard({
               onReactionCountsChange={setReactionCounts}
               onUserReactionChange={setUserReaction}
               defaultCommentsOpen={defaultCommentsOpen}
+              sharesCount={memory.shares_count ?? 0}
             />
           </div>
         </CardContent>

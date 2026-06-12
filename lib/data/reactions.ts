@@ -29,10 +29,11 @@ export async function toggleReaction(
     .eq("user_id", userId)
     .maybeSingle();
 
+  let delta = 0;
   if (existing) {
     if (existing.reaction_type === reactionType) {
       await supabase.from("post_reactions").delete().eq("id", existing.id);
-      return {action: "deleted"};
+      delta = -1;
     } else {
       await supabase
         .from("post_reactions")
@@ -46,8 +47,24 @@ export async function toggleReaction(
       user_id: userId,
       reaction_type: reactionType,
     });
-    return {action: "inserted"};
+    delta = 1;
   }
+
+  if (delta !== 0) {
+    const {data: post} = await supabase
+      .from("posts")
+      .select("likes_count")
+      .eq("id", postId)
+      .single();
+    if (post) {
+      await supabase
+        .from("posts")
+        .update({likes_count: Math.max(0, (post.likes_count ?? 0) + delta)})
+        .eq("id", postId);
+    }
+  }
+
+  return {action: delta === -1 ? "deleted" : "inserted"};
 }
 
 export async function getReactionCounts(

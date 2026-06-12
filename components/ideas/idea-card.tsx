@@ -88,6 +88,7 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [voterModalOpen, setVoterModalOpen] = useState(false);
+  const [sharesCount, setSharesCount] = useState(idea.shares_count ?? 0);
   const articleRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const descRef = useRef<HTMLParagraphElement>(null);
@@ -179,27 +180,32 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
   async function handleShare() {
     const url = `${window.location.origin}/${window.location.pathname.split("/")[1]}/ideas?id=${idea.id}`;
 
+    let shared = false;
     if (typeof navigator !== "undefined" && "share" in navigator) {
       try {
         await (navigator as Navigator).share({url});
-        return;
+        shared = true;
       } catch {
       }
     }
 
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success(t("linkCopied") ?? "Link copied");
-    } catch {
-      toast.error(t("shareFailed") ?? "Unable to share");
-      return;
+    if (!shared) {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success(t("linkCopied") ?? "Link copied");
+      } catch {
+        toast.error(t("shareFailed") ?? "Unable to share");
+        return;
+      }
     }
 
+    setSharesCount((c) => c + 1);
     const formData = new FormData();
     formData.set("ideaId", idea.id);
     formData.set("locale", locale);
     const result = await shareIdeaAction(formData);
     if (!result.success && result.error === "unauthorized") {
+      setSharesCount((c) => Math.max(0, c - 1));
       window.location.href = `/${locale}/login?next=/ideas`;
     }
   }
@@ -352,7 +358,7 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
                 className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-border/60 px-4 py-2.5 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground sm:w-auto"
               >
                 <Share2 size={16} />
-                {t("share")}
+                <span className="tabular-nums">{sharesCount}</span>
               </button>
             </div>
           </div>

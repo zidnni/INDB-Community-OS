@@ -6,8 +6,10 @@ import {useEffect, useState} from "react";
 import {toast} from "sonner";
 
 import {MemoryComments} from "@/components/memory/memory-comments";
-import {MemoryReactions} from "@/components/memory/memory-reactions";
+import {MemoryReactions, REACTIONS} from "@/components/memory/memory-reactions";
 import {saveMemoryAction, shareMemoryAction, unsaveMemoryAction} from "@/app/[locale]/server-actions";
+import {ReactionSummary} from "@/components/shared/reaction-summary";
+import {MemoryReactionModal} from "@/components/memory/memory-reaction-modal";
 import {createClient} from "@/lib/supabase/client";
 import type {MemoryReactionType} from "@/types/database";
 
@@ -20,6 +22,7 @@ export function MemoryActions({
   onReactionCountsChange,
   onUserReactionChange,
   defaultCommentsOpen = false,
+  sharesCount: initialSharesCount = 0,
 }: {
   memoryId: string;
   locale: string;
@@ -29,6 +32,7 @@ export function MemoryActions({
   onReactionCountsChange: (counts: Record<string, number>) => void;
   onUserReactionChange: (reaction: MemoryReactionType | null) => void;
   defaultCommentsOpen?: boolean;
+  sharesCount?: number;
 }) {
   const memoryT = useTranslations("Memory");
   const feed = useTranslations("Feed");
@@ -36,6 +40,8 @@ export function MemoryActions({
   const [savePending, setSavePending] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(defaultCommentsOpen);
   const [commentCount, setCommentCount] = useState(0);
+  const [reactionModalOpen, setReactionModalOpen] = useState(false);
+  const [sharesCount, setSharesCount] = useState(initialSharesCount);
   const supabase = createClient();
 
   useEffect(() => {
@@ -118,10 +124,12 @@ export function MemoryActions({
       }
     }
 
+    setSharesCount((c) => c + 1);
     const formData = new FormData();
     formData.set("memoryId", memoryId);
     const result = await shareMemoryAction(formData);
     if (!result.success && result.error === "unauthorized") {
+      setSharesCount((c) => Math.max(0, c - 1));
       window.location.href = `/${locale}/login?next=/memory`;
     }
   }
@@ -133,9 +141,16 @@ export function MemoryActions({
 
   return (
     <div>
+      <ReactionSummary
+        counts={reactionCounts}
+        reactions={REACTIONS}
+        onOpen={() => setReactionModalOpen(true)}
+        id={`memory-${memoryId}-reactions`}
+      />
       <div className="flex flex-wrap gap-2">
         <MemoryReactions
           memoryId={memoryId}
+          locale={locale}
           initialCounts={reactionCounts}
           initialUserReaction={userReaction}
           className="min-w-0 flex-[1_1_calc(50%-0.25rem)] xl:flex-1"
@@ -182,6 +197,7 @@ export function MemoryActions({
           className="flex min-h-11 min-w-0 flex-[1_1_calc(50%-0.25rem)] items-center justify-center gap-1.5 rounded-xl px-2 text-xs text-muted-foreground transition hover:bg-muted xl:flex-1 xl:text-sm"
         >
           <Share2 size={18} className="shrink-0" />
+          <span className="tabular-nums">{sharesCount}</span>
         </button>
       </div>
       <MemoryComments
@@ -190,6 +206,13 @@ export function MemoryActions({
         onCommentCountChange={setCommentCount}
         open={commentsOpen}
         onToggle={() => setCommentsOpen((p) => !p)}
+      />
+
+      <MemoryReactionModal
+        open={reactionModalOpen}
+        onClose={() => setReactionModalOpen(false)}
+        memoryId={memoryId}
+        locale={locale}
       />
     </div>
   );

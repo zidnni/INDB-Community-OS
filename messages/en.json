@@ -932,6 +932,7 @@
   },
   "ProfileAbout": {
     "overview": "Overview",
+    "basicInfo": "Basic Info",
     "workAndEducation": "Work & Education",
     "contact": "Contact Information",
     "places": "Places",

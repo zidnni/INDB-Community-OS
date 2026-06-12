@@ -8,7 +8,7 @@ import {toast} from "sonner";
 import {reactToMemoryAction} from "@/app/[locale]/server-actions";
 import type {MemoryReactionType} from "@/types/database";
 
-const REACTIONS: {type: MemoryReactionType; emoji: string}[] = [
+export const REACTIONS: {type: MemoryReactionType; emoji: string}[] = [
   {type: "like", emoji: "\u{1F44D}"},
   {type: "love", emoji: "\u2764\uFE0F"},
   {type: "support", emoji: "\u{1F91D}"},
@@ -19,6 +19,7 @@ const REACTIONS: {type: MemoryReactionType; emoji: string}[] = [
 
 export function MemoryReactions({
   memoryId,
+  locale,
   initialCounts,
   initialUserReaction,
   className,
@@ -26,6 +27,7 @@ export function MemoryReactions({
   onUserReactionChange,
 }: {
   memoryId: string;
+  locale: string;
   initialCounts?: Record<string, number>;
   initialUserReaction?: MemoryReactionType | null;
   className?: string;
@@ -56,6 +58,7 @@ export function MemoryReactions({
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
+  const countsTotal = Object.values(counts).reduce((a, b) => a + b, 0);
   const currentEmoji = REACTIONS.find((r) => r.type === userReaction)?.emoji;
   const reactionLabel = userReaction ? t(`reactions.${userReaction}`) : t("reactions.like");
 
@@ -90,7 +93,6 @@ export function MemoryReactions({
       setUserReaction(prevReaction);
       setCounts(prevCounts);
       if (result.error === "unauthorized") {
-        const locale = document.documentElement.lang || "en";
         window.location.href = `/${locale}/login`;
         setPending(false);
         return;
@@ -126,6 +128,7 @@ export function MemoryReactions({
         ) : (
           <Heart size={18} className="shrink-0" />
         )}
+        {countsTotal > 0 ? <span>{countsTotal}</span> : null}
       </button>
 
       {open ? (

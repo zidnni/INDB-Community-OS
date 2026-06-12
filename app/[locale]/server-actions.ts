@@ -25,6 +25,7 @@ import {
 } from "@/lib/data/notifications";
 import {toggleReaction, getPostReactionDetails} from "@/lib/data/reactions";
 import {getIdeaVoteDetails} from "@/lib/data/ideas";
+import {getMemoryReactionDetails} from "@/lib/data/memories";
 import {
   commentSchema,
   communityShareSchema,
@@ -607,6 +608,10 @@ export async function getPostReactionDetailsAction(postId: string, limit = 50, o
 
 export async function getIdeaVoteDetailsAction(ideaId: string, limit = 50, offset = 0) {
   return getIdeaVoteDetails(ideaId, limit, offset);
+}
+
+export async function getMemoryReactionDetailsAction(memoryId: string, limit = 50, offset = 0) {
+  return getMemoryReactionDetails(memoryId, limit, offset);
 }
 
 export async function toggleSaveAction(formData: FormData) {
@@ -1396,6 +1401,59 @@ export async function shareIdeaAction(
 
   await createShareNotification(idea.author_id, user.id, ideaId);
 
+  const {data: ideaRow} = await supabase.from("ideas").select("shares_count").eq("id", ideaId).single();
+  if (ideaRow) {
+    await supabase.from("ideas").update({shares_count: (ideaRow.shares_count ?? 0) + 1}).eq("id", ideaId);
+  }
+
+  return {success: true};
+}
+
+export async function sharePostAction(
+  formData: FormData,
+): Promise<{success: boolean; error?: string}> {
+  const postId = formData.get("postId");
+  const supabase = await createClient();
+
+  const {
+    data: {user},
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {success: false, error: "unauthorized"};
+  }
+
+  if (typeof postId !== "string") {
+    return {success: false, error: "invalid"};
+  }
+
+  const {data: post} = await supabase
+    .from("posts")
+    .select("author_id")
+    .eq("id", postId)
+    .single();
+
+  if (!post) {
+    return {success: false, error: "not_found"};
+  }
+
+  if (post.author_id && post.author_id !== user.id) {
+    await supabase.from("notifications").insert({
+      user_id: post.author_id,
+      actor_id: user.id,
+      type: "share",
+      entity_type: "post",
+      entity_id: postId,
+      title: "Shared your post",
+      message: null,
+    });
+  }
+
+  const {data: postRow} = await supabase.from("posts").select("shares_count").eq("id", postId).single();
+  if (postRow) {
+    await supabase.from("posts").update({shares_count: (postRow.shares_count ?? 0) + 1}).eq("id", postId);
+  }
+
   return {success: true};
 }
 
@@ -2120,6 +2178,11 @@ export async function shareMemoryAction(
     });
   }
 
+  const {data: memRow} = await supabase.from("memories").select("shares_count").eq("id", memoryId).single();
+  if (memRow) {
+    await supabase.from("memories").update({shares_count: (memRow.shares_count ?? 0) + 1}).eq("id", memoryId);
+  }
+
   return {success: true};
 }
 
@@ -2734,4 +2797,49 @@ export async function requestCommunityShareAction(formData: FormData) {
 
   revalidatePath(toPath(locale, "/fadla"));
   redirect(toPath(locale, appendParam(returnPath, "shareRequested", "1")));
+}
+
+export async function shareCommunityShareAction(
+  formData: FormData,
+): Promise<{success: boolean; error?: string}> {
+  const shareId = formData.get("shareId");
+  const supabase = await createClient();
+
+  const {
+    data: {user},
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {success: false, error: "unauthorized"};
+  }
+
+  if (typeof shareId !== "string") {
+    return {success: false, error: "invalid"};
+  }
+
+  const {data: share} = await supabase
+    .from("community_shares")
+    .select("owner_id, shares_count")
+    .eq("id", shareId)
+    .single();
+
+  if (!share) {
+    return {success: false, error: "not_found"};
+  }
+
+  if (share.owner_id !== user.id) {
+    await supabase.from("notifications").insert({
+      user_id: share.owner_id,
+      actor_id: user.id,
+      type: "share",
+      entity_type: "community_share",
+      entity_id: shareId,
+      title: "Shared your item",
+      message: null,
+    });
+  }
+
+  await supabase.from("community_shares").update({shares_count: (share.shares_count ?? 0) + 1}).eq("id", shareId);
+
+  return {success: true};
 }

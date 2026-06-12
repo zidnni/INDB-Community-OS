@@ -122,16 +122,18 @@ export function VoteButton({ideaId, votes: initialVotes, supportPercentage: init
             {voted ? t("voteLabelVoted") : t("voteLabel")}
           </motion.span>
         </AnimatePresence>
-        <AnimatePresence mode="wait">
-          <motion.span
-            key={`count-${votes}`}
-            initial={pulse ? {scale: 1.3} : false}
-            animate={{scale: 1}}
-            transition={{type: "spring", stiffness: 400, damping: 15}}
-          >
-            {votes}
-          </motion.span>
-        </AnimatePresence>
+        {votes > 0 ? (
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={`count-${votes}`}
+              initial={pulse ? {scale: 1.3} : false}
+              animate={{scale: 1}}
+              transition={{type: "spring", stiffness: 400, damping: 15}}
+            >
+              {votes}
+            </motion.span>
+          </AnimatePresence>
+        ) : null}
       </motion.button>
 
       {!hideDetails ? (

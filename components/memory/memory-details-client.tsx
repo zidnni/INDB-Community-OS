@@ -188,7 +188,7 @@ export function MemoryDetailsClient({
             </div>
           ) : null}
 
-          <div id={`memory-${memory.id}-reactions`} className="scroll-mt-24 border-t border-border/60 pt-3">
+          <div className="scroll-mt-24 border-t border-border/60 pt-3">
             <MemoryActions
               memoryId={memory.id}
               locale={locale}
@@ -198,6 +198,7 @@ export function MemoryDetailsClient({
               onReactionCountsChange={setReactionCounts}
               onUserReactionChange={setUserReaction}
               defaultCommentsOpen={defaultCommentsOpen}
+              sharesCount={memory.shares_count ?? 0}
             />
           </div>
         </CardContent>

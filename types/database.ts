@@ -89,6 +89,7 @@ export interface PostRow {
   likes_count: number;
   comments_count: number;
   saves_count: number;
+  shares_count: number;
   created_at: string;
   updated_at: string;
 }
@@ -171,6 +172,7 @@ export interface MemoryRow {
   media_type: string;
   verification_status: MemoryVerificationStatus;
   tags: string[] | null;
+  shares_count: number;
   created_at: string;
   updated_at: string;
 }
@@ -195,6 +197,7 @@ export interface IdeaRow {
   category_id: number | null;
   status: IdeaStatus;
   votes_count: number;
+  shares_count: number;
   image_url: string | null;
   created_at: string;
   updated_at: string;
@@ -257,6 +260,7 @@ export interface CommunityShareRow {
   location: string | null;
   status: CommunityShareStatus;
   images: CommunityShareImage[];
+  shares_count: number;
   created_at: string;
   updated_at: string;
 }

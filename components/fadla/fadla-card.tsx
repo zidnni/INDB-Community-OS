@@ -1,15 +1,17 @@
 "use client";
 
-import {Gift, Loader2, MapPin, PackageCheck, Pencil, Trash2} from "lucide-react";
+import {Gift, Loader2, MapPin, PackageCheck, Pencil, Share2, Trash2} from "lucide-react";
 import {useTranslations} from "next-intl";
 import {useSearchParams} from "next/navigation";
 import type {ReactNode} from "react";
 import {useEffect, useRef, useState} from "react";
 import {useFormStatus} from "react-dom";
+import {toast} from "sonner";
 
 import {
   deleteCommunityShareAction,
   requestCommunityShareAction,
+  shareCommunityShareAction,
   updateCommunityShareStatusAction,
 } from "@/app/[locale]/server-actions";
 import {TranslateButton} from "@/components/shared/translate-button";
@@ -61,8 +63,10 @@ export function FadlaCard({
   compact?: boolean;
 }) {
   const t = useTranslations("Fadla");
+  const feed = useTranslations("Feed");
   const searchParams = useSearchParams();
   const [highlight, setHighlight] = useState(false);
+  const [sharesCount, setSharesCount] = useState(share.shares_count ?? 0);
   const articleRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -215,6 +219,44 @@ export function FadlaCard({
               ))}
           </div>
         ) : null}
+
+        <div className="flex border-t border-border/60 pt-4">
+          <button
+            type="button"
+            onClick={async () => {
+              const url = `${window.location.origin}/${locale}/fadla?item=${share.id}`;
+              let shared = false;
+              if (typeof navigator !== "undefined" && "share" in navigator) {
+                try {
+                  await (navigator as Navigator).share({url});
+                  shared = true;
+                } catch {
+                }
+              }
+              if (!shared) {
+                try {
+                  await navigator.clipboard.writeText(url);
+                  toast.success(feed("linkCopied"));
+                } catch {
+                  toast.error(feed("shareFailed"));
+                  return;
+                }
+              }
+
+              setSharesCount((c) => c + 1);
+              const formData = new FormData();
+              formData.set("shareId", share.id);
+              const result = await shareCommunityShareAction(formData);
+              if (!result.success && result.error === "unauthorized") {
+                setSharesCount((c) => Math.max(0, c - 1));
+              }
+            }}
+            className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          >
+            <Share2 size={16} />
+            <span className="tabular-nums">{sharesCount}</span>
+          </button>
+        </div>
       </div>
     </article>
   );

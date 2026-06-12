@@ -1,5 +1,5 @@
 import {createClient} from "@/lib/supabase/server";
-import type {MemoryCommentWithAuthor, MemoryMediaRow, MemoryWithContributor} from "@/types/database";
+import type {MemoryCommentWithAuthor, MemoryMediaRow, MemoryReactionType, MemoryWithContributor} from "@/types/database";
 
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -158,4 +158,50 @@ export async function getUserMemories(userId: string): Promise<MemoryWithContrib
 
   const memories = (data ?? []) as unknown as MemoryWithContributor[];
   return attachMemoryMedia(memories);
+}
+
+export async function getMemoryReactionDetails(memoryId: string, limit = 50, offset = 0) {
+  const supabase = await createClient();
+
+  const {count} = await supabase
+    .from("memory_reactions")
+    .select("id", {count: "exact", head: true})
+    .eq("memory_id", memoryId);
+
+  const {data: groupedData} = await supabase
+    .from("memory_reactions")
+    .select("reaction_type")
+    .eq("memory_id", memoryId);
+
+  const groupedCounts: Record<string, number> = {};
+  for (const row of groupedData ?? []) {
+    groupedCounts[row.reaction_type] = (groupedCounts[row.reaction_type] ?? 0) + 1;
+  }
+
+  const {data: reactingUsers} = await supabase
+    .from("memory_reactions")
+    .select(`
+      user_id,
+      reaction_type,
+      created_at,
+      profile:profiles(full_name, username, avatar_url)
+    `)
+    .eq("memory_id", memoryId)
+    .order("created_at", {ascending: false})
+    .range(offset, offset + limit - 1);
+
+  return {
+    totalCount: count ?? 0,
+    groupedCounts,
+    reactingUsers: (reactingUsers ?? []).map((ru) => ({
+      user_id: ru.user_id,
+      reaction_type: ru.reaction_type as MemoryReactionType,
+      created_at: ru.created_at,
+      profile: ru.profile as unknown as {
+        full_name: string | null;
+        username: string | null;
+        avatar_url: string | null;
+      } | null,
+    })),
+  };
 }

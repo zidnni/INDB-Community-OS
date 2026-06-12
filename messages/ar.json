@@ -932,6 +932,7 @@
   },
   "ProfileAbout": {
     "overview": "نظرة عامة",
+    "basicInfo": "المعلومات الأساسية",
     "workAndEducation": "العمل والتعليم",
     "contact": "معلومات الاتصال",
     "places": "الأماكن",

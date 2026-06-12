@@ -121,7 +121,7 @@ export function ReactionButton({
         ) : (
           <Heart size={18} className="shrink-0" />
         )}
-        <span>{localTotal}</span>
+        {localTotal > 0 ? <span>{localTotal}</span> : null}
       </button>
 
       {open ? (

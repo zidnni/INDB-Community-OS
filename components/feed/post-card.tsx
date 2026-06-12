@@ -27,6 +27,7 @@ import {detectContentLanguage, type ContentLanguage} from "@/lib/i18n/detectCont
 import {translateContentAction} from "@/lib/i18n/translateContentAction";
 import {
   deletePostAction,
+  sharePostAction,
   submitCommentAction,
   toggleSaveAction,
 } from "@/app/[locale]/server-actions";
@@ -113,11 +114,14 @@ export function PostCard({
   const [commentsCount, setCommentsCount] = useState(post.comments_count);
   const [isSaved, setIsSaved] = useState(post.user_saved ?? false);
   const [savesCount, setSavesCount] = useState(post.saves_count);
+  const [sharesCount, setSharesCount] = useState(post.shares_count ?? 0);
   const [reactionModalOpen, setReactionModalOpen] = useState(false);
   const [localReactionCounts, setLocalReactionCounts] = useState<Record<string, number>>(
     post.reaction_counts ?? {},
   );
   const [reactionHighlight, setReactionHighlight] = useState(false);
+
+  const totalReactions = Object.values(localReactionCounts).reduce((a, b) => a + b, 0);
 
   const authorName = post.author?.full_name ?? post.author?.username ?? t("unknownAuthor");
   const authorProfileHref = post.author?.username ? `/profile/${post.author.username}` : null;
@@ -221,6 +225,15 @@ export function PostCard({
       } catch {
         toast.error(t("shareFailed"));
       }
+    }
+
+    setSharesCount((c) => c + 1);
+    const formData = new FormData();
+    formData.set("postId", post.id);
+    const result = await sharePostAction(formData);
+    if (!result.success && result.error === "unauthorized") {
+      setSharesCount((c) => Math.max(0, c - 1));
+      router.push(withLocale(`/login?next=${encodeURIComponent(returnPath)}`, locale));
     }
   }
 
@@ -416,7 +429,7 @@ export function PostCard({
               locale={locale}
               returnTo={returnPath}
               currentReaction={post.user_reaction}
-              likesCount={post.likes_count}
+              likesCount={totalReactions}
               onReactionChanged={handleReactionChanged}
             />
             </div>
@@ -449,7 +462,7 @@ export function PostCard({
               className="flex flex-1 items-center justify-center gap-1.5 min-h-12 rounded-xl px-3 text-sm text-muted-foreground transition hover:bg-muted sm:gap-2 sm:px-4"
             >
               <Share2 size={18} className="shrink-0" />
-              <span className="hidden sm:inline">{t("share")}</span>
+              <span className="tabular-nums">{sharesCount}</span>
             </button>
           </div>
 
