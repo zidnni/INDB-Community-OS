@@ -1,6 +1,16 @@
 import {createClient} from "@/lib/supabase/server";
 import type {PostMediaRow, PostWithAuthor} from "@/types/database";
 
+const DEFAULT_PAGE_SIZE = 20;
+
+export interface PaginatedResult<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
 async function attachUserReactions(
   posts: PostWithAuthor[],
   currentUserId?: string | null,
@@ -79,7 +89,24 @@ async function attachPostMedia(posts: PostWithAuthor[]): Promise<PostWithAuthor[
 export async function getPosts(
   currentUserId?: string | null,
 ): Promise<PostWithAuthor[]> {
+  const page = await getPostsPage({currentUserId});
+  return page.items;
+}
+
+export async function getPostsPage({
+  currentUserId,
+  page = 1,
+  pageSize = DEFAULT_PAGE_SIZE,
+}: {
+  currentUserId?: string | null;
+  page?: number;
+  pageSize?: number;
+} = {}): Promise<PaginatedResult<PostWithAuthor>> {
   const supabase = await createClient();
+  const safePage = Math.max(1, page);
+  const safePageSize = Math.min(Math.max(1, pageSize), 50);
+  const from = (safePage - 1) * safePageSize;
+  const to = from + safePageSize;
 
   const {data} = await supabase
     .from("posts")
@@ -90,11 +117,20 @@ export async function getPosts(
     `)
     .eq("status", "published")
     .not("author_id", "is", null)
-    .order("created_at", {ascending: false});
+    .order("created_at", {ascending: false})
+    .range(from, to);
 
-  const posts = (data ?? []) as unknown as PostWithAuthor[];
+  const rows = (data ?? []) as unknown as PostWithAuthor[];
+  const posts = rows.slice(0, safePageSize);
   await attachPostMedia(posts);
-  return attachUserReactions(posts, currentUserId);
+  const items = await attachUserReactions(posts, currentUserId);
+  return {
+    items,
+    page: safePage,
+    pageSize: safePageSize,
+    hasNextPage: rows.length > safePageSize,
+    hasPreviousPage: safePage > 1,
+  };
 }
 
 export async function getPostById(

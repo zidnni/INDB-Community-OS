@@ -1,13 +1,15 @@
 import {createAdminClient} from "@/lib/supabase/admin";
 import {createClient} from "@/lib/supabase/server";
 import {detectContentLanguage} from "@/lib/i18n/detectContentLanguage";
+import {checkRateLimit, getRequestIdentifier} from "@/lib/security/rate-limit";
 import type {ContentLanguage} from "@/types/database";
 import crypto from "crypto";
 import {NextRequest, NextResponse} from "next/server";
 
 const MAX_LENGTH = 3000;
 
-const GOOGLE_SUPPORTED_LANGS = new Set(["ar", "bg", "bn", "ca", "cs", "da", "de", "el", "en", "es", "et", "fi", "fr", "gu", "he", "hi", "hr", "hu", "id", "it", "ja", "kn", "ko", "lt", "lv", "ml", "mr", "ms", "nl", "no", "pl", "pt", "ro", "ru", "sk", "sl", "sr", "sv", "sw", "ta", "te", "th", "tl", "tr", "uk", "ur", "vi", "zh"]);
+const TRANSLATION_TARGET_LANGS = new Set<ContentLanguage>(["ar", "fr", "en", "ff", "wo"]);
+const GOOGLE_SUPPORTED_LANGS = new Set(["ar", "bg", "bn", "ca", "cs", "da", "de", "el", "en", "es", "et", "ff", "fi", "fr", "gu", "he", "hi", "hr", "hu", "id", "it", "ja", "kn", "ko", "lt", "lv", "ml", "mr", "ms", "nl", "no", "pl", "pt", "ro", "ru", "sk", "sl", "sr", "sv", "sw", "ta", "te", "th", "tl", "tr", "uk", "ur", "vi", "wo", "zh"]);
 
 function parseGoogleTranslate(data: unknown): string | null {
   try {
@@ -36,9 +38,9 @@ async function callGoogleTranslate(text: string, targetLang: string): Promise<st
   }
 }
 
-async function callMyMemoryTranslate(text: string, targetLang: string): Promise<string | null> {
+async function callMyMemoryTranslate(text: string, sourceLang: string, targetLang: string): Promise<string | null> {
   try {
-    const langPair = `en|${targetLang}`;
+    const langPair = `${sourceLang}|${targetLang}`;
     const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langPair}`;
     const res = await fetch(url, {
       headers: {"User-Agent": "Mozilla/5.0"},
@@ -82,8 +84,8 @@ async function saveTranslation(
 ): Promise<void> {
   try {
     const admin = createAdminClient();
-    const supabase = admin ?? await createClient();
-    await supabase.from("content_translations").upsert(
+    if (!admin) return;
+    await admin.from("content_translations").upsert(
       {
         content_type: contentType,
         content_id: contentId,
@@ -99,6 +101,14 @@ async function saveTranslation(
 }
 
 export async function GET(req: NextRequest) {
+  const rateLimit = await checkRateLimit("translation", getRequestIdentifier(req));
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      {error: "rate_limited"},
+      {status: 429, headers: {"Retry-After": String(rateLimit.retryAfter)}},
+    );
+  }
+
   const text = req.nextUrl.searchParams.get("text") || "Good morning";
   const targetLang = req.nextUrl.searchParams.get("target") || "ar";
   const contentType = req.nextUrl.searchParams.get("type") || "test";
@@ -107,6 +117,14 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const rateLimit = await checkRateLimit("translation", getRequestIdentifier(req));
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      {error: "rate_limited"},
+      {status: 429, headers: {"Retry-After": String(rateLimit.retryAfter)}},
+    );
+  }
+
   try {
     const {contentType, contentId, text, targetLang} = await req.json();
     return handleTranslate(text, targetLang, contentType, contentId);
@@ -128,28 +146,33 @@ async function handleTranslate(text: string, targetLang: string, contentType: st
     }
 
     const sourceLang = detectContentLanguage(text);
+    const safeTargetLang = targetLang as ContentLanguage;
 
-    if (sourceLang === targetLang) {
+    if (!TRANSLATION_TARGET_LANGS.has(safeTargetLang)) {
+      return NextResponse.json({error: "Translation is not available for this language yet"}, {status: 400});
+    }
+
+    if (sourceLang === safeTargetLang) {
       return NextResponse.json({translatedText: text, sourceLang});
     }
 
-    const cached = await getCachedTranslation(contentType, contentId, targetLang);
+    const cached = await getCachedTranslation(contentType, contentId, safeTargetLang);
     if (cached) {
       return NextResponse.json({translatedText: cached, sourceLang});
     }
 
     const originalHash = crypto.createHash("sha256").update(text).digest("hex");
 
-    let apiResult = await callGoogleTranslate(text, targetLang);
+    let apiResult = await callGoogleTranslate(text, safeTargetLang);
     if (!apiResult) {
-      apiResult = await callMyMemoryTranslate(text, targetLang);
+      apiResult = await callMyMemoryTranslate(text, sourceLang, safeTargetLang);
     }
 
     if (!apiResult) {
-      return NextResponse.json({error: "All translation APIs returned no result"}, {status: 502});
+      return NextResponse.json({error: "Translation is temporarily unavailable"}, {status: 502});
     }
 
-    await saveTranslation(contentType, contentId, sourceLang, targetLang as ContentLanguage, originalHash, apiResult);
+    await saveTranslation(contentType, contentId, sourceLang, safeTargetLang, originalHash, apiResult);
 
     return NextResponse.json({translatedText: apiResult, sourceLang});
   } catch (e) {

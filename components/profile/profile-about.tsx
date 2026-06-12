@@ -18,7 +18,6 @@ import {
   Phone,
   Plane,
   Plus,
-  Send,
   UserRound,
 } from "lucide-react";
 
@@ -404,20 +403,55 @@ function WorkEducationTab({
 function ContactTab({
   links,
   isOwn,
+  localeStr,
 }: {
   links: ProfileLinkRow[];
   isOwn: boolean;
+  localeStr: string;
 }) {
   const t = useTranslations("ProfileAbout");
 
   const contactLinks = links.filter((l) =>
-    ["phone", "email", "whatsapp", "telegram"].includes(l.platform)
+    ["phone", "email", "whatsapp"].includes(l.platform)
   );
-  const socialLinks = links.filter((l) =>
-    ["instagram", "facebook", "linkedin"].includes(l.platform)
-  );
+  const contactPlatforms = [
+    {platform: "phone", label: t("phone"), type: "tel", placeholder: "+222 ..."},
+    {platform: "email", label: t("email"), type: "email", placeholder: "name@example.com"},
+  ];
+  const existingPlatforms = new Set(links.map((link) => link.platform));
+  const hasNumber = links.some((link) => link.platform === "phone" || link.platform === "whatsapp");
+  const hasEmail = existingPlatforms.has("email");
 
-  if (contactLinks.length === 0 && socialLinks.length === 0 && !isOwn) {
+  function AddLinkForm({
+    platform,
+    label,
+    type = "text",
+    placeholder,
+  }: {
+    platform: string;
+    label: string;
+    type?: string;
+    placeholder: string;
+  }) {
+    return (
+      <form
+        action={async (formData) => {
+          await addLinkAction(formData);
+        }}
+        className="grid gap-2 rounded-xl border border-border/60 bg-muted/20 p-3 sm:grid-cols-[1fr_auto]"
+      >
+        <input type="hidden" name="locale" value={localeStr} />
+        <input type="hidden" name="platform" value={platform} />
+        <input type="hidden" name="visibility" value="public" />
+        <Input name="value" type={type} placeholder={placeholder} required className="text-sm" aria-label={label} />
+        <Button type="submit" size="sm" className="text-xs">
+          {t("addLink")}
+        </Button>
+      </form>
+    );
+  }
+
+  if (contactLinks.length === 0 && !isOwn) {
     return (
       <Card>
         <CardContent className="p-5 sm:p-6">
@@ -429,53 +463,40 @@ function ContactTab({
 
   return (
     <div className="space-y-4">
-      {contactLinks.length > 0 && (
-        <Card>
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Phone size={16} className="text-primary" />
-              {t("contact")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-2 space-y-2">
-            {contactLinks.map((link) => (
+      <Card>
+        <CardHeader className="p-4 pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Phone size={16} className="text-primary" />
+            {t("contact")}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 pt-2 space-y-3">
+          {contactLinks.length > 0 ? (
+            contactLinks.map((link) => (
               <div key={link.id} className="flex items-center gap-3 rounded-xl bg-muted/30 p-3">
                 {link.platform === "phone" && <Phone size={16} className="text-primary shrink-0" />}
+                {link.platform === "whatsapp" && <Phone size={16} className="text-primary shrink-0" />}
                 {link.platform === "email" && <Mail size={16} className="text-primary shrink-0" />}
-                {link.platform === "whatsapp" && <Send size={16} className="text-primary shrink-0" />}
-                {link.platform === "telegram" && <Send size={16} className="text-primary shrink-0" />}
                 <div>
-                  <p className="text-xs text-muted-foreground capitalize">{link.platform}</p>
+                  <p className="text-xs text-muted-foreground">{link.platform === "email" ? t("email") : t("phone")}</p>
                   <p className="text-sm font-medium">{link.value}</p>
                 </div>
               </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {socialLinks.length > 0 && (
-        <Card>
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-base flex items-center gap-2">
-              <UserRound size={16} className="text-primary" />
-              Social
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-2 space-y-2">
-            {socialLinks.map((link) => (
-              <a key={link.id} href={link.value} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-xl bg-muted/30 p-3 hover:bg-muted/50 transition">
-                <Globe size={16} className="text-primary shrink-0" />
-                <div className="flex-1">
-                  <p className="text-xs text-muted-foreground capitalize">{link.platform}</p>
-                  <p className="text-sm font-medium">{link.label || link.value}</p>
-                </div>
-                <ExternalLink size={14} className="text-muted-foreground shrink-0" />
-              </a>
-            ))}
-          </CardContent>
-        </Card>
-      )}
+            ))
+          ) : !isOwn ? (
+            <p className="text-sm text-muted-foreground italic">{t("noLinks")}</p>
+          ) : null}
+          {isOwn ? (
+            <div className="space-y-2">
+              {contactPlatforms
+                .filter((item) => item.platform === "phone" ? !hasNumber : !hasEmail)
+                .map((item) => (
+                  <AddLinkForm key={item.platform} {...item} />
+                ))}
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -933,7 +954,7 @@ export function ProfileAbout({
 
       {activeTab === "overview" && <OverviewTab profile={profile} isOwn={isOwnProfile} />}
       {activeTab === "work" && <WorkEducationTab work={work} education={education} isOwn={isOwnProfile} localeStr={locale} />}
-      {activeTab === "contact" && <ContactTab links={links} isOwn={isOwnProfile} />}
+      {activeTab === "contact" && <ContactTab links={links} isOwn={isOwnProfile} localeStr={locale} />}
       {activeTab === "places" && <PlacesTab profile={profile} travel={travel} isOwn={isOwnProfile} localeStr={locale} />}
       {activeTab === "interests" && <InterestsTab interests={interests} hobbies={hobbies} isOwn={isOwnProfile} localeStr={locale} />}
       {activeTab === "links" && <LinksTab links={links} isOwn={isOwnProfile} localeStr={locale} />}

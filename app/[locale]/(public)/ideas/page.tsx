@@ -7,8 +7,9 @@ import {IdeasToastHandler} from "@/components/ideas/ideas-toast-handler";
 import {IdeaCard} from "@/components/ideas/idea-card";
 import {TopIdeaRow} from "@/components/ideas/top-idea-row";
 import {EmptyState} from "@/components/shared/empty-state";
+import {PaginationControls} from "@/components/shared/pagination-controls";
 import {Link} from "@/lib/i18n/routing";
-import {getIdeas} from "@/lib/data/ideas";
+import {getIdeasPage} from "@/lib/data/ideas";
 import {createClient} from "@/lib/supabase/server";
 import type {IdeaBadge} from "@/types/database";
 
@@ -53,13 +54,17 @@ export default async function IdeasPage({
     ideaSubmitted?: string;
     ideaUpdated?: string;
     ideaDeleted?: string;
+    page?: string;
   }>;
 }) {
   const {locale} = await params;
   const sp = await searchParams;
+  const page = Math.max(1, Number(sp.page ?? "1") || 1);
   const t = await getTranslations({locale, namespace: "Ideas"});
   const empty = await getTranslations({locale, namespace: "EmptyStates.ideas"});
-  const {ideas, totalUsers} = await getIdeas();
+  const common = await getTranslations({locale, namespace: "Common"});
+  const ideasPage = await getIdeasPage({page});
+  const {ideas, totalUsers} = ideasPage;
 
   const supabase = await createClient();
   const {
@@ -139,6 +144,13 @@ export default async function IdeasPage({
           ctaHref="/ideas/submit"
         />
       )}
+
+      <PaginationControls
+        page={ideasPage.page}
+        hasNextPage={ideasPage.hasNextPage}
+        previousLabel={common("previous")}
+        nextLabel={common("next")}
+      />
     </div>
   );
 }

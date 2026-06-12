@@ -23,6 +23,8 @@ const formSchema = z.object({
   fullName: z.string().min(2).max(100),
   bio: z.string().max(500).optional().or(z.literal("")),
   city: z.string().max(100).optional().or(z.literal("")),
+  hometown: z.string().max(100).optional().or(z.literal("")),
+  languagesSpoken: z.string().max(500).optional().or(z.literal("")),
   languagePreference: z.string().max(10).optional().or(z.literal("")),
 });
 
@@ -31,11 +33,14 @@ type ProfileFormValues = {
   fullName: string;
   bio?: string;
   city?: string;
+  hometown?: string;
+  languagesSpoken?: string;
   languagePreference?: string;
 };
 
 export function ProfileEditForm({profile, locale}: {profile: ProfileRow; locale: string}) {
   const t = useTranslations("Profile");
+  const aboutT = useTranslations("ProfileAbout");
   const errorsT = useTranslations("Errors");
   const imageT = useTranslations("ImageUpload");
   const router = useRouter();
@@ -59,6 +64,8 @@ export function ProfileEditForm({profile, locale}: {profile: ProfileRow; locale:
       fullName: profile.full_name ?? "",
       bio: profile.bio ?? "",
       city: profile.city ?? "",
+      hometown: profile.hometown ?? "",
+      languagesSpoken: (profile.languages_spoken ?? []).join(", "),
       languagePreference: profile.language_preference ?? "",
     },
   });
@@ -105,6 +112,8 @@ export function ProfileEditForm({profile, locale}: {profile: ProfileRow; locale:
       formData.set("fullName", values.fullName);
       formData.set("bio", values.bio ?? "");
       formData.set("city", values.city ?? "");
+      formData.set("hometown", values.hometown ?? "");
+      formData.set("languagesSpoken", values.languagesSpoken ?? "");
       formData.set("languagePreference", values.languagePreference ?? "");
       formData.set("avatarUrl", profile.avatar_url ?? "");
       formData.set("coverImageUrl", profile.cover_image_url ?? "");
@@ -160,9 +169,34 @@ export function ProfileEditForm({profile, locale}: {profile: ProfileRow; locale:
             {errors.city && <p className="text-xs text-destructive">{errors.city.message}</p>}
           </div>
 
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">{aboutT("hometown")}</label>
+              <Input {...register("hometown")} placeholder={aboutT("hometown")} />
+              {errors.hometown && <p className="text-xs text-destructive">{errors.hometown.message}</p>}
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">{aboutT("languages")}</label>
+              <Input {...register("languagesSpoken")} placeholder="العربية, Français, Pulaar" />
+              {errors.languagesSpoken && <p className="text-xs text-destructive">{errors.languagesSpoken.message}</p>}
+            </div>
+          </div>
+
           <div className="space-y-1">
             <label className="text-xs font-medium text-muted-foreground">{t("fields.languagePreference")}</label>
-            <Input {...register("languagePreference")} placeholder={t("fields.languagePreference")} />
+            <select
+              {...register("languagePreference")}
+              className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm outline-none ring-primary/30 placeholder:text-muted-foreground focus:ring"
+            >
+              <option value="auto">Auto</option>
+              <option value="ar">العربية</option>
+              <option value="fr">Français</option>
+              <option value="ff">Pulaar</option>
+              <option value="snk">Soninké</option>
+              <option value="wo">Wolof</option>
+              <option value="en">English</option>
+            </select>
             {errors.languagePreference && <p className="text-xs text-destructive">{errors.languagePreference.message}</p>}
           </div>
 

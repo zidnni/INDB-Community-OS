@@ -31,6 +31,8 @@ export const profileSchema = z.object({
   fullName: z.string().min(2).max(100),
   bio: z.string().max(500).optional().or(z.literal("")),
   city: z.string().max(100).optional().or(z.literal("")),
+  hometown: z.string().max(100).optional().or(z.literal("")),
+  languagesSpoken: z.string().max(500).optional().or(z.literal("")),
   languagePreference: z.string().max(10).optional().or(z.literal("")),
   avatarUrl: z.string().optional().or(z.literal("")),
   coverImageUrl: z.string().optional().or(z.literal("")),

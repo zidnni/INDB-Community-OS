@@ -804,7 +804,9 @@
     "seeTranslation": "عرض الترجمة",
     "seeOriginal": "عرض النص الأصلي",
     "translating": "جارٍ الترجمة...",
-    "translationUnavailable": "الترجمة غير متاحة"
+    "translationUnavailable": "الترجمة غير متاحة",
+    "previous": "السابق",
+    "next": "التالي"
   },
   "EmptyStates": {
     "posts": {

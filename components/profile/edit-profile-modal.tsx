@@ -15,13 +15,16 @@ import {updateProfileAction} from "@/app/[locale]/server-actions";
 import {prepareImageForUpload, ImageUploadError} from "@/lib/images/client-compression";
 import {ACCEPTED_IMAGE_EXTENSIONS} from "@/lib/images/upload-config";
 import {useRouter} from "@/lib/i18n/routing";
-import type {ProfileRow} from "@/types/database";
+import type {ProfileEducationRow, ProfileHobbyRow, ProfileInterestRow, ProfileLinkRow, ProfileRow, ProfileTravelRow, ProfileWorkRow} from "@/types/database";
+import {ProfileAbout} from "./profile-about";
 
 const formSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters").max(24),
   fullName: z.string().min(2, "Name must be at least 2 characters").max(100),
   bio: z.string().max(500).optional().or(z.literal("")),
   city: z.string().max(100).optional().or(z.literal("")),
+  hometown: z.string().max(100).optional().or(z.literal("")),
+  languagesSpoken: z.string().max(500).optional().or(z.literal("")),
   languagePreference: z.string().max(10).optional().or(z.literal("")),
 });
 
@@ -31,11 +34,29 @@ interface EditProfileModalProps {
   open: boolean;
   onClose: () => void;
   profile: ProfileRow;
+  work: ProfileWorkRow[];
+  education: ProfileEducationRow[];
+  interests: ProfileInterestRow[];
+  hobbies: ProfileHobbyRow[];
+  links: ProfileLinkRow[];
+  travel: ProfileTravelRow[];
   locale: string;
 }
 
-export function EditProfileModal({open, onClose, profile, locale}: EditProfileModalProps) {
+export function EditProfileModal({
+  open,
+  onClose,
+  profile,
+  work,
+  education,
+  interests,
+  hobbies,
+  links,
+  travel,
+  locale,
+}: EditProfileModalProps) {
   const t = useTranslations("Profile");
+  const aboutT = useTranslations("ProfileAbout");
   const errorsT = useTranslations("Errors");
   const imageT = useTranslations("ImageUpload");
   const router = useRouter();
@@ -59,6 +80,8 @@ export function EditProfileModal({open, onClose, profile, locale}: EditProfileMo
       fullName: profile.full_name ?? "",
       bio: profile.bio ?? "",
       city: profile.city ?? "",
+      hometown: profile.hometown ?? "",
+      languagesSpoken: (profile.languages_spoken ?? []).join(", "),
       languagePreference: profile.language_preference ?? "",
     },
   });
@@ -112,6 +135,8 @@ export function EditProfileModal({open, onClose, profile, locale}: EditProfileMo
       formData.set("fullName", values.fullName);
       formData.set("bio", values.bio ?? "");
       formData.set("city", values.city ?? "");
+      formData.set("hometown", values.hometown ?? "");
+      formData.set("languagesSpoken", values.languagesSpoken ?? "");
       formData.set("languagePreference", values.languagePreference ?? "");
       formData.set("avatarUrl", profile.avatar_url ?? "");
       formData.set("coverImageUrl", profile.cover_image_url ?? "");
@@ -143,7 +168,7 @@ export function EditProfileModal({open, onClose, profile, locale}: EditProfileMo
         className="fixed inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative z-10 mx-auto w-full max-w-lg rounded-2xl bg-card shadow-2xl">
+      <div className="relative z-10 mx-auto w-full max-w-3xl rounded-2xl bg-card shadow-2xl">
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <h2 className="text-lg font-semibold">{t("editProfile")}</h2>
           <button
@@ -154,6 +179,7 @@ export function EditProfileModal({open, onClose, profile, locale}: EditProfileMo
           </button>
         </div>
 
+        <div className="max-h-[82vh] overflow-y-auto">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 p-5">
           {/* Cover Image Upload */}
           <div className="space-y-2">
@@ -243,15 +269,33 @@ export function EditProfileModal({open, onClose, profile, locale}: EditProfileMo
               {errors.city && <p className="text-xs text-destructive">{errors.city.message}</p>}
             </div>
 
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">{aboutT("hometown")}</label>
+                <Input {...register("hometown")} placeholder={aboutT("hometown")} />
+                {errors.hometown && <p className="text-xs text-destructive">{errors.hometown.message}</p>}
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">{aboutT("languages")}</label>
+                <Input {...register("languagesSpoken")} placeholder={`${"\u0627\u0644\u0639\u0631\u0628\u064a\u0629"}, ${"Fran\u00e7ais"}, Pulaar`} />
+                {errors.languagesSpoken && <p className="text-xs text-destructive">{errors.languagesSpoken.message}</p>}
+              </div>
+            </div>
+
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground">{t("fields.languagePreference")}</label>
               <select
                 {...register("languagePreference")}
                 className="flex h-10 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm outline-none ring-primary/30 placeholder:text-muted-foreground focus:ring"
               >
+                <option value="auto">Auto</option>
+                <option value="ar">{"\u0627\u0644\u0639\u0631\u0628\u064a\u0629"}</option>
+                <option value="fr">{"Fran\u00e7ais"}</option>
+                <option value="ff">Pulaar</option>
+                <option value="snk">{"Sonink\u00e9"}</option>
+                <option value="wo">Wolof</option>
                 <option value="en">English</option>
-                <option value="fr">Français</option>
-                <option value="ar">العربية</option>
               </select>
               {errors.languagePreference && <p className="text-xs text-destructive">{errors.languagePreference.message}</p>}
             </div>
@@ -274,6 +318,36 @@ export function EditProfileModal({open, onClose, profile, locale}: EditProfileMo
             </Button>
           </div>
         </form>
+        <div className="border-t border-border px-5 py-5">
+          <div className="mb-4">
+            <h3 className="text-base font-semibold">{aboutT("overview")}</h3>
+            <p className="text-sm text-muted-foreground">
+              {aboutT("workAndEducation")} · {aboutT("contact")} · {aboutT("places")} · {aboutT("interests")}
+            </p>
+          </div>
+          <ProfileAbout
+            profile={{
+              id: profile.id,
+              full_name: profile.full_name,
+              username: profile.username,
+              avatar_url: profile.avatar_url,
+              bio: profile.bio,
+              city: profile.city,
+              hometown: profile.hometown ?? null,
+              languages_spoken: profile.languages_spoken ?? [],
+              contribution_score: profile.contribution_score ?? 0,
+              created_at: profile.created_at,
+            }}
+            work={work}
+            education={education}
+            interests={interests}
+            hobbies={hobbies}
+            links={links}
+            travel={travel}
+            isOwnProfile={true}
+          />
+        </div>
+        </div>
       </div>
     </div>
   );

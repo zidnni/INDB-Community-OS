@@ -112,14 +112,14 @@ export function ProfileClient({
   const joinDate = formatJoinDate(profile.created_at, locale);
   const contributionScore = profile.contribution_score ?? 0;
   const contributionRank = getContributionRankKey(contributionScore);
-  const currentTab = activeTab === "memories" ? "memories" : activeTab === "ideas" ? "ideas" : activeTab === "shares" ? "shares" : activeTab === "about" ? "about" : "posts";
+  const currentTab = activeTab === "posts" ? "posts" : activeTab === "memories" ? "memories" : activeTab === "ideas" ? "ideas" : activeTab === "shares" ? "shares" : "about";
 
   const tabs = [
+    {key: "about", label: t("tabs.about"), count: null},
     {key: "posts", label: t("tabs.posts"), count: postsWithComments.length},
     {key: "memories", label: t("tabs.memories"), count: memories.length},
     {key: "ideas", label: t("tabs.ideas"), count: ideas.length},
     {key: "shares", label: t("tabs.shares"), count: shares.length},
-    {key: "about", label: t("tabs.about"), count: null},
   ] as const;
 
   return (
@@ -306,7 +306,7 @@ export function ProfileClient({
                 key={tab.key}
                 href={`/profile?tab=${tab.key}`}
                 className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-5 py-3 text-base font-medium transition ${
-                  currentTab === tab.key || (currentTab === "posts" && tab.key === "posts" && !activeTab)
+                  currentTab === tab.key
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
@@ -315,7 +315,7 @@ export function ProfileClient({
                 {tab.count !== null ? (
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-sm ${
-                      currentTab === tab.key || (currentTab === "posts" && tab.key === "posts" && !activeTab)
+                      currentTab === tab.key
                         ? "bg-primary-foreground/20 text-primary-foreground"
                         : "bg-muted-foreground/10 text-muted-foreground"
                     }`}
@@ -438,6 +438,12 @@ export function ProfileClient({
         open={editModalOpen}
         onClose={() => setEditModalOpen(false)}
         profile={profile}
+        work={work}
+        education={education}
+        interests={interests}
+        hobbies={hobbies}
+        links={links}
+        travel={travel}
         locale={locale}
       />
     </>

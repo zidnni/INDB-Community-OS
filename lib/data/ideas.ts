@@ -3,6 +3,8 @@ import {calculateIdeaSupport} from "@/lib/ideas/support";
 import {getTotalActiveUsers} from "@/lib/data/stats";
 import type {IdeaCommentWithAuthor, IdeaMediaRow, IdeaWithAuthor, IdeaWithSupport} from "@/types/database";
 
+const DEFAULT_PAGE_SIZE = 20;
+
 async function attachIdeaMedia(ideas: IdeaWithAuthor[]): Promise<IdeaWithAuthor[]> {
   if (ideas.length === 0) return ideas;
   const supabase = await createClient();
@@ -29,7 +31,29 @@ async function attachIdeaMedia(ideas: IdeaWithAuthor[]): Promise<IdeaWithAuthor[
 }
 
 export async function getIdeas(): Promise<{ideas: IdeaWithSupport[]; totalUsers: number}> {
+  const page = await getIdeasPage();
+  return {ideas: page.ideas, totalUsers: page.totalUsers};
+}
+
+export async function getIdeasPage({
+  page = 1,
+  pageSize = DEFAULT_PAGE_SIZE,
+}: {
+  page?: number;
+  pageSize?: number;
+} = {}): Promise<{
+  ideas: IdeaWithSupport[];
+  totalUsers: number;
+  page: number;
+  pageSize: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}> {
   const supabase = await createClient();
+  const safePage = Math.max(1, page);
+  const safePageSize = Math.min(Math.max(1, pageSize), 50);
+  const from = (safePage - 1) * safePageSize;
+  const to = from + safePageSize;
 
   const {data} = await supabase
     .from("ideas")
@@ -39,9 +63,12 @@ export async function getIdeas(): Promise<{ideas: IdeaWithSupport[]; totalUsers:
       category:categories(id, slug, name_en, name_fr, name_ar, name_ff, name_snk, name_wo)
     `)
     .not("author_id", "is", null)
-    .order("created_at", {ascending: false});
+    .order("votes_count", {ascending: false})
+    .order("created_at", {ascending: false})
+    .range(from, to);
 
-  const ideas = (data ?? []) as unknown as IdeaWithAuthor[];
+  const rows = (data ?? []) as unknown as IdeaWithAuthor[];
+  const ideas = rows.slice(0, safePageSize);
   await attachIdeaMedia(ideas);
   const totalUsers = await getTotalActiveUsers();
 
@@ -50,13 +77,18 @@ export async function getIdeas(): Promise<{ideas: IdeaWithSupport[]; totalUsers:
     return {...idea, supportPercentage, badge, rank: null};
   });
 
-  withSupport.sort((a, b) => b.votes_count - a.votes_count);
-
   for (let i = 0; i < withSupport.length && i < 10; i++) {
-    withSupport[i].rank = i + 1;
+    withSupport[i].rank = safePage === 1 ? i + 1 : null;
   }
 
-  return {ideas: withSupport, totalUsers};
+  return {
+    ideas: withSupport,
+    totalUsers,
+    page: safePage,
+    pageSize: safePageSize,
+    hasNextPage: rows.length > safePageSize,
+    hasPreviousPage: safePage > 1,
+  };
 }
 
 export async function getUserIdeas(userId: string): Promise<IdeaWithAuthor[]> {

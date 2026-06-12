@@ -1,6 +1,8 @@
 import {createClient} from "@/lib/supabase/server";
 import type {MemoryCommentWithAuthor, MemoryMediaRow, MemoryWithContributor} from "@/types/database";
 
+const DEFAULT_PAGE_SIZE = 20;
+
 async function attachMemoryMedia(memories: MemoryWithContributor[]): Promise<MemoryWithContributor[]> {
   if (memories.length === 0) return memories;
   const supabase = await createClient();
@@ -31,7 +33,28 @@ export async function getVisibleMemories(): Promise<MemoryWithContributor[]> {
 }
 
 export async function getApprovedMemories(): Promise<MemoryWithContributor[]> {
+  const page = await getApprovedMemoriesPage();
+  return page.items;
+}
+
+export async function getApprovedMemoriesPage({
+  page = 1,
+  pageSize = DEFAULT_PAGE_SIZE,
+}: {
+  page?: number;
+  pageSize?: number;
+} = {}): Promise<{
+  items: MemoryWithContributor[];
+  page: number;
+  pageSize: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}> {
   const supabase = await createClient();
+  const safePage = Math.max(1, page);
+  const safePageSize = Math.min(Math.max(1, pageSize), 50);
+  const from = (safePage - 1) * safePageSize;
+  const to = from + safePageSize;
 
   const {data} = await supabase
     .from("memories")
@@ -41,10 +64,20 @@ export async function getApprovedMemories(): Promise<MemoryWithContributor[]> {
     `)
     .eq("verification_status", "approved")
     .not("contributor_id", "is", null)
-    .order("year", {ascending: false});
+    .order("year", {ascending: false})
+    .order("created_at", {ascending: false})
+    .range(from, to);
 
-  const memories = (data ?? []) as unknown as MemoryWithContributor[];
-  return attachMemoryMedia(memories);
+  const rows = (data ?? []) as unknown as MemoryWithContributor[];
+  const memories = rows.slice(0, safePageSize);
+  const items = await attachMemoryMedia(memories);
+  return {
+    items,
+    page: safePage,
+    pageSize: safePageSize,
+    hasNextPage: rows.length > safePageSize,
+    hasPreviousPage: safePage > 1,
+  };
 }
 
 export async function getMemoryById(id: string): Promise<MemoryWithContributor | null> {

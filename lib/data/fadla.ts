@@ -1,6 +1,8 @@
 import {createClient} from "@/lib/supabase/server";
 import type {CommunityShareImage, CommunityShareWithOwner} from "@/types/database";
 
+const DEFAULT_PAGE_SIZE = 20;
+
 function normalizeImages(value: unknown): CommunityShareImage[] {
   if (!Array.isArray(value)) return [];
 
@@ -51,14 +53,46 @@ async function hydrateShares(
 }
 
 export async function getCommunityShares(currentUserId?: string | null): Promise<CommunityShareWithOwner[]> {
+  const page = await getCommunitySharesPage({currentUserId});
+  return page.items;
+}
+
+export async function getCommunitySharesPage({
+  currentUserId,
+  page = 1,
+  pageSize = DEFAULT_PAGE_SIZE,
+}: {
+  currentUserId?: string | null;
+  page?: number;
+  pageSize?: number;
+} = {}): Promise<{
+  items: CommunityShareWithOwner[];
+  page: number;
+  pageSize: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}> {
   const supabase = await createClient();
+  const safePage = Math.max(1, page);
+  const safePageSize = Math.min(Math.max(1, pageSize), 50);
+  const from = (safePage - 1) * safePageSize;
+  const to = from + safePageSize;
 
   const {data} = await supabase
     .from("community_shares")
     .select("*, owner:profiles!community_shares_owner_id_fkey(id, username, full_name, avatar_url)")
-    .order("created_at", {ascending: false});
+    .order("created_at", {ascending: false})
+    .range(from, to);
 
-  return hydrateShares((data ?? []) as unknown as CommunityShareWithOwner[], currentUserId);
+  const rows = (data ?? []) as unknown as CommunityShareWithOwner[];
+  const items = await hydrateShares(rows.slice(0, safePageSize), currentUserId);
+  return {
+    items,
+    page: safePage,
+    pageSize: safePageSize,
+    hasNextPage: rows.length > safePageSize,
+    hasPreviousPage: safePage > 1,
+  };
 }
 
 export async function getUserCommunityShares(userId: string): Promise<CommunityShareWithOwner[]> {

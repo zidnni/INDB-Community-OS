@@ -19,6 +19,11 @@ export async function uploadFileToStorage(
   pathPrefix: string,
 ): Promise<UploadedMediaResult> {
   const supabase = createClient();
+  const rateLimitResponse = await fetch("/api/uploads/rate-limit", {method: "POST"});
+
+  if (!rateLimitResponse.ok) {
+    throw new Error("Upload rate limit exceeded");
+  }
 
   const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
   const filePath = `${pathPrefix}/${Date.now()}-${safeFileName}`;
@@ -65,9 +70,12 @@ export async function uploadMediaItem(
   const {
     data: {user},
   } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
   const mediaType = getMediaType(file);
   const mediaFolder = mediaType === "video" ? "videos" : "images";
-  const pathPrefix = user?.id ? `${user.id}/${prefix}/${mediaFolder}` : `${prefix}/${mediaFolder}`;
+  const pathPrefix = `${user.id}/${prefix}/${mediaFolder}`;
 
   if (isVideoFile(file)) {
     return uploadFileToStorage(file, bucket, pathPrefix);

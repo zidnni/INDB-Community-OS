@@ -7,6 +7,8 @@ import {getTranslations} from "next-intl/server";
 import {routing} from "@/lib/i18n/routing";
 import {withLocale} from "@/lib/i18n/paths";
 import {type ImageUploadKind, validateCompressedImageFile} from "@/lib/images/upload-config";
+import {recordAdminAuditLog} from "@/lib/security/admin-audit";
+import {checkRateLimit} from "@/lib/security/rate-limit";
 import {createAdminClient} from "@/lib/supabase/admin";
 import {createClient} from "@/lib/supabase/server";
 import {adminCreditPointOptions, type AdminContentType} from "@/lib/data/admin";
@@ -72,6 +74,14 @@ function getReturnPath(formData: FormData, fallback: string) {
 function appendParam(path: string, key: string, value: string) {
   const separator = path.includes("?") ? "&" : "?";
   return `${path}${separator}${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+}
+
+async function isUserRateLimited(
+  kind: "comment" | "reaction" | "follow" | "upload",
+  userId: string,
+) {
+  const result = await checkRateLimit(kind, userId);
+  return !result.allowed;
 }
 
 export async function signOutAction(formData: FormData) {
@@ -457,6 +467,10 @@ export async function addCommentAction(formData: FormData) {
     redirect(toPath(locale, `/login?next=${next}`));
   }
 
+  if (await isUserRateLimited("comment", user.id)) {
+    redirect(toPath(locale, appendParam(returnPath, "error", "rate_limited")));
+  }
+
   const parsed = commentSchema.safeParse({
     content: formData.get("content"),
   });
@@ -501,6 +515,10 @@ export async function submitCommentAction(
 
   const {data: {user}} = await supabase.auth.getUser();
   if (!user) return {success: false, error: "unauthorized"};
+
+  if (await isUserRateLimited("comment", user.id)) {
+    return {success: false, error: "rate_limited"};
+  }
 
   const parsed = commentSchema.safeParse({content: formData.get("content")});
   if (!parsed.success || typeof postId !== "string") {
@@ -550,6 +568,10 @@ export async function toggleReactionAction(formData: FormData) {
   if (!user) {
     const next = encodeURIComponent(returnPath);
     redirect(toPath(locale, `/login?next=${next}`));
+  }
+
+  if (await isUserRateLimited("reaction", user.id)) {
+    redirect(toPath(locale, appendParam(returnPath, "error", "rate_limited")));
   }
 
   if (typeof postId !== "string" || !reactionType) {
@@ -621,6 +643,10 @@ export async function toggleFollowAction(formData: FormData): Promise<{success: 
     return {success: false, error: "notAuthenticated"};
   }
 
+  if (await isUserRateLimited("follow", user.id)) {
+    return {success: false, error: "rate_limited"};
+  }
+
   if (typeof profileId !== "string" || profileId.length === 0) {
     return {success: false, error: "invalidProfile"};
   }
@@ -649,6 +675,10 @@ export async function uploadAvatarAction(formData: FormData): Promise<{url?: str
   const {data: {user}} = await supabase.auth.getUser();
   if (!user) return {error: imageT("notAuthenticated")};
 
+  if (await isUserRateLimited("upload", user.id)) {
+    return {error: imageT("failed")};
+  }
+
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) return {error: imageT("noFile")};
 
@@ -671,6 +701,10 @@ export async function uploadCoverAction(formData: FormData): Promise<{url?: stri
 
   const {data: {user}} = await supabase.auth.getUser();
   if (!user) return {error: imageT("notAuthenticated")};
+
+  if (await isUserRateLimited("upload", user.id)) {
+    return {error: imageT("failed")};
+  }
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) return {error: imageT("noFile")};
@@ -703,6 +737,8 @@ export async function updateProfileAction(formData: FormData): Promise<{success:
     fullName: formData.get("fullName"),
     bio: formData.get("bio"),
     city: formData.get("city"),
+    hometown: formData.get("hometown"),
+    languagesSpoken: formData.get("languagesSpoken"),
     languagePreference: formData.get("languagePreference"),
     avatarUrl: formData.get("avatarUrl"),
     coverImageUrl: formData.get("coverImageUrl"),
@@ -717,6 +753,9 @@ export async function updateProfileAction(formData: FormData): Promise<{success:
 
   const avatarFile = formData.get("avatarFile");
   if (avatarFile instanceof File && avatarFile.size > 0) {
+    if (await isUserRateLimited("upload", user.id)) {
+      return {success: false, error: imageT("failed")};
+    }
     const uploaded = await uploadImageFile(avatarFile, "avatars", user.id, "avatar", imageT);
     if (uploaded.error) {
       return {success: false, error: uploaded.error};
@@ -726,6 +765,9 @@ export async function updateProfileAction(formData: FormData): Promise<{success:
 
   const coverFile = formData.get("coverFile");
   if (coverFile instanceof File && coverFile.size > 0) {
+    if (await isUserRateLimited("upload", user.id)) {
+      return {success: false, error: imageT("failed")};
+    }
     const uploaded = await uploadImageFile(coverFile, "profile-covers", user.id, "cover", imageT);
     if (uploaded.error) {
       return {success: false, error: uploaded.error};
@@ -739,6 +781,10 @@ export async function updateProfileAction(formData: FormData): Promise<{success:
     full_name: parsed.data.fullName,
     bio: parsed.data.bio || null,
     city: parsed.data.city || null,
+    hometown: parsed.data.hometown || null,
+    languages_spoken: parsed.data.languagesSpoken
+      ? parsed.data.languagesSpoken.split(",").map((language) => language.trim()).filter(Boolean)
+      : [],
     language_preference: parsed.data.languagePreference || "auto",
     avatar_url: avatarUrl,
     cover_image_url: coverImageUrl,
@@ -1354,6 +1400,10 @@ export async function addIdeaCommentAction(
     return {success: false, error: "unauthorized"};
   }
 
+  if (await isUserRateLimited("comment", user.id)) {
+    return {success: false, error: "rate_limited"};
+  }
+
   const parsed = commentSchema.safeParse({
     content: formData.get("content"),
   });
@@ -1501,6 +1551,10 @@ export async function voteIdeaAction(
     return {success: false, error: "unauthorized"};
   }
 
+  if (await isUserRateLimited("reaction", user.id)) {
+    return {success: false, error: "rate_limited"};
+  }
+
   if (typeof ideaId !== "string") {
     return {success: false, error: "invalid"};
   }
@@ -1558,6 +1612,10 @@ export async function reactToMemoryAction(
 
   if (!user) {
     return {success: false, error: "unauthorized"};
+  }
+
+  if (await isUserRateLimited("reaction", user.id)) {
+    return {success: false, error: "rate_limited"};
   }
 
   if (typeof memoryId !== "string") {
@@ -1636,6 +1694,10 @@ export async function addMemoryCommentAction(
 
   if (!user) {
     return {success: false, error: "unauthorized"};
+  }
+
+  if (await isUserRateLimited("comment", user.id)) {
+    return {success: false, error: "rate_limited"};
   }
 
   const parsed = commentSchema.safeParse({
@@ -2226,6 +2288,14 @@ export async function updateAdminUserRoleAction(formData: FormData) {
     redirectAdmin(locale, "roleError", "/admin/users");
   }
 
+  await recordAdminAuditLog({
+    adminId: adminUserId,
+    action: "user_role_updated",
+    targetType: "profile",
+    targetId: targetUserId,
+    metadata: {role},
+  });
+
   revalidatePath(toPath(locale, "/admin"));
   revalidatePath(toPath(locale, "/admin/users"));
   revalidatePath("/", "layout");
@@ -2260,6 +2330,13 @@ export async function deleteAdminUserAction(formData: FormData) {
     console.error("deleteAdminUserAction error:", result.error);
     redirectAdmin(locale, "userDeleteError", "/admin/users");
   }
+
+  await recordAdminAuditLog({
+    adminId: adminUserId,
+    action: "user_deleted",
+    targetType: "profile",
+    targetId: targetUserId,
+  });
 
   revalidatePath(toPath(locale, "/admin"));
   revalidatePath(toPath(locale, "/admin/users"));
@@ -2301,6 +2378,14 @@ export async function awardCommunityCreditsAction(formData: FormData) {
   if (error) {
     redirectAdmin(locale, "creditError", "/admin/credits");
   }
+
+  await recordAdminAuditLog({
+    adminId: adminUserId,
+    action: "credits_awarded",
+    targetType: "profile",
+    targetId: userId,
+    metadata: {points, reason},
+  });
 
   await createNotification({
     userId,
@@ -2360,6 +2445,13 @@ export async function deleteAdminContentAction(formData: FormData) {
     const {error} = await supabase.from("memories").delete().eq("id", id);
     if (error) redirectAdmin(locale, "deleteError", "/admin/content");
   }
+
+  await recordAdminAuditLog({
+    adminId: adminUserId,
+    action: "content_deleted",
+    targetType: type,
+    targetId: id,
+  });
 
   revalidatePath(toPath(locale, "/admin"));
   revalidatePath(toPath(locale, "/admin/content"));

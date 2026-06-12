@@ -5,8 +5,9 @@ import {getTranslations} from "next-intl/server";
 import {MemoryGrid} from "@/components/memory/memory-grid";
 import {MemorySubmittedToast} from "@/components/memory/memory-submitted-toast";
 import {EmptyState} from "@/components/shared/empty-state";
+import {PaginationControls} from "@/components/shared/pagination-controls";
 import {Button} from "@/components/ui/button";
-import {getApprovedMemories} from "@/lib/data/memories";
+import {getApprovedMemoriesPage} from "@/lib/data/memories";
 import {Link} from "@/lib/i18n/routing";
 
 export async function generateMetadata({
@@ -28,13 +29,16 @@ export default async function MemoryPage({
   searchParams,
 }: {
   params: Promise<{locale: string}>;
-  searchParams: Promise<{memorySubmitted?: string; memoryUpdated?: string}>;
+  searchParams: Promise<{memorySubmitted?: string; memoryUpdated?: string; page?: string}>;
 }) {
   const {locale} = await params;
   const sp = await searchParams;
+  const page = Math.max(1, Number(sp.page ?? "1") || 1);
   const t = await getTranslations({locale, namespace: "Memory"});
   const empty = await getTranslations({locale, namespace: "EmptyStates.memories"});
-  const memories = await getApprovedMemories();
+  const common = await getTranslations({locale, namespace: "Common"});
+  const memoriesPage = await getApprovedMemoriesPage({page});
+  const memories = memoriesPage.items;
 
   return (
     <div className="space-y-5">
@@ -71,6 +75,13 @@ export default async function MemoryPage({
           ctaHref="/memory/submit"
         />
       )}
+
+      <PaginationControls
+        page={memoriesPage.page}
+        hasNextPage={memoriesPage.hasNextPage}
+        previousLabel={common("previous")}
+        nextLabel={common("next")}
+      />
     </div>
   );
 }

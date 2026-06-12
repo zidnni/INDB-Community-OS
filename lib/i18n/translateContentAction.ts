@@ -33,8 +33,8 @@ async function saveTranslation(
   translatedText: string,
 ): Promise<void> {
   const admin = createAdminClient();
-  const supabase = admin ?? await createClient();
-  const {error} = await supabase.from("content_translations").upsert(
+  if (!admin) return;
+  const {error} = await admin.from("content_translations").upsert(
     {
       content_type: contentType,
       content_id: contentId,

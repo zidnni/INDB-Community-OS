@@ -87,7 +87,7 @@ export default async function PublicProfilePage({
   const joinDate = formatJoinDate(profile.created_at, locale);
   const contributionScore = profile.contribution_score ?? 0;
   const contributionRank = getContributionRankKey(contributionScore);
-  const currentTab = activeTab === "memories" ? "memories" : activeTab === "ideas" ? "ideas" : activeTab === "shares" ? "shares" : activeTab === "about" ? "about" : "posts";
+  const currentTab = activeTab === "posts" ? "posts" : activeTab === "memories" ? "memories" : activeTab === "ideas" ? "ideas" : activeTab === "shares" ? "shares" : "about";
 
   const t = await getTranslations({locale, namespace: "Profile"});
   const emptyPosts = await getTranslations({locale, namespace: "EmptyStates.posts"});
@@ -96,11 +96,11 @@ export default async function PublicProfilePage({
   const emptyFadla = await getTranslations({locale, namespace: "EmptyStates.fadla"});
 
   const tabs = [
+    {key: "about", label: t("tabs.about"), count: null},
     {key: "posts", label: t("tabs.posts"), count: allPosts.length},
     {key: "memories", label: t("tabs.memories"), count: memories.length},
     {key: "ideas", label: t("tabs.ideas"), count: ideas.length},
     {key: "shares", label: t("tabs.shares"), count: shares.length},
-    {key: "about", label: t("tabs.about"), count: null},
   ] as const;
 
   return (
@@ -237,7 +237,7 @@ export default async function PublicProfilePage({
             key={tab.key}
             href={`/profile/${username}?tab=${tab.key}`}
             className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-medium transition ${
-              currentTab === tab.key || (currentTab === "posts" && tab.key === "posts" && !activeTab)
+              currentTab === tab.key
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
@@ -245,7 +245,7 @@ export default async function PublicProfilePage({
             {tab.label}
             {tab.count !== null ? (
               <span className={`rounded-full px-2 py-0.5 text-xs ${
-                currentTab === tab.key || (currentTab === "posts" && tab.key === "posts" && !activeTab)
+                currentTab === tab.key
                   ? "bg-primary-foreground/20 text-primary-foreground"
                   : "bg-muted-foreground/10 text-muted-foreground"
               }`}>

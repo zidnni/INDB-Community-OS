@@ -31,7 +31,7 @@ export function TranslateButton({text, contentType, contentId, className = ""}: 
       const res = await fetch("/api/translate?" + params.toString());
       const result = await res.json();
       if (result.error) {
-        setError(result.error);
+        setError("unavailable");
         return;
       }
       setTranslated(result.translatedText);
@@ -55,9 +55,8 @@ export function TranslateButton({text, contentType, contentId, className = ""}: 
 
   if (error) {
     return (
-      <div className={className + " border border-destructive/30 rounded-lg p-2"}>
+      <div className={className}>
         <span className="text-xs text-destructive">{translatingT("unavailable")}</span>
-        <span className="block text-xs text-destructive/70 mt-1 font-mono">{error}</span>
       </div>
     );
   }

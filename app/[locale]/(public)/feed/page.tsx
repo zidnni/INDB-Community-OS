@@ -5,8 +5,9 @@ import {getTranslations} from "next-intl/server";
 import {CreatePostCard} from "@/components/feed/create-post-card";
 import {PostCard} from "@/components/feed/post-card";
 import {EmptyState} from "@/components/shared/empty-state";
+import {PaginationControls} from "@/components/shared/pagination-controls";
 import {getCommentsByPost} from "@/lib/data/comments";
-import {getPosts} from "@/lib/data/posts";
+import {getPostsPage} from "@/lib/data/posts";
 import {getCurrentProfile} from "@/lib/data/profile";
 import {createClient} from "@/lib/supabase/server";
 
@@ -26,18 +27,24 @@ export async function generateMetadata({
 
 export default async function FeedPage({
   params,
+  searchParams,
 }: {
   params: Promise<{locale: string}>;
+  searchParams: Promise<{page?: string}>;
 }) {
   const {locale} = await params;
+  const sp = await searchParams;
+  const page = Math.max(1, Number(sp.page ?? "1") || 1);
   const empty = await getTranslations({locale, namespace: "EmptyStates.posts"});
+  const common = await getTranslations({locale, namespace: "Common"});
 
   const supabase = await createClient();
   const {data: {user}} = await supabase.auth.getUser();
   const currentUserId = user?.id ?? null;
   const profile = user ? await getCurrentProfile() : null;
 
-  const posts = await getPosts(currentUserId);
+  const postsPage = await getPostsPage({currentUserId, page});
+  const posts = postsPage.items;
 
   const profileName = profile?.full_name ?? profile?.username ?? user?.email ?? "?";
 
@@ -63,6 +70,13 @@ export default async function FeedPage({
           ctaHref="/feed"
         />
       )}
+
+      <PaginationControls
+        page={postsPage.page}
+        hasNextPage={postsPage.hasNextPage}
+        previousLabel={common("previous")}
+        nextLabel={common("next")}
+      />
     </div>
   );
 }
