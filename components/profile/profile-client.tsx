@@ -1,7 +1,6 @@
 "use client";
 
 import {useState} from "react";
-import {useSearchParams} from "next/navigation";
 import Image from "next/image";
 import {useTranslations} from "next-intl";
 import {
@@ -103,17 +102,14 @@ export function ProfileClient({
   const emptyMemories = useTranslations("EmptyStates.memories");
   const emptyIdeas = useTranslations("EmptyStates.ideas");
   const emptyFadla = useTranslations("EmptyStates.fadla");
-  const searchParams = useSearchParams();
-
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("about");
 
-  const activeTab = searchParams.get("tab");
   const displayName = profile.full_name ?? profile.username ?? "?";
   const initials = getInitials(displayName);
   const joinDate = formatJoinDate(profile.created_at, locale);
   const contributionScore = profile.contribution_score ?? 0;
   const contributionRank = getContributionRankKey(contributionScore);
-  const currentTab = activeTab === "posts" ? "posts" : activeTab === "memories" ? "memories" : activeTab === "ideas" ? "ideas" : activeTab === "shares" ? "shares" : "about";
 
   const tabs = [
     {key: "about", label: t("tabs.about"), count: null},
@@ -311,20 +307,21 @@ export function ProfileClient({
           {/* Tabs */}
           <div className="mt-4 flex gap-1 overflow-x-auto rounded-2xl border border-border/70 bg-card p-1">
             {tabs.map((tab) => (
-              <Link
+              <button
                 key={tab.key}
-                href={`/profile?tab=${tab.key}`}
+                type="button"
+                onClick={() => setActiveTab(tab.key)}
                 className={`inline-flex shrink-0 items-center gap-1.5 rounded-xl px-5 py-3 text-base font-medium transition ${
-                  currentTab === tab.key
+                  activeTab === tab.key
                     ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    : "text-muted-foreground active:bg-muted/80 hover:bg-muted hover:text-foreground"
                 }`}
               >
                 {tab.label}
                 {tab.count !== null ? (
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-sm ${
-                      currentTab === tab.key
+                      activeTab === tab.key
                         ? "bg-primary-foreground/20 text-primary-foreground"
                         : "bg-muted-foreground/10 text-muted-foreground"
                     }`}
@@ -332,13 +329,13 @@ export function ProfileClient({
                     {tab.count}
                   </span>
                 ) : null}
-              </Link>
+              </button>
             ))}
           </div>
 
           {/* Tab Content */}
           <div className="mt-4">
-            {currentTab === "posts" ? (
+            {activeTab === "posts" ? (
               postsWithComments.length > 0 ? (
                 <div className="space-y-3 sm:space-y-4">
                   {postsWithComments.map(({post, comments}) => (
@@ -356,7 +353,7 @@ export function ProfileClient({
               )
             ) : null}
 
-            {currentTab === "memories" ? (
+            {activeTab === "memories" ? (
               memories.length > 0 ? (
                 <div className="grid gap-4 sm:grid-cols-2">
                   {memories.map((memory) => (
@@ -374,7 +371,7 @@ export function ProfileClient({
               )
             ) : null}
 
-            {currentTab === "ideas" ? (
+            {activeTab === "ideas" ? (
               ideas.length > 0 ? (
                 <div className="space-y-3 sm:space-y-4">
                   {ideas.map((idea) => (
@@ -392,7 +389,7 @@ export function ProfileClient({
               )
             ) : null}
 
-            {currentTab === "shares" ? (
+            {activeTab === "shares" ? (
               shares.length > 0 ? (
                 <div className="grid gap-4 lg:grid-cols-2">
                   {shares.map((share) => (
@@ -416,7 +413,7 @@ export function ProfileClient({
               )
             ) : null}
 
-            {currentTab === "about" ? (
+            {activeTab === "about" ? (
               <ProfileAbout
                 profile={{
                   id: profile.id,
