@@ -3,9 +3,7 @@
 import {Check, Gift, HandHeart, Loader2, MapPin, Pencil, Share2, Trash2, X} from "lucide-react";
 import {useTranslations} from "next-intl";
 import {useSearchParams} from "next/navigation";
-import type {ReactNode} from "react";
 import {useEffect, useRef, useState} from "react";
-import {useFormStatus} from "react-dom";
 import {toast} from "sonner";
 
 import {
@@ -22,8 +20,9 @@ import {UserAvatar} from "@/components/layout/user-avatar";
 import {MediaCarousel} from "@/components/media/media-carousel";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
+import {useRouter} from "@/lib/i18n/routing";
 import {cn} from "@/lib/utils/cn";
-import type {FadlaRequestWithRequester, FadlaWithOwner} from "@/types/database";
+import type {FadlaWithOwner} from "@/types/database";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   food: "🍲", clothes: "👕", books: "📚", school_supplies: "🎒", furniture: "🪑",
@@ -45,16 +44,6 @@ const STATUS_STYLE: Record<string, string> = {
   archived: "bg-muted text-muted-foreground border-muted",
 };
 
-function SubmitButton({children, className, variant = "outline"}: {children: ReactNode; className?: string; variant?: "default" | "outline" | "destructive"}) {
-  const {pending} = useFormStatus();
-  return (
-    <Button type="submit" size="sm" variant={variant} disabled={pending} className={className}>
-      {pending ? <Loader2 size={16} className="animate-spin" /> : null}
-      {children}
-    </Button>
-  );
-}
-
 export function FadlaCard({
   item,
   currentUserId,
@@ -70,10 +59,12 @@ export function FadlaCard({
 }) {
   const t = useTranslations("Fadla");
   const feed = useTranslations("Feed");
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [highlight, setHighlight] = useState(false);
   const [sharesCount, setSharesCount] = useState(item.shares_count ?? 0);
   const [requestState, setRequestState] = useState<"idle" | "loading" | "requested">("idle");
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const articleRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -101,6 +92,86 @@ export function FadlaCard({
       toast.error(result.error);
       setRequestState("idle");
     }
+  }
+
+  async function handleAccept(requestId: string) {
+    if (actionLoading) return;
+    setActionLoading(`accept-${requestId}`);
+    const formData = new FormData();
+    formData.set("locale", locale);
+    formData.set("requestId", requestId);
+    const result = await acceptFadlaRequestAction(formData);
+    if (result.success) {
+      toast.success(t("toasts.accepted"));
+      router.refresh();
+    } else {
+      toast.error(result.error);
+    }
+    setActionLoading(null);
+  }
+
+  async function handleDecline(requestId: string) {
+    if (actionLoading) return;
+    setActionLoading(`decline-${requestId}`);
+    const formData = new FormData();
+    formData.set("locale", locale);
+    formData.set("requestId", requestId);
+    const result = await declineFadlaRequestAction(formData);
+    if (result.success) {
+      toast.success(t("toasts.declined"));
+      router.refresh();
+    } else {
+      toast.error(result.error);
+    }
+    setActionLoading(null);
+  }
+
+  async function handleConfirmCollection() {
+    if (actionLoading) return;
+    setActionLoading("confirmCollection");
+    const formData = new FormData();
+    formData.set("locale", locale);
+    formData.set("shareId", item.id);
+    const result = await confirmFadlaCollectionAction(formData);
+    if (result.success) {
+      toast.success(t("toasts.collected"));
+      router.refresh();
+    } else {
+      toast.error(result.error);
+    }
+    setActionLoading(null);
+  }
+
+  async function handleComplete() {
+    if (actionLoading) return;
+    setActionLoading("complete");
+    const formData = new FormData();
+    formData.set("locale", locale);
+    formData.set("shareId", item.id);
+    const result = await completeFadlaItemAction(formData);
+    if (result.success) {
+      toast.success(t("toasts.completed"));
+      router.refresh();
+    } else {
+      toast.error(result.error);
+    }
+    setActionLoading(null);
+  }
+
+  async function handleArchive() {
+    if (actionLoading) return;
+    setActionLoading("archive");
+    const formData = new FormData();
+    formData.set("locale", locale);
+    formData.set("shareId", item.id);
+    const result = await archiveFadlaItemAction(formData);
+    if (result.success) {
+      toast.success(t("toasts.archived"));
+      router.refresh();
+    } else {
+      toast.error(result.error);
+    }
+    setActionLoading(null);
   }
 
   const isOwner = currentUserId === item.owner_id;
@@ -213,14 +284,16 @@ export function FadlaCard({
           )}
 
           {!isOwner && isRecipient && item.status === "reserved" && (
-            <form action={confirmFadlaCollectionAction}>
-              <input type="hidden" name="locale" value={locale} />
-              <input type="hidden" name="shareId" value={item.id} />
-              <SubmitButton variant="default" className="min-h-11 rounded-full px-5">
-                <Check size={17} />
-                {t("confirmCollection")}
-              </SubmitButton>
-            </form>
+            <Button
+              type="button"
+              variant="default"
+              disabled={actionLoading === "confirmCollection"}
+              onClick={handleConfirmCollection}
+              className="min-h-11 rounded-full px-5"
+            >
+              {actionLoading === "confirmCollection" ? <Loader2 size={17} className="animate-spin" /> : <Check size={17} />}
+              {t("confirmCollection")}
+            </Button>
           )}
 
           {!isOwner && isRecipient && item.status === "collected" && (
@@ -253,20 +326,26 @@ export function FadlaCard({
                         </div>
                       </div>
                       <div className="flex shrink-0 gap-1.5">
-                        <form action={acceptFadlaRequestAction}>
-                          <input type="hidden" name="locale" value={locale} />
-                          <input type="hidden" name="requestId" value={req.id} />
-                          <SubmitButton variant="default" className="h-8 w-8 rounded-full p-0">
-                            <Check size={15} />
-                          </SubmitButton>
-                        </form>
-                        <form action={declineFadlaRequestAction}>
-                          <input type="hidden" name="locale" value={locale} />
-                          <input type="hidden" name="requestId" value={req.id} />
-                          <SubmitButton variant="outline" className="h-8 w-8 rounded-full p-0">
-                            <X size={15} />
-                          </SubmitButton>
-                        </form>
+                        <Button
+                          type="button"
+                          variant="default"
+                          size="sm"
+                          disabled={actionLoading === `accept-${req.id}`}
+                          onClick={() => handleAccept(req.id)}
+                          className="h-8 w-8 rounded-full p-0"
+                        >
+                          {actionLoading === `accept-${req.id}` ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={actionLoading === `decline-${req.id}`}
+                          onClick={() => handleDecline(req.id)}
+                          className="h-8 w-8 rounded-full p-0"
+                        >
+                          {actionLoading === `decline-${req.id}` ? <Loader2 size={15} className="animate-spin" /> : <X size={15} />}
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -276,25 +355,30 @@ export function FadlaCard({
 
             {/* Collected → Complete */}
             {item.status === "collected" && (
-              <form action={completeFadlaItemAction}>
-                <input type="hidden" name="locale" value={locale} />
-                <input type="hidden" name="shareId" value={item.id} />
-                <SubmitButton variant="default" className="w-full rounded-full">
-                  <Check size={17} />
-                  {t("markCompleted")}
-                </SubmitButton>
-              </form>
+              <Button
+                type="button"
+                variant="default"
+                disabled={actionLoading === "complete"}
+                onClick={handleComplete}
+                className="w-full rounded-full"
+              >
+                {actionLoading === "complete" ? <Loader2 size={17} className="animate-spin" /> : <Check size={17} />}
+                {t("markCompleted")}
+              </Button>
             )}
 
             {/* Completed → Archive */}
             {item.status === "completed" && (
-              <form action={archiveFadlaItemAction}>
-                <input type="hidden" name="locale" value={locale} />
-                <input type="hidden" name="shareId" value={item.id} />
-                <SubmitButton variant="outline" className="w-full rounded-full">
-                  {t("archive")}
-                </SubmitButton>
-              </form>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={actionLoading === "archive"}
+                onClick={handleArchive}
+                className="w-full rounded-full"
+              >
+                {actionLoading === "archive" ? <Loader2 size={17} className="animate-spin" /> : null}
+                {t("archive")}
+              </Button>
             )}
 
             {/* Edit / Delete (only for published items) */}
@@ -304,13 +388,13 @@ export function FadlaCard({
                   <Pencil size={15} />
                   {t("actions.edit")}
                 </Button>
-                <form action={deleteFadlaItemAction}>
+                <form action={async (formData) => { await deleteFadlaItemAction(formData); }}>
                   <input type="hidden" name="locale" value={locale} />
                   <input type="hidden" name="shareId" value={item.id} />
-                  <SubmitButton variant="destructive" className="min-h-10 w-full rounded-full">
+                  <Button type="submit" variant="destructive" size="sm" className="min-h-10 w-full rounded-full">
                     <Trash2 size={15} />
                     {t("actions.delete")}
-                  </SubmitButton>
+                  </Button>
                 </form>
               </div>
             )}

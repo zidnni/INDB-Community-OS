@@ -984,7 +984,12 @@
       "created": "Huunde yeɗitaama no moƴƴi",
       "updated": "Yeɗitine hesɗitinaama",
       "deleted": "Yeɗitine momtaama",
-      "requested": "Ƴamle neldii e jom huunde"
+      "requested": "Ƴamle neldii e jom huunde",
+      "accepted": "Ƴamle jaɓaama",
+      "declined": "Ƴamle saltaama",
+      "collected": "Moƴƴinaama tingol",
+      "completed": "Huunde timminaama",
+      "archived": "Huunde maraama"
     },
     "errors": {
       "saveFailed": "Dannde yeɗitine waawaa",

@@ -2818,15 +2818,18 @@ export async function requestFadlaItemAction(
   return {success: true, requestId};
 }
 
-export async function acceptFadlaRequestAction(formData: FormData) {
+export async function acceptFadlaRequestAction(
+  formData: FormData,
+): Promise<{success: true} | {success: false; error: string}> {
   const locale = normalizeLocale(formData.get("locale"));
   const requestId = formData.get("requestId");
   const supabase = await createClient();
   const {data: {user}} = await supabase.auth.getUser();
   const errorsT = await getTranslations({locale, namespace: "Errors"});
+  const fadlaT = await getTranslations({locale, namespace: "Fadla"});
 
   if (!user || typeof requestId !== "string") {
-    redirect(toPath(locale, "/fadla?shareError=1"));
+    return {success: false, error: errorsT("submitFailed")};
   }
 
   const {data: req} = await supabase
@@ -2836,7 +2839,7 @@ export async function acceptFadlaRequestAction(formData: FormData) {
     .single();
 
   if (!req || req.status !== "pending") {
-    redirect(toPath(locale, "/fadla?shareError=1"));
+    return {success: false, error: fadlaT("errors.notFound")};
   }
 
   const {data: item} = await supabase
@@ -2846,17 +2849,19 @@ export async function acceptFadlaRequestAction(formData: FormData) {
     .single();
 
   if (!item || item.owner_id !== user.id) {
-    redirect(toPath(locale, "/fadla?shareError=1"));
+    return {success: false, error: errorsT("submitFailed")};
   }
 
+  const now = new Date().toISOString();
+
   // Accept this request
-  await supabase.from("community_share_requests").update({status: "accepted", updated_at: new Date().toISOString()}).eq("id", requestId);
+  await supabase.from("community_share_requests").update({status: "accepted", updated_at: now}).eq("id", requestId);
 
   // Decline all other pending requests for this item
-  await supabase.from("community_share_requests").update({status: "declined", updated_at: new Date().toISOString()}).eq("share_id", req.share_id).eq("status", "pending").neq("id", requestId);
+  await supabase.from("community_share_requests").update({status: "declined", updated_at: now}).eq("share_id", req.share_id).eq("status", "pending").neq("id", requestId);
 
   // Update item status to reserved
-  await supabase.from("community_shares").update({status: "reserved", updated_at: new Date().toISOString()}).eq("id", req.share_id);
+  await supabase.from("community_shares").update({status: "reserved", updated_at: now}).eq("id", req.share_id);
 
   await createNotification({
     userId: req.requester_id,
@@ -2869,17 +2874,21 @@ export async function acceptFadlaRequestAction(formData: FormData) {
 
   revalidatePath(toPath(locale, "/fadla"));
   revalidatePath(toPath(locale, "/profile"));
-  redirect(toPath(locale, `/fadla?item=${req.share_id}`));
+  return {success: true};
 }
 
-export async function declineFadlaRequestAction(formData: FormData) {
+export async function declineFadlaRequestAction(
+  formData: FormData,
+): Promise<{success: true} | {success: false; error: string}> {
   const locale = normalizeLocale(formData.get("locale"));
   const requestId = formData.get("requestId");
   const supabase = await createClient();
   const {data: {user}} = await supabase.auth.getUser();
+  const errorsT = await getTranslations({locale, namespace: "Errors"});
+  const fadlaT = await getTranslations({locale, namespace: "Fadla"});
 
   if (!user || typeof requestId !== "string") {
-    redirect(toPath(locale, "/fadla?shareError=1"));
+    return {success: false, error: errorsT("submitFailed")};
   }
 
   const {data: req} = await supabase
@@ -2889,7 +2898,7 @@ export async function declineFadlaRequestAction(formData: FormData) {
     .single();
 
   if (!req || req.status !== "pending") {
-    redirect(toPath(locale, "/fadla?shareError=1"));
+    return {success: false, error: fadlaT("errors.notFound")};
   }
 
   const {data: item} = await supabase
@@ -2899,10 +2908,24 @@ export async function declineFadlaRequestAction(formData: FormData) {
     .single();
 
   if (!item || item.owner_id !== user.id) {
-    redirect(toPath(locale, "/fadla?shareError=1"));
+    return {success: false, error: errorsT("submitFailed")};
   }
 
-  await supabase.from("community_share_requests").update({status: "declined", updated_at: new Date().toISOString()}).eq("id", requestId);
+  const now = new Date().toISOString();
+
+  await supabase.from("community_share_requests").update({status: "declined", updated_at: now}).eq("id", requestId);
+
+  // Check if there are any other pending requests for this item
+  const {count: remaining} = await supabase
+    .from("community_share_requests")
+    .select("*", {count: "exact", head: true})
+    .eq("share_id", req.share_id)
+    .eq("status", "pending");
+
+  // If no other pending requests remain, return item to published
+  if (!remaining || remaining === 0) {
+    await supabase.from("community_shares").update({status: "published", updated_at: now}).eq("id", req.share_id);
+  }
 
   await createNotification({
     userId: req.requester_id,
@@ -2913,18 +2936,23 @@ export async function declineFadlaRequestAction(formData: FormData) {
     title: "Your Fadla request was declined",
   });
 
-  revalidatePath(toPath(locale, `/fadla?item=${req.share_id}`));
-  redirect(toPath(locale, `/fadla?item=${req.share_id}`));
+  revalidatePath(toPath(locale, "/fadla"));
+  revalidatePath(toPath(locale, "/profile"));
+  return {success: true};
 }
 
-export async function confirmFadlaCollectionAction(formData: FormData) {
+export async function confirmFadlaCollectionAction(
+  formData: FormData,
+): Promise<{success: true} | {success: false; error: string}> {
   const locale = normalizeLocale(formData.get("locale"));
   const itemId = formData.get("shareId") || formData.get("itemId");
   const supabase = await createClient();
   const {data: {user}} = await supabase.auth.getUser();
+  const errorsT = await getTranslations({locale, namespace: "Errors"});
+  const fadlaT = await getTranslations({locale, namespace: "Fadla"});
 
   if (!user || typeof itemId !== "string") {
-    redirect(toPath(locale, "/fadla?shareError=1"));
+    return {success: false, error: errorsT("submitFailed")};
   }
 
   const {data: item} = await supabase
@@ -2934,7 +2962,7 @@ export async function confirmFadlaCollectionAction(formData: FormData) {
     .single();
 
   if (!item || item.status !== "reserved") {
-    redirect(toPath(locale, "/fadla?shareError=1"));
+    return {success: false, error: fadlaT("errors.notAvailable")};
   }
 
   // Verify user is the accepted requester
@@ -2946,7 +2974,7 @@ export async function confirmFadlaCollectionAction(formData: FormData) {
     .maybeSingle();
 
   if (!acceptedRequest || acceptedRequest.requester_id !== user.id) {
-    redirect(toPath(locale, "/fadla?shareError=1"));
+    return {success: false, error: errorsT("submitFailed")};
   }
 
   await supabase.from("community_shares").update({
@@ -2965,17 +2993,21 @@ export async function confirmFadlaCollectionAction(formData: FormData) {
 
   revalidatePath(toPath(locale, "/fadla"));
   revalidatePath(toPath(locale, "/profile"));
-  redirect(toPath(locale, `/fadla?item=${itemId}`));
+  return {success: true};
 }
 
-export async function completeFadlaItemAction(formData: FormData) {
+export async function completeFadlaItemAction(
+  formData: FormData,
+): Promise<{success: true} | {success: false; error: string}> {
   const locale = normalizeLocale(formData.get("locale"));
   const itemId = formData.get("shareId") || formData.get("itemId");
   const supabase = await createClient();
   const {data: {user}} = await supabase.auth.getUser();
+  const errorsT = await getTranslations({locale, namespace: "Errors"});
+  const fadlaT = await getTranslations({locale, namespace: "Fadla"});
 
   if (!user || typeof itemId !== "string") {
-    redirect(toPath(locale, "/fadla?shareError=1"));
+    return {success: false, error: errorsT("submitFailed")};
   }
 
   const {data: item} = await supabase
@@ -2985,7 +3017,7 @@ export async function completeFadlaItemAction(formData: FormData) {
     .single();
 
   if (!item || item.owner_id !== user.id || item.status !== "collected") {
-    redirect(toPath(locale, "/fadla?shareError=1"));
+    return {success: false, error: fadlaT("errors.notAvailable")};
   }
 
   await supabase.from("community_shares").update({
@@ -2996,17 +3028,21 @@ export async function completeFadlaItemAction(formData: FormData) {
 
   revalidatePath(toPath(locale, "/fadla"));
   revalidatePath(toPath(locale, "/profile"));
-  redirect(toPath(locale, `/fadla`));
+  return {success: true};
 }
 
-export async function archiveFadlaItemAction(formData: FormData) {
+export async function archiveFadlaItemAction(
+  formData: FormData,
+): Promise<{success: true} | {success: false; error: string}> {
   const locale = normalizeLocale(formData.get("locale"));
   const itemId = formData.get("shareId") || formData.get("itemId");
   const supabase = await createClient();
   const {data: {user}} = await supabase.auth.getUser();
+  const errorsT = await getTranslations({locale, namespace: "Errors"});
+  const fadlaT = await getTranslations({locale, namespace: "Fadla"});
 
   if (!user || typeof itemId !== "string") {
-    redirect(toPath(locale, "/fadla?shareError=1"));
+    return {success: false, error: errorsT("submitFailed")};
   }
 
   const {data: item} = await supabase
@@ -3016,7 +3052,7 @@ export async function archiveFadlaItemAction(formData: FormData) {
     .single();
 
   if (!item || item.owner_id !== user.id || item.status !== "completed") {
-    redirect(toPath(locale, "/fadla?shareError=1"));
+    return {success: false, error: fadlaT("errors.notAvailable")};
   }
 
   await supabase.from("community_shares").update({
@@ -3027,7 +3063,7 @@ export async function archiveFadlaItemAction(formData: FormData) {
 
   revalidatePath(toPath(locale, "/fadla"));
   revalidatePath(toPath(locale, "/profile"));
-  redirect(toPath(locale, "/fadla/archive"));
+  return {success: true};
 }
 
 // backward-compatible aliases

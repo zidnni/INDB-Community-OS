@@ -990,7 +990,12 @@
       "created": "Objet partage avec succes",
       "updated": "Objet partage mis a jour",
       "deleted": "Objet partage supprime",
-      "requested": "Demande envoyee au proprietaire"
+      "requested": "Demande envoyee au proprietaire",
+      "accepted": "Demande acceptee",
+      "declined": "Demand refuse",
+      "collected": "Collecte confirme",
+      "completed": "Element marque termine",
+      "archived": "Element archive"
     },
     "errors": {
       "saveFailed": "Impossible d'enregistrer l'objet partage",

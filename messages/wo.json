@@ -984,7 +984,12 @@
       "created": "Mbariy ngalif nañu kon",
       "updated": "Ngalifte sagal nañu",
       "deleted": "Ngalifte far na",
-      "requested": "Laaj yonne nañu jom mbariy"
+      "requested": "Laaj yonne nañu jom mbariy",
+      "accepted": "Laaj nangu nañu",
+      "declined": "Laaj bondi nañu",
+      "collected": "Jot nañu kon",
+      "completed": "Ngalifte mucc na",
+      "archived": "Ngalifte denc nañu"
     },
     "errors": {
       "saveFailed": "Mënul tank ngalifte",

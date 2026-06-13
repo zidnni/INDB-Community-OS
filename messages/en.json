@@ -984,7 +984,12 @@
       "created": "Item shared successfully",
       "updated": "Shared item updated",
       "deleted": "Shared item deleted",
-      "requested": "Request sent to the owner"
+      "requested": "Request sent to the owner",
+      "accepted": "Request accepted",
+      "declined": "Request declined",
+      "collected": "Collection confirmed",
+      "completed": "Item marked completed",
+      "archived": "Item archived"
     },
     "errors": {
       "saveFailed": "Could not save shared item",

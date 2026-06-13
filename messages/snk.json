@@ -984,7 +984,12 @@
       "created": "Hay koo ntenxinta no boori",
       "updated": "Ntentine sagalinta",
       "deleted": "Ntentine tunta",
-      "requested": "Ƴamle ntenxinta jom hay koo"
+      "requested": "Ƴamle ntenxinta jom hay koo",
+      "accepted": "Ƴamle ntaaxa",
+      "declined": "Ƴamle ntaxa",
+      "collected": "Matta ngata no ban",
+      "completed": "Hay koo nfanna no dede",
+      "archived": "Hay koo nwuxa"
     },
     "errors": {
       "saveFailed": "Mar ntentine wa",

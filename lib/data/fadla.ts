@@ -27,6 +27,7 @@ async function hydrateItems(items: FadlaWithOwner[], currentUserId?: string | nu
 
   const countMap = new Map<string, number>();
   const requestedByCurrent = new Set<string>();
+  const ownerItemIds = new Set<string>();
 
   for (const req of requests ?? []) {
     countMap.set(req.share_id, (countMap.get(req.share_id) ?? 0) + 1);
@@ -35,11 +36,35 @@ async function hydrateItems(items: FadlaWithOwner[], currentUserId?: string | nu
     }
   }
 
+  // Identify items owned by the current user so we can load full request details
+  for (const item of items) {
+    if (currentUserId && item.owner_id === currentUserId) {
+      ownerItemIds.add(item.id);
+    }
+  }
+
+  const ownerRequests: Map<string, FadlaRequestWithRequester[]> = new Map();
+  if (ownerItemIds.size > 0) {
+    const {data: fullRequests} = await supabase
+      .from("community_share_requests")
+      .select("*, requester:profiles!community_share_requests_requester_id_fkey(id, username, full_name, avatar_url)")
+      .in("share_id", [...ownerItemIds])
+      .order("created_at", {ascending: true});
+
+    for (const req of fullRequests ?? []) {
+      const shareId = req.share_id;
+      const existing = ownerRequests.get(shareId) ?? [];
+      existing.push(req as unknown as FadlaRequestWithRequester);
+      ownerRequests.set(shareId, existing);
+    }
+  }
+
   return items.map((item) => ({
     ...item,
     images: normalizeImages(item.images),
     requests_count: countMap.get(item.id) ?? 0,
     requested_by_current_user: requestedByCurrent.has(item.id),
+    requests: ownerItemIds.has(item.id) ? (ownerRequests.get(item.id) ?? []) : item.requests,
   }));
 }
 
