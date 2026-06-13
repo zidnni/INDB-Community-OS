@@ -168,7 +168,8 @@
     "fadlaRequestAccepted": "{actorName} a accepte votre demande",
     "fadlaRequestDeclined": "{actorName} a decline votre demande",
     "fadlaCollected": "{actorName} a recupere l'objet",
-    "loadMore": "Charger plus"
+    "loadMore": "Charger plus",
+    "fadlaHandedOver": "{actorName} a confirm? la remise"
   },
   "RightSidebar": {
     "trendingTopics": "Sujets tendance",
@@ -994,8 +995,9 @@
       "accepted": "Demande acceptee",
       "declined": "Demand refuse",
       "collected": "Collecte confirme",
-      "completed": "Element marque termine",
-      "archived": "Element archive"
+      "completed": "Objet termin? et archiv?",
+      "archived": "Element archive",
+      "handedOver": "Remise confirm?e"
     },
     "errors": {
       "saveFailed": "Impossible d'enregistrer l'objet partage",
@@ -1003,11 +1005,24 @@
       "alreadyRequested": "Vous avez deja demande cet element",
       "notFound": "Element introuvable",
       "ownItem": "Vous ne pouvez pas demander votre propre element",
-      "notAvailable": "Cet element n'est plus disponible"
+      "notAvailable": "Cet element n'est plus disponible",
+      "collectionNotConfirmed": "Le b?n?ficiaire doit confirmer la collecte d?abord."
     },
     "empty": {
       "title": "Aucun objet partage pour le moment",
       "description": "Soyez la premiere personne a partager quelque chose d'utile avec la communaute."
+    },
+    "markHandedOver": "Marquer comme remis",
+    "completeAndArchive": "Terminer et archiver",
+    "reservedFor": "R?serv? pour {name}",
+    "waitingCollection": "En attente de la confirmation de collecte par le b?n?ficiaire.",
+    "recipientConfirmed": "Le b?n?ficiaire a confirm? la collecte. Confirmez la remise pour continuer.",
+    "waitingHandover": "En attente de la confirmation de remise par le propri?taire",
+    "requestStatus": {
+      "pending": "En attente",
+      "accepted": "Accept?e",
+      "declined": "Refus?e",
+      "cancelled": "Annul?e"
     }
   },
   "Translating": {

@@ -168,7 +168,8 @@
     "fadlaRequestDeclined": "{actorName} declined your request",
     "fadlaCollected": "{actorName} collected the item",
     "someone": "Someone",
-    "loadMore": "Load more"
+    "loadMore": "Load more",
+    "fadlaHandedOver": "{actorName} confirmed the handover"
   },
   "RightSidebar": {
     "trendingTopics": "Trending Topics",
@@ -988,8 +989,9 @@
       "accepted": "Request accepted",
       "declined": "Request declined",
       "collected": "Collection confirmed",
-      "completed": "Item marked completed",
-      "archived": "Item archived"
+      "completed": "Item completed and archived",
+      "archived": "Item archived",
+      "handedOver": "Handover confirmed"
     },
     "errors": {
       "saveFailed": "Could not save shared item",
@@ -997,11 +999,24 @@
       "alreadyRequested": "You already requested this item",
       "notFound": "Item not found",
       "ownItem": "You cannot request your own item",
-      "notAvailable": "This item is no longer available"
+      "notAvailable": "This item is no longer available",
+      "collectionNotConfirmed": "The recipient must confirm collection first."
     },
     "empty": {
       "title": "Nothing shared yet",
       "description": "Be the first to share something useful with the community."
+    },
+    "markHandedOver": "Mark as Handed Over",
+    "completeAndArchive": "Complete and Archive",
+    "reservedFor": "Reserved for {name}",
+    "waitingCollection": "Waiting for the recipient to confirm collection.",
+    "recipientConfirmed": "Recipient confirmed collection. Confirm the handover to continue.",
+    "waitingHandover": "Waiting for owner handover confirmation",
+    "requestStatus": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "cancelled": "Cancelled"
     }
   },
   "ConfirmDialog": {

@@ -2864,13 +2864,35 @@ export async function acceptFadlaRequestAction(
   const now = new Date().toISOString();
 
   // Accept this request
-  await supabase.from("community_share_requests").update({status: "accepted", updated_at: now}).eq("id", requestId);
+  const {error: acceptError} = await supabase
+    .from("community_share_requests")
+    .update({status: "accepted", updated_at: now})
+    .eq("id", requestId);
+
+  if (acceptError) {
+    return {success: false, error: fadlaT("errors.actionFailed")};
+  }
 
   // Decline all other pending requests for this item
   await supabase.from("community_share_requests").update({status: "declined", updated_at: now}).eq("share_id", req.share_id).eq("status", "pending").neq("id", requestId);
 
   // Update item status to reserved
-  await supabase.from("community_shares").update({status: "reserved", updated_at: now}).eq("id", req.share_id);
+  let {error: itemUpdateError} = await supabase
+    .from("community_shares")
+    .update({status: "reserved", accepted_request_id: requestId, updated_at: now})
+    .eq("id", req.share_id);
+
+  if (itemUpdateError && (itemUpdateError.code === "PGRST204" || itemUpdateError.code === "42703")) {
+    const retry = await supabase
+      .from("community_shares")
+      .update({status: "reserved", updated_at: now})
+      .eq("id", req.share_id);
+    itemUpdateError = retry.error;
+  }
+
+  if (itemUpdateError) {
+    return {success: false, error: fadlaT("errors.actionFailed")};
+  }
 
   await createNotification({
     userId: req.requester_id,
@@ -2977,7 +2999,7 @@ export async function confirmFadlaCollectionAction(
   // Verify user is the accepted requester
   const {data: acceptedRequest} = await supabase
     .from("community_share_requests")
-    .select("requester_id")
+    .select("id, requester_id, collected_at")
     .eq("share_id", itemId)
     .eq("status", "accepted")
     .maybeSingle();
@@ -2988,10 +3010,10 @@ export async function confirmFadlaCollectionAction(
 
   const adminClient = createAdminClient();
   const statusClient = adminClient ?? supabase;
-  const {error: statusError} = await statusClient.from("community_shares").update({
-    status: "collected",
+  const {error: statusError} = await statusClient.from("community_share_requests").update({
+    collected_at: acceptedRequest.collected_at ?? new Date().toISOString(),
     updated_at: new Date().toISOString(),
-  }).eq("id", itemId);
+  }).eq("id", acceptedRequest.id);
 
   if (statusError) {
     return {success: false, error: fadlaT("errors.actionFailed")};
@@ -3004,6 +3026,77 @@ export async function confirmFadlaCollectionAction(
     entityType: "community_share",
     entityId: itemId,
     title: "Item was collected",
+  });
+
+  revalidatePath(toPath(locale, "/fadla"));
+  revalidatePath(toPath(locale, "/profile"));
+  return {success: true};
+}
+
+export async function confirmFadlaHandoverAction(
+  formData: FormData,
+): Promise<{success: true} | {success: false; error: string}> {
+  const locale = normalizeLocale(formData.get("locale"));
+  const itemId = formData.get("shareId") || formData.get("itemId");
+  const supabase = await createClient();
+  const {data: {user}} = await supabase.auth.getUser();
+  const errorsT = await getTranslations({locale, namespace: "Errors"});
+  const fadlaT = await getTranslations({locale, namespace: "Fadla"});
+
+  if (!user || typeof itemId !== "string") {
+    return {success: false, error: errorsT("submitFailed")};
+  }
+
+  const {data: item} = await supabase
+    .from("community_shares")
+    .select("owner_id, status")
+    .eq("id", itemId)
+    .single();
+
+  if (!item || item.owner_id !== user.id || item.status !== "reserved") {
+    return {success: false, error: fadlaT("errors.notAvailable")};
+  }
+
+  const {data: acceptedRequest} = await supabase
+    .from("community_share_requests")
+    .select("id, requester_id, collected_at")
+    .eq("share_id", itemId)
+    .eq("status", "accepted")
+    .maybeSingle();
+
+  if (!acceptedRequest || !acceptedRequest.collected_at) {
+    return {success: false, error: fadlaT("errors.collectionNotConfirmed")};
+  }
+
+  const now = new Date().toISOString();
+  const adminClient = createAdminClient();
+  const statusClient = adminClient ?? supabase;
+
+  const {error: requestError} = await statusClient
+    .from("community_share_requests")
+    .update({handed_over_at: now, updated_at: now})
+    .eq("id", acceptedRequest.id);
+
+  if (requestError) {
+    return {success: false, error: fadlaT("errors.actionFailed")};
+  }
+
+  const {error: itemError} = await statusClient
+    .from("community_shares")
+    .update({status: "collected", updated_at: now})
+    .eq("id", itemId);
+
+  if (itemError) {
+    return {success: false, error: fadlaT("errors.actionFailed")};
+  }
+
+  await createNotification({
+    userId: acceptedRequest.requester_id,
+    actorId: user.id,
+    type: "fadla_handed_over",
+    entityType: "community_share",
+    entityId: itemId,
+    title: "Fadla handover confirmed",
   });
 
   revalidatePath(toPath(locale, "/fadla"));
@@ -3036,8 +3129,9 @@ export async function completeFadlaItemAction(
   }
 
   await supabase.from("community_shares").update({
-    status: "completed",
+    status: "archived",
     completed_at: new Date().toISOString(),
+    archived_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }).eq("id", itemId);
 

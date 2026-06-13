@@ -267,6 +267,7 @@ export interface CommunityShareRow {
   status: CommunityShareStatus;
   images: CommunityShareImage[];
   shares_count: number;
+  accepted_request_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -295,10 +296,11 @@ export interface FadlaItemRow {
   images: CommunityShareImage[];
   shares_count: number;
   created_at: string;
-  updated_at: string;
-  completed_at: string | null;
-  archived_at: string | null;
-}
+    updated_at: string;
+    completed_at: string | null;
+    archived_at: string | null;
+    accepted_request_id: string | null;
+  }
 
 export interface FadlaRequestRow {
   id: string;
@@ -306,6 +308,8 @@ export interface FadlaRequestRow {
   requester_id: string;
   message: string | null;
   status: FadlaRequestStatus;
+  collected_at: string | null;
+  handed_over_at: string | null;
   created_at: string;
   updated_at: string;
 }

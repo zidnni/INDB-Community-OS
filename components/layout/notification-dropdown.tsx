@@ -386,6 +386,8 @@ export function NotificationDropdown({
           return t("fadlaRequestDeclined", {actorName});
         case "fadla_collected":
           return t("fadlaCollected", {actorName});
+        case "fadla_handed_over":
+          return t("fadlaHandedOver", {actorName});
         default:
           return n.message ?? "";
       }

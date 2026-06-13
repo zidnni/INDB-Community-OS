@@ -11,6 +11,7 @@ import {
   archiveFadlaItemAction,
   completeFadlaItemAction,
   confirmFadlaCollectionAction,
+  confirmFadlaHandoverAction,
   declineFadlaRequestAction,
   deleteFadlaItemAction,
   requestFadlaItemAction,
@@ -142,6 +143,22 @@ export function FadlaCard({
     setActionLoading(null);
   }
 
+  async function handleConfirmHandover() {
+    if (actionLoading) return;
+    setActionLoading("confirmHandover");
+    const formData = new FormData();
+    formData.set("locale", locale);
+    formData.set("shareId", item.id);
+    const result = await confirmFadlaHandoverAction(formData);
+    if (result.success) {
+      toast.success(t("toasts.handedOver"));
+      router.refresh();
+    } else {
+      toast.error(result.error);
+    }
+    setActionLoading(null);
+  }
+
   async function handleComplete() {
     if (actionLoading) return;
     setActionLoading("complete");
@@ -183,7 +200,11 @@ export function FadlaCard({
   const categoryEmoji = CATEGORY_EMOJI[item.category] ?? "📦";
   const canBeRequested = (item.status === "published" || item.status === "requested") && !isOwner && !item.requested_by_current_user && requestState !== "requested";
   const hasPendingRequest = item.requested_by_current_user || requestState === "requested";
-  const isRecipient = item.requests?.some((r) => r.requester_id === currentUserId && r.status === "accepted");
+  const acceptedRequest = (item.requests ?? []).find((r) => r.status === "accepted");
+  const acceptedRequesterName = acceptedRequest?.requester?.full_name ?? acceptedRequest?.requester?.username ?? t("unknownOwner");
+  const isRecipient = acceptedRequest?.requester_id === currentUserId;
+  const recipientConfirmedCollection = Boolean(acceptedRequest?.collected_at);
+  const ownerConfirmedHandover = Boolean(acceptedRequest?.handed_over_at);
   const pendingRequests = (item.requests ?? []).filter((r) => r.status === "pending");
   const ownerCanManageRequests = isOwner && pendingRequests.length > 0 && (item.status === "published" || item.status === "requested");
 
@@ -284,7 +305,7 @@ export function FadlaCard({
             </span>
           )}
 
-          {!isOwner && isRecipient && item.status === "reserved" && (
+          {!isOwner && isRecipient && item.status === "reserved" && !recipientConfirmedCollection && (
             <Button
               type="button"
               variant="default"
@@ -297,10 +318,17 @@ export function FadlaCard({
             </Button>
           )}
 
-          {!isOwner && isRecipient && item.status === "collected" && (
+          {!isOwner && isRecipient && item.status === "reserved" && recipientConfirmedCollection && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+              <Check size={16} />
+              {t("waitingHandover")}
+            </span>
+          )}
+
+          {!isOwner && isRecipient && (item.status === "collected" || item.status === "archived") && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700 dark:bg-green-900/20 dark:text-green-300">
               <Check size={16} />
-              {t("status.collected")}
+              {t(item.status === "archived" ? "status.archived" : "status.collected")}
             </span>
           )}
         </div>
@@ -355,6 +383,40 @@ export function FadlaCard({
             )}
 
             {/* Collected → Complete */}
+            {item.status === "reserved" && acceptedRequest && (
+              <div className="rounded-2xl border border-orange-200 bg-orange-50/70 p-3 text-sm dark:border-orange-900/50 dark:bg-orange-950/20">
+                <div className="flex items-center gap-2.5">
+                  <UserAvatar
+                    label={acceptedRequesterName}
+                    avatarUrl={acceptedRequest.requester?.avatar_url}
+                    className="h-9 w-9 shrink-0 text-[10px]"
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-orange-900 dark:text-orange-100">
+                      {t("reservedFor", {name: acceptedRequesterName})}
+                    </p>
+                    <p className="truncate text-xs text-orange-800/70 dark:text-orange-200/70">
+                      {acceptedRequest.requester?.username ? `@${acceptedRequest.requester.username}` : t("unknownOwner")}
+                    </p>
+                  </div>
+                </div>
+                <p className="mt-2 text-orange-900/80 dark:text-orange-100/80">
+                  {recipientConfirmedCollection ? t("recipientConfirmed") : t("waitingCollection")}
+                </p>
+                {recipientConfirmedCollection && !ownerConfirmedHandover && (
+                  <Button
+                    type="button"
+                    variant="default"
+                    disabled={actionLoading === "confirmHandover"}
+                    onClick={handleConfirmHandover}
+                    className="mt-3 w-full rounded-full"
+                  >
+                    {actionLoading === "confirmHandover" ? <Loader2 size={17} className="animate-spin" /> : <Check size={17} />}
+                    {t("markHandedOver")}
+                  </Button>
+                )}
+              </div>
+            )}
             {item.status === "collected" && (
               <Button
                 type="button"
@@ -364,7 +426,7 @@ export function FadlaCard({
                 className="w-full rounded-full"
               >
                 {actionLoading === "complete" ? <Loader2 size={17} className="animate-spin" /> : <Check size={17} />}
-                {t("markCompleted")}
+                {t("completeAndArchive")}
               </Button>
             )}
 
