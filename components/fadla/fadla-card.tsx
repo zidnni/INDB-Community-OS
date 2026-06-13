@@ -185,6 +185,7 @@ export function FadlaCard({
   const hasPendingRequest = item.requested_by_current_user || requestState === "requested";
   const isRecipient = item.requests?.some((r) => r.requester_id === currentUserId && r.status === "accepted");
   const pendingRequests = (item.requests ?? []).filter((r) => r.status === "pending");
+  const ownerCanManageRequests = isOwner && pendingRequests.length > 0 && (item.status === "published" || item.status === "requested");
 
   return (
     <article
@@ -308,7 +309,7 @@ export function FadlaCard({
         {isOwner && (
           <div className="space-y-3 border-t border-border/60 pt-4">
             {/* Request management */}
-            {item.status === "requested" && pendingRequests.length > 0 && (
+            {ownerCanManageRequests && (
               <div className="space-y-2">
                 <p className="text-sm font-semibold text-muted-foreground">{t("requests")} ({pendingRequests.length})</p>
                 <div className="space-y-2 max-h-48 overflow-y-auto">

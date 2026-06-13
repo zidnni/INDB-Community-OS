@@ -3,7 +3,7 @@ import {getTranslations} from "next-intl/server";
 
 import {FadlaClient} from "@/components/fadla/fadla-client";
 import {PaginationControls} from "@/components/shared/pagination-controls";
-import {getPublishedItems} from "@/lib/data/fadla";
+import {getItemById, getPublishedItems} from "@/lib/data/fadla";
 import {createClient} from "@/lib/supabase/server";
 
 export async function generateMetadata({
@@ -51,11 +51,15 @@ export default async function FadlaPage({
     urgency: sp.urgency,
     status: sp.status,
   });
+  const focusedItem = sp.item ? await getItemById(sp.item, user?.id ?? null) : null;
+  const items = focusedItem && !result.items.some((item) => item.id === focusedItem.id)
+    ? [focusedItem, ...result.items]
+    : result.items;
 
   return (
     <div className="space-y-4">
       <FadlaClient
-        items={result.items}
+        items={items}
         currentUserId={user?.id ?? null}
         locale={locale}
       />

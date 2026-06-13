@@ -29,7 +29,6 @@ import {getMemoryReactionDetails} from "@/lib/data/memories";
 import {getTimelineMemoriesByYear} from "@/lib/data/memory-timeline";
 import {
   commentSchema,
-  communityShareSchema,
   createPostSchema,
   fadlaItemSchema,
   ideaSchema,
@@ -38,7 +37,7 @@ import {
   profileSchema,
   registerSchema,
 } from "@/lib/validations/community";
-import type {CommentWithAuthor, CommunityShareImage, CommunityShareStatus, FadlaRequestStatus, IdeaCommentWithAuthor, MemoryCommentWithAuthor, MemoryReactionType, ReactionType} from "@/types/database";
+import type {CommentWithAuthor, CommunityShareImage, IdeaCommentWithAuthor, MemoryCommentWithAuthor, MemoryReactionType, ReactionType} from "@/types/database";
 import {
   deletePostMedia,
   deleteMemoryMedia,
@@ -2797,7 +2796,17 @@ export async function requestFadlaItemAction(
 
   // Update status to 'requested' if it was 'published'
   if (item.status === "published") {
-    await supabase.from("community_shares").update({status: "requested", updated_at: new Date().toISOString()}).eq("id", itemId);
+    const adminClient = createAdminClient();
+    const statusClient = adminClient ?? supabase;
+    const {error: statusError} = await statusClient
+      .from("community_shares")
+      .update({status: "requested", updated_at: new Date().toISOString()})
+      .eq("id", itemId);
+
+    if (statusError) {
+      await supabase.from("community_share_requests").delete().eq("id", requestId);
+      return {success: false, error: fadlaT("errors.saveFailed")};
+    }
   }
 
   await createNotification({
@@ -2977,10 +2986,16 @@ export async function confirmFadlaCollectionAction(
     return {success: false, error: errorsT("submitFailed")};
   }
 
-  await supabase.from("community_shares").update({
+  const adminClient = createAdminClient();
+  const statusClient = adminClient ?? supabase;
+  const {error: statusError} = await statusClient.from("community_shares").update({
     status: "collected",
     updated_at: new Date().toISOString(),
   }).eq("id", itemId);
+
+  if (statusError) {
+    return {success: false, error: fadlaT("errors.actionFailed")};
+  }
 
   await createNotification({
     userId: item.owner_id,

@@ -140,7 +140,7 @@ export async function getPublishedItems({
   };
 }
 
-export async function getItemById(id: string): Promise<FadlaWithOwner | null> {
+export async function getItemById(id: string, currentUserId?: string | null): Promise<FadlaWithOwner | null> {
   const supabase = await createClient();
   const {data} = await supabase
     .from("community_shares")
@@ -149,7 +149,7 @@ export async function getItemById(id: string): Promise<FadlaWithOwner | null> {
     .maybeSingle();
 
   if (!data) return null;
-  const [item] = await hydrateItems([data as unknown as FadlaWithOwner]);
+  const [item] = await hydrateItems([data as unknown as FadlaWithOwner], currentUserId);
   if (!item) return null;
   const requests = await hydrateRequests(id);
   return {...item, requests};
