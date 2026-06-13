@@ -294,7 +294,28 @@
     "memoryShared": "Souvenir partagé avec succès",
     "memoryUpdated": "Souvenir mis à jour",
     "memorySaved": "Souvenir enregistré",
-    "memoryUnsaved": "Souvenir retiré des éléments enregistrés"
+    "memoryUnsaved": "Souvenir retiré des éléments enregistrés",
+    "allCategories": "Toutes les catégories",
+    "categories": {
+      "port": "Port",
+      "railway": "Chemin de fer",
+      "schools": "Écoles",
+      "families": "Familles",
+      "culture": "Culture",
+      "sport": "Sport",
+      "market": "Marché",
+      "beach": "Plage",
+      "oldCity": "Vieille ville",
+      "work": "Travail",
+      "fishing": "Pêche",
+      "migration": "Migration",
+      "cansado": "Cansado",
+      "snim": "SNIM",
+      "religiousEvents": "Événements religieux",
+      "nationalEvents": "Événements nationaux",
+      "neighborhoods": "Quartiers",
+      "other": "Autre"
+    }
   },
   "MemoryReactions": {
     "love": "J'adore",

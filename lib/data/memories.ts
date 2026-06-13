@@ -40,9 +40,11 @@ export async function getApprovedMemories(): Promise<MemoryWithContributor[]> {
 export async function getApprovedMemoriesPage({
   page = 1,
   pageSize = DEFAULT_PAGE_SIZE,
+  category,
 }: {
   page?: number;
   pageSize?: number;
+  category?: string;
 } = {}): Promise<{
   items: MemoryWithContributor[];
   page: number;
@@ -56,14 +58,20 @@ export async function getApprovedMemoriesPage({
   const from = (safePage - 1) * safePageSize;
   const to = from + safePageSize;
 
-  const {data} = await supabase
+  let query = supabase
     .from("memories")
     .select(`
       *,
       contributor:profiles!memories_contributor_id_fkey(id, username, full_name, avatar_url)
     `)
     .eq("verification_status", "approved")
-    .not("contributor_id", "is", null)
+    .not("contributor_id", "is", null);
+
+  if (category) {
+    query = query.eq("category", category);
+  }
+
+  const {data} = await query
     .order("year", {ascending: false})
     .order("created_at", {ascending: false})
     .range(from, to);

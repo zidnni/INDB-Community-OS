@@ -294,7 +294,28 @@
     "memoryShared": "Memory shared successfully",
     "memoryUpdated": "Memory updated",
     "memorySaved": "Memory saved",
-    "memoryUnsaved": "Memory removed from saved"
+    "memoryUnsaved": "Memory removed from saved",
+    "allCategories": "All Categories",
+    "categories": {
+      "port": "Port",
+      "railway": "Railway",
+      "schools": "Schools",
+      "families": "Families",
+      "culture": "Culture",
+      "sport": "Sport",
+      "market": "Market",
+      "beach": "Beach",
+      "oldCity": "Old City",
+      "work": "Work",
+      "fishing": "Fishing",
+      "migration": "Migration",
+      "cansado": "Cansado",
+      "snim": "SNIM",
+      "religiousEvents": "Religious Events",
+      "nationalEvents": "National Events",
+      "neighborhoods": "Neighborhoods",
+      "other": "Other"
+    }
   },
   "MemoryReactions": {
     "love": "Love",

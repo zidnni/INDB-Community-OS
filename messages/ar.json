@@ -294,7 +294,28 @@
     "memoryShared": "تمت مشاركة الذكرى بنجاح",
     "memoryUpdated": "تم تحديث الذكرى",
     "memorySaved": "تم حفظ الذكرى",
-    "memoryUnsaved": "تمت إزالة الذكرى من المحفوظات"
+    "memoryUnsaved": "تمت إزالة الذكرى من المحفوظات",
+    "allCategories": "جميع التصنيفات",
+    "categories": {
+      "port": "الميناء",
+      "railway": "السكك الحديدية",
+      "schools": "المدارس",
+      "families": "العائلات",
+      "culture": "الثقافة",
+      "sport": "الرياضة",
+      "market": "السوق",
+      "beach": "الشاطئ",
+      "oldCity": "المدينة القديمة",
+      "work": "العمل",
+      "fishing": "الصيد",
+      "migration": "الهجرة",
+      "cansado": "قنسدو",
+      "snim": "سنيم",
+      "religiousEvents": "الأحداث الدينية",
+      "nationalEvents": "الأحداث الوطنية",
+      "neighborhoods": "الأحياء",
+      "other": "أخرى"
+    }
   },
   "MemoryReactions": {
     "love": "حب",
