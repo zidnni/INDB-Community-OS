@@ -2777,18 +2777,19 @@ export async function requestFadlaItemAction(
 
   if (existing) return {success: false, error: fadlaT("errors.alreadyRequested")};
 
-  const {data: newRequest, error} = await supabase
+  const requestId = crypto.randomUUID();
+
+  const {error} = await supabase
     .from("community_share_requests")
     .insert({
+      id: requestId,
       share_id: itemId,
       requester_id: user.id,
-    })
-    .select("id")
-    .single();
+    });
 
   if (error) {
     if (error.code === "23505") return {success: false, error: fadlaT("errors.alreadyRequested")};
-    if (error.code === "42501" || error.code === "PGRST301") {
+    if (error.code === "42501") {
       return {success: false, error: fadlaT("errors.notAvailable")};
     }
     return {success: false, error: errorsT("submitFailed")};
@@ -2808,13 +2809,13 @@ export async function requestFadlaItemAction(
     title: "New Fadla request",
     metadata: {
       shareId: itemId,
-      requestId: newRequest.id,
+      requestId,
       requesterId: user.id,
     },
   });
 
   revalidatePath(toPath(locale, "/fadla"));
-  return {success: true, requestId: newRequest.id};
+  return {success: true, requestId};
 }
 
 export async function acceptFadlaRequestAction(formData: FormData) {
