@@ -2992,52 +2992,32 @@ export async function confirmFadlaCollectionAction(
     .eq("id", itemId)
     .single();
 
-  if (!item) {
-    console.error("[confirmFadlaCollectionAction] item not found for id:", itemId);
-    return {success: false, error: fadlaT("errors.notAvailable")};
-  }
-  if (item.status !== "reserved") {
-    console.error("[confirmFadlaCollectionAction] item status is", item.status, "expected reserved");
+  if (!item || item.status !== "reserved") {
     return {success: false, error: fadlaT("errors.notAvailable")};
   }
 
   // Verify user is the accepted requester
-  const {data: acceptedRequest, error: fetchError} = await supabase
+  const {data: acceptedRequest} = await supabase
     .from("community_share_requests")
     .select("id, requester_id, collected_at")
     .eq("share_id", itemId)
     .eq("status", "accepted")
     .maybeSingle();
 
-  if (fetchError) {
-    console.error("[confirmFadlaCollectionAction] fetch request error:", fetchError);
-  }
-
-  if (!acceptedRequest) {
-    console.error("[confirmFadlaCollectionAction] no accepted request found for share_id:", itemId);
-    return {success: false, error: errorsT("submitFailed")};
-  }
-  if (acceptedRequest.requester_id !== user.id) {
-    console.error("[confirmFadlaCollectionAction] requester_id mismatch:", acceptedRequest.requester_id, "vs", user.id);
+  if (!acceptedRequest || acceptedRequest.requester_id !== user.id) {
     return {success: false, error: errorsT("submitFailed")};
   }
 
   const adminClient = createAdminClient();
   const statusClient = adminClient ?? supabase;
-  if (!adminClient) {
-    console.warn("[confirmFadlaCollectionAction] no admin client - falling back to regular client (RLS may block update)");
-  }
   const {error: statusError} = await statusClient.from("community_share_requests").update({
     collected_at: acceptedRequest.collected_at ?? new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }).eq("id", acceptedRequest.id);
 
   if (statusError) {
-    console.error("[confirmFadlaCollectionAction] update collected_at failed:", statusError.message, "code:", statusError.code);
     return {success: false, error: fadlaT("errors.actionFailed")};
   }
-
-  console.log("[confirmFadlaCollectionAction] success for request:", acceptedRequest.id);
 
   await createNotification({
     userId: item.owner_id,
