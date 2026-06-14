@@ -1,19 +1,26 @@
 ﻿import {z} from "zod";
 
+export const passwordSchema = z
+  .string()
+  .min(8, "password_length")
+  .regex(/[a-zA-Z]/, "password_requirements")
+  .regex(/[0-9]/, "password_requirements");
+
 export const loginSchema = z.object({
-  email: z.email(),
-  password: z.string().min(8),
+  email: z.string().email("auth_invalid_email"),
+  password: z.string().min(8, "password_length"),
 });
 
 export const registerSchema = z
   .object({
-    username: z.string().min(3).max(24),
-    email: z.email(),
-    password: z.string().min(8),
-    confirmPassword: z.string().min(8),
+    username: z.string().min(3, "username_length").max(24, "username_length"),
+    fullName: z.string().min(2, "full_name_length").max(100, "full_name_length"),
+    email: z.string().email("auth_invalid_email"),
+    password: passwordSchema,
+    confirmPassword: z.string().min(8, "password_length"),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords must match",
+    message: "password_mismatch",
     path: ["confirmPassword"],
   });
 

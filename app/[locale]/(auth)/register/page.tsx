@@ -9,23 +9,22 @@ export default async function RegisterPage({
   searchParams,
 }: {
   params: Promise<{locale: string}>;
-  searchParams: Promise<{error?: string; next?: string}>;
+  searchParams: Promise<{next?: string}>;
 }) {
   const {locale} = await params;
   const t = await getTranslations({locale, namespace: "Auth.register"});
-  const {error, next} = await searchParams;
+  const {next} = await searchParams;
 
   return (
-    <div className="mx-auto max-w-md space-y-4">
-      <div className="flex justify-center">
+    <div className="mx-auto max-w-md space-y-6">
+      <div className="flex justify-center pt-4">
         <Logo size="md" priority />
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("title")}</CardTitle>
+      <Card className="border-border/50 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-xl font-semibold tracking-tight">{t("title")}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {error ? <p className="rounded-xl bg-destructive/10 p-2 text-xs text-destructive">{error}</p> : null}
+        <CardContent className="space-y-4">
           <RegisterForm locale={locale} next={next} />
         </CardContent>
       </Card>

@@ -4,7 +4,17 @@ import crypto from "crypto";
 
 import {createAdminClient} from "@/lib/supabase/admin";
 
-type RateLimitKind = "search" | "translation" | "comment" | "reaction" | "follow" | "upload";
+export type RateLimitKind =
+  | "search"
+  | "translation"
+  | "comment"
+  | "reaction"
+  | "follow"
+  | "upload"
+  | "login"
+  | "register"
+  | "passwordReset"
+  | "resendVerification";
 
 const RATE_LIMITS: Record<RateLimitKind, {limit: number; windowSeconds: number}> = {
   search: {limit: 60, windowSeconds: 60},
@@ -13,6 +23,10 @@ const RATE_LIMITS: Record<RateLimitKind, {limit: number; windowSeconds: number}>
   reaction: {limit: 120, windowSeconds: 60},
   follow: {limit: 30, windowSeconds: 60},
   upload: {limit: 40, windowSeconds: 300},
+  login: {limit: 5, windowSeconds: 600},
+  register: {limit: 3, windowSeconds: 1800},
+  passwordReset: {limit: 3, windowSeconds: 3600},
+  resendVerification: {limit: 3, windowSeconds: 1800},
 };
 
 const memoryBuckets = new Map<string, {count: number; resetAt: number}>();

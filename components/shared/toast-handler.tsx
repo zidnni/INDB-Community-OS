@@ -17,6 +17,7 @@ const SUCCESS_KEYS = [
   "postSaved",
   "linkCopied",
   "emailSent",
+  "emailConfirmation",
 ] as const;
 
 export function ToastHandler() {
@@ -29,6 +30,12 @@ export function ToastHandler() {
     if (error && !handled.current.has(`error:${error}`)) {
       handled.current.add(`error:${error}`);
       toast.error(decodeURIComponent(error));
+    }
+
+    const success = searchParams.get("success");
+    if (success && !handled.current.has(`success:${success}`)) {
+      handled.current.add(`success:${success}`);
+      toast.success(decodeURIComponent(success));
     }
 
     for (const key of SUCCESS_KEYS) {

@@ -1,14 +1,17 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 
 import { routing } from '@/lib/i18n/routing';
 import { withLocale } from '@/lib/i18n/paths';
 import { type ImageUploadKind, validateCompressedImageFile } from '@/lib/images/upload-config';
+import { getLocalizedAuthError } from '@/lib/auth/auth-error-messages';
+import { sanitizeRedirectUrl } from '@/lib/auth/safe-redirect';
 import { recordAdminAuditLog } from '@/lib/security/admin-audit';
-import { checkRateLimit } from '@/lib/security/rate-limit';
+import { checkRateLimit, type RateLimitKind } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
 import { adminCreditPointOptions, type AdminContentType } from '@/lib/data/admin';
@@ -87,11 +90,18 @@ function appendParam(path: string, key: string, value: string) {
 }
 
 async function isUserRateLimited(
-  kind: 'comment' | 'reaction' | 'follow' | 'upload',
+  kind: RateLimitKind,
   userId: string,
 ) {
   const result = await checkRateLimit(kind, userId);
   return !result.allowed;
+}
+
+async function getClientIp(): Promise<string> {
+  const headersList = await headers();
+  const forwardedFor = headersList.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const realIp = headersList.get("x-real-ip")?.trim();
+  return forwardedFor || realIp || "unknown-ip";
 }
 
 export async function signOutAction(formData: FormData) {
@@ -105,7 +115,7 @@ export async function signOutAction(formData: FormData) {
 
 export async function loginAction(formData: FormData) {
   const locale = normalizeLocale(formData.get('locale'));
-  const t = await getTranslations({ locale, namespace: 'Errors' });
+  const errorT = await getTranslations({ locale, namespace: 'Auth.errors' });
   const next = formData.get('next');
 
   const parsed = loginSchema.safeParse({
@@ -114,25 +124,40 @@ export async function loginAction(formData: FormData) {
   });
 
   if (!parsed.success) {
+    const key = parsed.error.issues[0]?.message ?? "auth_generic_error";
     redirect(
       toPath(
         locale,
-        `/login?error=${encodeURIComponent(parsed.error.issues[0]?.message ?? t('invalidInput'))}`,
+        `/login?error=${encodeURIComponent(errorT(key))}`,
+      ),
+    );
+  }
+
+  const email = parsed.data.email.trim().toLowerCase();
+
+  const ip = await getClientIp();
+  const rateCheck = await checkRateLimit("login", `${ip}:${email}`);
+
+  if (!rateCheck.allowed) {
+    redirect(
+      toPath(
+        locale,
+        `/login?error=${encodeURIComponent(errorT("auth_rate_limited"))}`,
       ),
     );
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({
-    email: parsed.data.email.trim().toLowerCase(),
+    email,
     password: parsed.data.password,
   });
 
   if (error) {
-    redirect(toPath(locale, `/login?error=${encodeURIComponent(error.message)}`));
+    const errorMessage = getLocalizedAuthError(error, errorT);
+    redirect(toPath(locale, `/login?error=${encodeURIComponent(errorMessage)}`));
   }
 
-  // Check if user has completed onboarding
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
     const { data: profile } = await supabase
@@ -147,27 +172,31 @@ export async function loginAction(formData: FormData) {
     }
   }
 
+  const safeNext = sanitizeRedirectUrl(typeof next === 'string' ? next : "");
   revalidatePath('/', 'layout');
-  redirect(toPath(locale, typeof next === 'string' && next ? next : '/feed'));
+  redirect(toPath(locale, safeNext || '/feed'));
 }
 
 export async function registerAction(formData: FormData) {
   const locale = normalizeLocale(formData.get('locale'));
-  const t = await getTranslations({ locale, namespace: 'Errors' });
+  const errorT = await getTranslations({ locale, namespace: 'Auth.errors' });
+  const successT = await getTranslations({ locale, namespace: 'Auth.success' });
   const next = formData.get('next');
 
   const parsed = registerSchema.safeParse({
     username: formData.get('username'),
+    fullName: formData.get('fullName'),
     email: formData.get('email'),
     password: formData.get('password'),
     confirmPassword: formData.get('confirmPassword'),
   });
 
   if (!parsed.success) {
+    const key = parsed.error.issues[0]?.message ?? "auth_generic_error";
     redirect(
       toPath(
         locale,
-        `/register?error=${encodeURIComponent(parsed.error.issues[0]?.message ?? t('invalidInput'))}`,
+        `/register?error=${encodeURIComponent(errorT(key))}`,
       ),
     );
   }
@@ -175,6 +204,19 @@ export async function registerAction(formData: FormData) {
   const email = parsed.data.email.trim().toLowerCase();
   const password = parsed.data.password;
   const username = parsed.data.username;
+  const fullName = parsed.data.fullName;
+
+  const ip = await getClientIp();
+  const rateCheck = await checkRateLimit("register", ip);
+
+  if (!rateCheck.allowed) {
+    redirect(
+      toPath(
+        locale,
+        `/register?error=${encodeURIComponent(errorT("auth_rate_limited"))}`,
+      ),
+    );
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
@@ -182,14 +224,15 @@ export async function registerAction(formData: FormData) {
     password,
     options: {
       data: {
-        full_name: username,
+        full_name: fullName,
         username,
       },
     },
   });
 
   if (error) {
-    redirect(toPath(locale, `/register?error=${encodeURIComponent(error.message)}`));
+    const errorMessage = getLocalizedAuthError(error, errorT);
+    redirect(toPath(locale, `/register?error=${encodeURIComponent(errorMessage)}`));
   }
 
   if (data.user?.id) {
@@ -198,7 +241,7 @@ export async function registerAction(formData: FormData) {
       .upsert({
         id: data.user.id,
         username,
-        full_name: username,
+        full_name: fullName,
         role: 'member',
       })
       .maybeSingle();
@@ -207,12 +250,80 @@ export async function registerAction(formData: FormData) {
   const redirectPath = typeof next === 'string' && next ? next : '/feed';
 
   if (data.session) {
-    // New users should go to onboarding
     revalidatePath('/', 'layout');
     redirect(toPath(locale, '/onboarding'));
   }
 
-  redirect(toPath(locale, `/login?emailConfirmation=1&next=${encodeURIComponent(redirectPath)}`));
+  const successMessage = encodeURIComponent(successT("auth_registered"));
+  redirect(toPath(locale, `/login?emailConfirmation=1&success=${successMessage}&next=${encodeURIComponent(redirectPath)}`));
+}
+
+export async function resendVerificationAction(formData: FormData) {
+  const locale = normalizeLocale(formData.get('locale'));
+  const errorT = await getTranslations({ locale, namespace: 'Auth.errors' });
+  const successT = await getTranslations({ locale, namespace: 'Auth.success' });
+
+  const email = formData.get('email');
+
+  if (typeof email !== 'string' || !email.includes('@')) {
+    redirect(toPath(locale, `/login?error=${encodeURIComponent(errorT("auth_invalid_email"))}`));
+  }
+
+  const ip = await getClientIp();
+  const rateCheck = await checkRateLimit("resendVerification", ip);
+
+  if (!rateCheck.allowed) {
+    redirect(toPath(locale, `/login?error=${encodeURIComponent(errorT("auth_rate_limited"))}`));
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email: email.trim().toLowerCase(),
+  });
+
+  if (error) {
+    const errorMessage = getLocalizedAuthError(error, errorT);
+    redirect(toPath(locale, `/login?error=${encodeURIComponent(errorMessage)}`));
+  }
+
+  const successMessage = encodeURIComponent(successT("auth_email_confirmation_sent"));
+  redirect(toPath(locale, `/login?success=${successMessage}`));
+}
+
+export async function forgotPasswordAction(formData: FormData) {
+  const locale = normalizeLocale(formData.get('locale'));
+  const errorT = await getTranslations({ locale, namespace: 'Auth.errors' });
+
+  const email = formData.get('email');
+
+  if (typeof email !== 'string' || !email.includes('@')) {
+    redirect(toPath(locale, `/forgot-password?error=${encodeURIComponent(errorT("auth_invalid_email"))}`));
+  }
+
+  const ip = await getClientIp();
+  const rateCheck = await checkRateLimit("passwordReset", ip);
+
+  if (!rateCheck.allowed) {
+    redirect(
+      toPath(
+        locale,
+        `/forgot-password?error=${encodeURIComponent(errorT("auth_rate_limited"))}`,
+      ),
+    );
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/${locale}/login`,
+  });
+
+  if (error) {
+    const errorMessage = getLocalizedAuthError(error, errorT);
+    redirect(toPath(locale, `/forgot-password?error=${encodeURIComponent(errorMessage)}`));
+  }
+
+  redirect(toPath(locale, '/forgot-password?emailSent=1'));
 }
 
 async function uploadFile(
@@ -1406,27 +1517,6 @@ export async function deletePostCommentAction(
   }
 
   return { success: true };
-}
-
-export async function forgotPasswordAction(formData: FormData) {
-  const locale = normalizeLocale(formData.get('locale'));
-  const supabase = await createClient();
-
-  const email = formData.get('email');
-
-  if (typeof email !== 'string' || !email.includes('@')) {
-    redirect(toPath(locale, `/forgot-password?error=${encodeURIComponent('Invalid input')}`));
-  }
-
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/${locale}/login`,
-  });
-
-  if (error) {
-    redirect(toPath(locale, `/forgot-password?error=${encodeURIComponent(error.message)}`));
-  }
-
-  redirect(toPath(locale, '/forgot-password?emailSent=1'));
 }
 
 export async function shareIdeaAction(

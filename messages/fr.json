@@ -876,7 +876,10 @@
       "hasAccount": "Vous avez déjà un compte ?",
       "login": "Connexion",
       "showPassword": "Afficher le mot de passe",
-      "hidePassword": "Masquer le mot de passe"
+      "hidePassword": "Masquer le mot de passe",
+      "fullName": "Nom complet",
+      "fullNamePlaceholder": "Votre nom complet",
+      "usernamePlaceholder": "Choisissez un nom d'utilisateur"
     },
     "forgotPassword": {
       "title": "Réinitialiser votre mot de passe",
@@ -884,7 +887,42 @@
       "submit": "Envoyer le lien de réinitialisation",
       "submitting": "Envoi...",
       "sent": "Consultez vos e-mails pour le lien de réinitialisation.",
-      "backToLogin": "Retour à la connexion"
+      "backToLogin": "Retour à la connexion",
+      "description": "Entrez votre e-mail et nous vous enverrons un lien pour réinitialiser votre mot de passe."
+    },
+    "errors": {
+      "auth_invalid_credentials": "E-mail ou mot de passe incorrect",
+      "auth_email_not_confirmed": "Veuillez confirmer votre e-mail avant de vous connecter",
+      "auth_user_exists": "Un compte avec cet e-mail existe déjà",
+      "auth_weak_password": "Le mot de passe doit contenir au moins 8 caractères avec des lettres et des chiffres",
+      "auth_invalid_email": "Veuillez entrer une adresse e-mail valide",
+      "auth_link_expired": "Ce lien a expiré ou est invalide",
+      "auth_rate_limited": "Trop de tentatives. Veuillez réessayer plus tard",
+      "auth_generic_error": "Une erreur est survenue. Veuillez réessayer",
+      "auth_session_expired": "Votre session a expiré. Veuillez vous reconnecter",
+      "auth_network_error": "Erreur réseau. Veuillez vérifier votre connexion",
+      "password_length": "Le mot de passe doit contenir au moins 8 caractères",
+      "password_requirements": "Le mot de passe doit contenir au moins une lettre et un chiffre",
+      "password_mismatch": "Les mots de passe ne correspondent pas",
+      "username_length": "Le nom d'utilisateur doit contenir entre 3 et 24 caractères",
+      "full_name_length": "Le nom complet doit contenir entre 2 et 100 caractères"
+    },
+    "success": {
+      "auth_registered": "Inscription terminée ! Vérifiez votre e-mail pour confirmer votre compte.",
+      "auth_password_reset_sent": "Si un compte existe, vous recevrez un e-mail de réinitialisation.",
+      "auth_password_updated": "Mot de passe mis à jour avec succès.",
+      "auth_email_confirmed": "E-mail confirmé ! Vous pouvez maintenant vous connecter.",
+      "auth_logged_out": "Vous avez été déconnecté.",
+      "auth_email_confirmation_sent": "E-mail de confirmation envoyé. Veuillez vérifier votre boîte de réception."
+    },
+    "validation": {
+      "password_requirements": "Au moins 8 caractères avec lettres et chiffres",
+      "password_length": "Au moins 8 caractères",
+      "password_letter": "Contient une lettre",
+      "password_number": "Contient un chiffre",
+      "password_mismatch": "Les mots de passe ne correspondent pas",
+      "username_length": "Entre 3 et 24 caractères",
+      "full_name_length": "Entre 2 et 100 caractères"
     }
   },
   "Toasts": {
@@ -900,6 +938,7 @@
     "updated": "Profil mis à jour",
     "linkCopied": "Lien de la publication copié",
     "emailSent": "Consultez vos e-mails pour le lien de réinitialisation",
+    "emailConfirmation": "Inscription terminée. Veuillez vérifier votre e-mail pour confirmer votre compte.",
     "comingSoon": "Bientôt disponible"
   },
   "Errors": {
