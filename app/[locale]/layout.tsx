@@ -89,7 +89,8 @@ export default async function LocaleLayout({
         <div
           dir={isRtl ? "rtl" : "ltr"}
           className={cn(
-            "min-h-screen overflow-x-clip pb-[calc(5rem+var(--safe-bottom))] text-start lg:pb-0",
+            "min-h-screen overflow-x-clip text-start",
+            !isOnboardingRoute && "pb-[calc(5rem+var(--safe-bottom))] lg:pb-0",
             isRtl ? "font-[var(--font-arabic)]" : "font-[var(--font-latin)]",
           )}
         >

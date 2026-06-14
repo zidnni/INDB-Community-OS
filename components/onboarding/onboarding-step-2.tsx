@@ -8,17 +8,9 @@ import {
   Lightbulb,
   Gift,
   User,
-  ChevronRight,
 } from "lucide-react";
 
-import {Button} from "@/components/ui/button";
-
-interface OnboardingStep2Props {
-  onNext: () => void;
-  onSkip: () => void;
-}
-
-export function OnboardingStep2({onNext, onSkip}: OnboardingStep2Props) {
+export function OnboardingStep2() {
   const t = useTranslations("Onboarding.step2");
 
   const features = [
@@ -94,23 +86,6 @@ export function OnboardingStep2({onNext, onSkip}: OnboardingStep2Props) {
         ))}
       </div>
 
-      {/* Actions */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-        <Button
-          variant="ghost"
-          onClick={onSkip}
-          className="min-h-12 w-full sm:w-auto"
-        >
-          {t("skip")}
-        </Button>
-        <Button
-          onClick={onNext}
-          className="min-h-12 w-full bg-[#ED2124] hover:bg-[#d81e21] sm:w-auto"
-        >
-          {t("next")}
-          <ChevronRight size={16} />
-        </Button>
-      </div>
     </div>
   );
 }

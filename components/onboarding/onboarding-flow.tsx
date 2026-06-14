@@ -1,10 +1,10 @@
 "use client";
 
-import {useState} from "react";
+import {useRef, useState} from "react";
 import {useTranslations} from "next-intl";
 import {ChevronLeft, ChevronRight} from "lucide-react";
 
-import {OnboardingStep1} from "@/components/onboarding/onboarding-step-1";
+import {OnboardingStep1, type OnboardingStep1Handle} from "@/components/onboarding/onboarding-step-1";
 import {OnboardingStep2} from "@/components/onboarding/onboarding-step-2";
 import {OnboardingStep3} from "@/components/onboarding/onboarding-step-3";
 import {Button} from "@/components/ui/button";
@@ -20,6 +20,7 @@ export function OnboardingFlow({locale, userId}: OnboardingFlowProps) {
   const t = useTranslations("Onboarding");
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSaving, setIsSaving] = useState(false);
   const [profileData, setProfileData] = useState({
     full_name: "",
     bio: "",
@@ -27,6 +28,7 @@ export function OnboardingFlow({locale, userId}: OnboardingFlowProps) {
     languages: [] as string[],
     avatar_url: undefined as string | undefined,
   });
+  const step1Ref = useRef<OnboardingStep1Handle>(null);
 
   const totalSteps = 3;
 
@@ -57,9 +59,23 @@ export function OnboardingFlow({locale, userId}: OnboardingFlowProps) {
     handleNext();
   };
 
+  const handleNextStep = async () => {
+    if (currentStep === 1) {
+      setIsSaving(true);
+      try {
+        await step1Ref.current?.save();
+      } catch (error) {
+        console.error("Failed to save profile:", error);
+      } finally {
+        setIsSaving(false);
+      }
+    } else if (currentStep === 2) {
+      handleNext();
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
-      {/* Progress indicator */}
       <div className="flex items-center justify-center gap-2 p-4">
         {[1, 2, 3].map((step) => (
           <div
@@ -71,52 +87,71 @@ export function OnboardingFlow({locale, userId}: OnboardingFlowProps) {
         ))}
       </div>
 
-      {/* Step counter */}
       <div className="text-center text-sm text-muted-foreground">
         {currentStep} / {totalSteps}
       </div>
 
-      {/* Content */}
       <div className="flex-1 px-4 py-8 sm:px-8">
         <div className="mx-auto max-w-lg">
           {currentStep === 1 && (
             <OnboardingStep1
+              ref={step1Ref}
               onSave={handleProfileSave}
-              onSkip={handleSkip}
               initialData={profileData}
               locale={locale}
             />
           )}
 
           {currentStep === 2 && (
-            <OnboardingStep2 onNext={handleNext} onSkip={handleSkip} />
+            <OnboardingStep2 />
           )}
 
           {currentStep === 3 && (
-            <OnboardingStep3 onComplete={handleComplete} />
+            <OnboardingStep3 />
           )}
         </div>
       </div>
 
-      {/* Navigation buttons (for desktop) */}
-      <div className="flex items-center justify-between border-t bg-card p-4 sm:hidden">
-        <Button
-          variant="ghost"
-          onClick={handleBack}
-          disabled={currentStep === 1}
-          className="gap-2"
-        >
-          <ChevronLeft size={16} />
-          {t("back")}
-        </Button>
+      <div className="sticky bottom-0 border-t bg-card p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        <div className="mx-auto flex max-w-lg items-center justify-between gap-4">
+          {currentStep > 1 ? (
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              className="min-h-12 gap-2"
+            >
+              <ChevronLeft size={16} />
+              {t("back")}
+            </Button>
+          ) : (
+            <div />
+          )}
 
-        <Button
-          onClick={currentStep === totalSteps ? handleComplete : handleNext}
-          className="bg-[#ED2124] hover:bg-[#d81e21]"
-        >
-          {currentStep === totalSteps ? t("getStarted") : t("next")}
-          <ChevronRight size={16} />
-        </Button>
+          {currentStep < totalSteps ? (
+            <Button
+              variant="ghost"
+              onClick={handleSkip}
+              className="min-h-12"
+            >
+              {t("skip")}
+            </Button>
+          ) : (
+            <div />
+          )}
+
+          <Button
+            onClick={currentStep === totalSteps ? handleComplete : handleNextStep}
+            className="min-h-12 bg-[#ED2124] px-6 hover:bg-[#d81e21]"
+            disabled={isSaving}
+          >
+            {currentStep === totalSteps
+              ? t("getStarted")
+              : isSaving
+              ? "..."
+              : t("next")}
+            {currentStep < totalSteps && <ChevronRight size={16} className="ms-1" />}
+          </Button>
+        </div>
       </div>
     </div>
   );

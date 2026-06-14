@@ -1,11 +1,10 @@
 "use client";
 
-import {useRef, useState} from "react";
+import {forwardRef, useImperativeHandle, useRef, useState} from "react";
 import Image from "next/image";
 import {useTranslations} from "next-intl";
 import {Camera, MapPin} from "lucide-react";
 
-import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
 import {
@@ -15,9 +14,12 @@ import {
 import {prepareImageForUpload} from "@/lib/images/client-compression";
 import {ACCEPTED_IMAGE_EXTENSIONS} from "@/lib/images/upload-config";
 
+export interface OnboardingStep1Handle {
+  save: () => Promise<void>;
+}
+
 interface OnboardingStep1Props {
   onSave: (data: {full_name: string; bio: string; city: string; languages: string[]; avatar_url: string | undefined}) => void;
-  onSkip: () => void;
   initialData?: {full_name: string; bio: string; city: string; languages: string[]};
   locale: string;
 }
@@ -28,7 +30,7 @@ function getInitials(name: string): string {
   return parts[0].substring(0, 2).toUpperCase();
 }
 
-export function OnboardingStep1({onSave, onSkip, initialData, locale}: OnboardingStep1Props) {
+export const OnboardingStep1 = forwardRef<OnboardingStep1Handle, OnboardingStep1Props>(function OnboardingStep1({onSave, initialData, locale}, ref) {
   const t = useTranslations("Onboarding.step1");
   const [fullName, setFullName] = useState(initialData?.full_name || "");
   const [bio, setBio] = useState(initialData?.bio || "");
@@ -66,6 +68,10 @@ export function OnboardingStep1({onSave, onSkip, initialData, locale}: Onboardin
       e.target.value = "";
     }
   };
+
+  useImperativeHandle(ref, () => ({
+    save: handleSave,
+  }));
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -210,23 +216,6 @@ export function OnboardingStep1({onSave, onSkip, initialData, locale}: Onboardin
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-        <Button
-          variant="ghost"
-          onClick={onSkip}
-          className="min-h-12 w-full sm:w-auto"
-        >
-          {t("skip")}
-        </Button>
-        <Button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="min-h-12 w-full bg-[#ED2124] hover:bg-[#d81e21] sm:w-auto"
-        >
-          {isSaving ? t("saving") : t("saveAndContinue")}
-        </Button>
-      </div>
     </div>
   );
-}
+});
