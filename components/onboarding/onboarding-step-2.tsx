@@ -10,6 +10,18 @@ import {
   User,
 } from "lucide-react";
 
+function renderBrandTitle(text: string) {
+  const parts = text.split("❤️");
+  if (parts.length < 2) return text;
+  return (
+    <>
+      {parts[0]}
+      <span className="text-[#ED2124]">❤️</span>
+      {parts.slice(1).join("❤️")}
+    </>
+  );
+}
+
 export function OnboardingStep2() {
   const t = useTranslations("Onboarding.step2");
 
@@ -50,7 +62,7 @@ export function OnboardingStep2() {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-[#ED2124] sm:text-3xl">{t("title")}</h1>
+        <h1 className="text-2xl font-bold sm:text-3xl">{renderBrandTitle(t("title"))}</h1>
         <p className="mt-2 text-sm text-muted-foreground sm:text-base">{t("subtitle")}</p>
       </div>
 
