@@ -62,9 +62,16 @@ export function OnboardingStep2({onNext, onSkip}: OnboardingStep2Props) {
         <p className="mt-2 text-sm text-muted-foreground sm:text-base">{t("subtitle")}</p>
       </div>
 
-      {/* What is INDB */}
+      {/* What is I ❤️ NDB */}
       <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-sm">
-        <p className="text-center text-sm sm:text-base">{t("whatIsINDB")}</p>
+        <div className="mb-3 text-center text-lg font-bold">
+          I{" "}
+          <span className="text-[#ED2124]">❤️</span>
+          {" "}NDB
+        </div>
+        <p className="text-center text-sm text-muted-foreground sm:text-base">
+          {t("whatIsINDB")}
+        </p>
       </div>
 
       {/* Features */}
