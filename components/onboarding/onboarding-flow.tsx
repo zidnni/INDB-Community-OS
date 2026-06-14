@@ -44,12 +44,12 @@ export function OnboardingFlow({locale, userId}: OnboardingFlowProps) {
 
   const handleSkip = async () => {
     await completeOnboardingAction(userId);
-    router.push(`/${locale}`);
+    router.push("/feed");
   };
 
   const handleComplete = async () => {
     await completeOnboardingAction(userId);
-    router.push(`/${locale}`);
+    router.push("/feed");
   };
 
   const handleProfileSave = (data: typeof profileData) => {
