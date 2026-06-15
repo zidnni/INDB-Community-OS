@@ -40,6 +40,26 @@ export function toSyntheticPhoneEmail(normalizedPhone: string): string {
   return `${digits}@phone.indb.local`;
 }
 
+export function getPhoneRegistrationInput({
+  normalizedPhone,
+  fullName,
+  password,
+}: {
+  normalizedPhone: string;
+  fullName: string;
+  password: string;
+}) {
+  return {
+    phone: normalizedPhone,
+    password,
+    phone_confirm: true,
+    user_metadata: {
+      full_name: fullName,
+      phone: normalizedPhone,
+    },
+  };
+}
+
 export function getSyntheticPhoneRegistrationInput({
   normalizedPhone,
   fullName,
@@ -50,12 +70,8 @@ export function getSyntheticPhoneRegistrationInput({
   password: string;
 }) {
   return {
+    ...getPhoneRegistrationInput({ normalizedPhone, fullName, password }),
     email: toSyntheticPhoneEmail(normalizedPhone),
-    password,
     email_confirm: true,
-    user_metadata: {
-      full_name: fullName,
-      phone: normalizedPhone,
-    },
   };
 }

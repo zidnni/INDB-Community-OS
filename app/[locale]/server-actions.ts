@@ -40,8 +40,8 @@ import {
   profileSchema,
   registerSchema,
 } from '@/lib/validations/community';
-import { normalizeMauritaniaPhone, toSyntheticPhoneEmail, isValidMauritaniaPhone } from '@/lib/auth/phone';
-import { getSyntheticPhoneRegistrationInput } from '@/lib/auth/phone-auth';
+import { normalizeMauritaniaPhone, isValidMauritaniaPhone } from '@/lib/auth/phone';
+import { getPhoneRegistrationInput } from '@/lib/auth/phone-auth';
 import type {
   CommentWithAuthor,
   CommunityShareImage,
@@ -253,8 +253,7 @@ export async function loginAction(formData: FormData) {
     return { error: { phone: errorT("auth_invalid_phone") } };
   }
 
-  const syntheticEmail = toSyntheticPhoneEmail(normalizedPhone);
-  console.log("LOGIN synthetic email:", syntheticEmail);
+  console.log("LOGIN phone identifier:", normalizedPhone);
 
   const ip = await getClientIp();
   const rateCheck = await checkRateLimit("login", `${ip}:${normalizedPhone}`);
@@ -265,7 +264,7 @@ export async function loginAction(formData: FormData) {
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({
-    email: syntheticEmail,
+    phone: normalizedPhone,
     password: parsed.data.password,
   });
 
@@ -368,11 +367,10 @@ export async function registerAction(formData: FormData) {
     return { error: { phone: errorT("auth_invalid_phone") } };
   }
 
-  const syntheticEmail = toSyntheticPhoneEmail(normalizedPhone);
   const password = parsed.data.password;
   const fullName = parsed.data.fullName;
 
-  console.log("REGISTER synthetic email:", syntheticEmail);
+  console.log("REGISTER phone identifier:", normalizedPhone);
 
   const ip = await getClientIp();
   const rateCheck = await checkRateLimit("register", ip);
@@ -405,21 +403,20 @@ export async function registerAction(formData: FormData) {
 
   console.log("REGISTER START");
   console.log("REGISTER normalizedPhone", normalizedPhone);
-  console.log("REGISTER syntheticEmail", syntheticEmail);
 
   const adminClient = createAdminClient();
   if (!adminClient) {
-    console.error("REGISTER: admin client unavailable for synthetic phone registration");
+    console.error("REGISTER: admin client unavailable for phone registration");
     return { error: { general: errorT("auth_generic_error") } };
   }
 
-  const registrationInput = getSyntheticPhoneRegistrationInput({
+  const registrationInput = getPhoneRegistrationInput({
     normalizedPhone,
     fullName,
     password,
   });
 
-  console.log("REGISTER: using admin client for synthetic phone registration");
+  console.log("REGISTER: using admin client for real phone registration");
 
   const { data: createdUser, error: createUserError } = await adminClient.auth.admin.createUser(registrationInput);
   console.log("REGISTER createUser result", { userId: createdUser?.user?.id, error: createUserError ? { message: createUserError.message, code: createUserError.code } : null });
@@ -473,9 +470,9 @@ export async function registerAction(formData: FormData) {
     }
   }
 
-  console.log("REGISTER: attempting immediate sign-in with synthetic email");
+  console.log("REGISTER: attempting immediate sign-in with phone credentials");
   const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-    email: registrationInput.email,
+    phone: normalizedPhone,
     password,
   });
   console.log("REGISTER signIn result", { userId: signInData?.user?.id, session: !!signInData?.session, error: signInError ? { message: signInError.message, code: signInError.code } : null });
