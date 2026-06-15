@@ -261,26 +261,45 @@ export async function registerAction(formData: FormData) {
 
   const supabase = await createClient();
 
-  const adminClient = createAdminClient();
-  let dbForPhoneCheck = supabase;
-  if (adminClient) {
-    dbForPhoneCheck = adminClient;
-    console.log("REGISTER: using admin client for phone uniqueness check");
-  } else {
-    console.log("REGISTER: admin client unavailable, using anon client for phone uniqueness check");
+  let existingProfileByPhone = null;
+
+  try {
+    const adminClient = createAdminClient();
+    if (adminClient) {
+      console.log("REGISTER: using admin client for phone uniqueness check");
+      const { data, error } = await adminClient
+        .from('profiles')
+        .select('id, phone, full_name, created_at')
+        .eq('phone', normalizedPhone)
+        .maybeSingle();
+      if (error) {
+        console.error("REGISTER: admin phone query error (trying anon)", { message: error.message, code: error.code });
+      } else {
+        existingProfileByPhone = data;
+      }
+    } else {
+      console.log("REGISTER: admin client unavailable, trying anon client");
+    }
+  } catch (e) {
+    console.error("REGISTER: admin client exception (trying anon)", e);
   }
 
-  console.log("REGISTER: checking phone uniqueness", { normalizedPhone });
-
-  const { data: existingProfileByPhone, error: phoneCheckError } = await dbForPhoneCheck
-    .from('profiles')
-    .select('id, phone, full_name, created_at')
-    .eq('phone', normalizedPhone)
-    .maybeSingle();
-
-  if (phoneCheckError) {
-    console.error("REGISTER ERROR: phone uniqueness check query failed", { message: phoneCheckError.message, code: phoneCheckError.code, details: phoneCheckError.details, hint: phoneCheckError.hint });
-    return { error: { general: errorT("auth_generic_error") } };
+  if (!existingProfileByPhone) {
+    try {
+      console.log("REGISTER: checking phone uniqueness with anon client", { normalizedPhone });
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone', normalizedPhone)
+        .maybeSingle();
+      if (error) {
+        console.error("REGISTER: anon phone query error (proceeding without check)", { message: error.message, code: error.code });
+      } else if (data) {
+        existingProfileByPhone = data;
+      }
+    } catch (e) {
+      console.error("REGISTER: anon phone query exception (proceeding without check)", e);
+    }
   }
 
   console.log("REGISTER existing profile:", existingProfileByPhone);
