@@ -845,7 +845,6 @@
     "register": {
       "title": "Mah huunde maa",
       "done": "Gollal mahu huunde timmii.",
-      "username": "Innde huutorteende",
       "phone": "Nimitoor",
       "password": "Finnde wowre",
       "confirmPassword": "Tabitin finnde wowre",
@@ -856,8 +855,7 @@
       "showPassword": "Hollu finnde wowre",
       "hidePassword": "Suud finnde wowre",
       "fullName": "Innde timmunde",
-      "fullNamePlaceholder": "Innde maa timmunde",
-      "usernamePlaceholder": "Suɓo innde huutorteende"
+      "fullNamePlaceholder": "Innde maa timmunde"
     },
     "forgotPassword": {
       "title": "Fuɗɗor finnde wowre",

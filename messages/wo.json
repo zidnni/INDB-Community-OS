@@ -845,7 +845,6 @@
     "register": {
       "title": "Sos sa jikko",
       "done": "Sos jikko mukk na.",
-      "username": "Tur jëfandiku",
       "phone": "Numéro portable",
       "password": "Sàmm",
       "confirmPassword": "Tabiti sàmm",
@@ -856,8 +855,7 @@
       "showPassword": "Wone sàmm",
       "hidePassword": "Nàcc sàmm",
       "fullName": "Tur bu fulla",
-      "fullNamePlaceholder": "Sa tur bu fulla",
-      "usernamePlaceholder": "Tannal tur jëfandiku"
+      "fullNamePlaceholder": "Sa tur bu fulla"
     },
     "forgotPassword": {
       "title": "Sagal sàmm",

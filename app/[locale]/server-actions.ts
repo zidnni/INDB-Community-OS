@@ -242,7 +242,6 @@ export async function registerAction(formData: FormData) {
   const next = formData.get('next');
 
   const parsed = registerSchema.safeParse({
-    username: formData.get('username'),
     fullName: formData.get('fullName'),
     phone: formData.get('phone'),
     password: formData.get('password'),
@@ -252,7 +251,6 @@ export async function registerAction(formData: FormData) {
   if (!parsed.success) {
     return {
       error: authValidationErrors(parsed.error.issues, {
-        username: formData.get('username'),
         fullName: formData.get('fullName'),
         phone: formData.get('phone'),
         password: formData.get('password'),
@@ -263,6 +261,7 @@ export async function registerAction(formData: FormData) {
 
   const rawPhone = parsed.data.phone.trim();
   const normalizedPhone = normalizePhone(rawPhone);
+  console.log("REGISTER: normalized phone", normalizedPhone);
 
   if (!isValidMauritaniaPhone(normalizedPhone)) {
     return { error: { phone: errorT("auth_invalid_phone") } };
@@ -270,7 +269,6 @@ export async function registerAction(formData: FormData) {
 
   const syntheticEmail = phoneToEmail(normalizedPhone);
   const password = parsed.data.password;
-  const username = parsed.data.username;
   const fullName = parsed.data.fullName;
 
   const ip = await getClientIp();
@@ -283,26 +281,22 @@ export async function registerAction(formData: FormData) {
   const supabase = await createClient();
 
   // Check if phone already exists in profiles
-  const { data: existingProfileByPhone } = await supabase
+  const { data: existingProfileByPhone, error: phoneCheckError } = await supabase
     .from('profiles')
     .select('id')
     .eq('phone', normalizedPhone)
     .maybeSingle();
 
+  if (phoneCheckError) {
+    console.error("REGISTER: phone uniqueness check failed", phoneCheckError);
+    return { error: { phone: errorT("auth_generic_error") } };
+  }
+
   if (existingProfileByPhone) {
     return { error: { phone: errorT("auth_phone_exists") } };
   }
 
-  // Check if username already taken
-  const { data: existingProfileByUsername } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('username', username)
-    .maybeSingle();
-
-  if (existingProfileByUsername) {
-    return { error: { username: errorT("username_taken") } };
-  }
+  console.log("REGISTER: calling supabase.auth.signUp with email", syntheticEmail);
 
   const { data, error } = await supabase.auth.signUp({
     email: syntheticEmail,
@@ -310,13 +304,15 @@ export async function registerAction(formData: FormData) {
     options: {
       data: {
         full_name: fullName,
-        username,
         phone: normalizedPhone,
       },
     },
   });
 
+  console.log("REGISTER: signUp result", { data, error });
+
   if (error) {
+    console.error("REGISTER ERROR", error);
     const errorMessage = getLocalizedAuthError(error, errorT);
     if (error.message.includes('User already registered') || error.message.toLowerCase().includes('already registered')) {
       return { error: { phone: errorT("auth_phone_exists") } };
@@ -325,16 +321,28 @@ export async function registerAction(formData: FormData) {
   }
 
   if (data.user?.id) {
-    await supabase
+    const autoUsername = `u${data.user.id.replace(/-/g, '').slice(0, 12)}`;
+    console.log("REGISTER: auto-generated username", autoUsername);
+
+    const { error: profileError } = await supabase
       .from('profiles')
       .upsert({
         id: data.user.id,
-        username,
+        username: autoUsername,
         full_name: fullName,
         phone: normalizedPhone,
         role: 'member',
-      })
-      .maybeSingle();
+      });
+
+    console.log("REGISTER: profile upsert result", { error: profileError });
+
+    if (profileError) {
+      console.error("REGISTER: profile creation failed", profileError);
+      return { error: { general: errorT("auth_generic_error") } };
+    }
+  } else {
+    console.error("REGISTER: no user returned from signUp");
+    return { error: { general: errorT("auth_generic_error") } };
   }
 
   const redirectPath = typeof next === 'string' && next ? next : '/feed';

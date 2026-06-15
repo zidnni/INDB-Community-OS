@@ -845,7 +845,6 @@
     "register": {
       "title": "Mah kuun maa",
       "done": "Goy mah kuun banta.",
-      "username": "Turu gollan",
       "phone": "Numéro de téléphone",
       "password": "Furta",
       "confirmPassword": "Tabiti furta",
@@ -856,8 +855,7 @@
       "showPassword": "Yeru furta",
       "hidePassword": "Noxu furta",
       "fullName": "Turu timmuxe",
-      "fullNamePlaceholder": "I turu timmuxe",
-      "usernamePlaceholder": "Suuxu turu gollan"
+      "fullNamePlaceholder": "I turu timmuxe"
     },
     "forgotPassword": {
       "title": "Sagalin furta maa",

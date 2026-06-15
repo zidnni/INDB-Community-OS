@@ -972,7 +972,6 @@
     "register": {
       "title": "Create your account",
       "done": "Account creation interaction completed.",
-      "username": "Username",
       "phone": "Phone number",
       "password": "Password",
       "confirmPassword": "Confirm password",
@@ -983,8 +982,7 @@
       "showPassword": "Show password",
       "hidePassword": "Hide password",
       "fullName": "Full name",
-      "fullNamePlaceholder": "Your full name",
-      "usernamePlaceholder": "Choose a username"
+      "fullNamePlaceholder": "Your full name"
     },
     "forgotPassword": {
       "title": "Reset your password",

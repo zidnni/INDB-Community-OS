@@ -12,7 +12,6 @@ import {registerAction} from "@/app/[locale]/server-actions";
 
 interface FormErrors {
   fullName?: string;
-  username?: string;
   phone?: string;
   password?: string;
   confirmPassword?: string;
@@ -40,7 +39,6 @@ export function RegisterForm({locale, next}: {locale: string; next?: string}) {
   const [errors, setErrors] = useState<FormErrors>({});
   const [formData, setFormData] = useState({
     fullName: "",
-    username: "",
     phone: "",
     password: "",
     confirmPassword: "",
@@ -67,7 +65,6 @@ export function RegisterForm({locale, next}: {locale: string; next?: string}) {
     const nextErrors: FormErrors = {};
 
     if (!formData.fullName.trim()) nextErrors.fullName = errorT("full_name_required");
-    if (!formData.username.trim()) nextErrors.username = errorT("username_required");
     if (!formData.phone.trim()) nextErrors.phone = errorT("phone_required");
     if (!formData.password) nextErrors.password = errorT("password_required");
     else if (!hasMinLen) nextErrors.password = errorT("password_length");
@@ -91,7 +88,6 @@ export function RegisterForm({locale, next}: {locale: string; next?: string}) {
       const formDataObj = new FormData();
       formDataObj.append("locale", locale);
       formDataObj.append("fullName", formData.fullName);
-      formDataObj.append("username", formData.username);
       formDataObj.append("phone", formData.phone);
       formDataObj.append("password", formData.password);
       formDataObj.append("confirmPassword", formData.confirmPassword);
@@ -133,28 +129,6 @@ export function RegisterForm({locale, next}: {locale: string; next?: string}) {
           <p className="flex items-center gap-1.5 text-xs text-red-600">
             <AlertCircle size={12} />
             {errors.fullName}
-          </p>
-        )}
-      </div>
-      <div className="space-y-2">
-        <label className="text-sm font-medium text-foreground/80">{t("username")}</label>
-        <Input
-          name="username"
-          value={formData.username}
-          onChange={(e) => updateField("username", e.target.value)}
-          placeholder={t("usernamePlaceholder")}
-          aria-invalid={Boolean(errors.username)}
-          className={`h-11 rounded-xl bg-background px-4 text-sm transition-colors focus-visible:ring-[#ED2124]/20 ${
-            errors.username
-              ? "border-red-500 focus-visible:border-red-500 focus-visible:ring-red-500/20"
-              : "border-border/60 focus-visible:border-[#ED2124]"
-          }`}
-          autoComplete="username"
-        />
-        {errors.username && (
-          <p className="flex items-center gap-1.5 text-xs text-red-600">
-            <AlertCircle size={12} />
-            {errors.username}
           </p>
         )}
       </div>

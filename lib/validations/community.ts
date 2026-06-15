@@ -13,7 +13,6 @@ export const loginSchema = z.object({
 
 export const registerSchema = z
   .object({
-    username: z.string().min(3, "username_length").max(24, "username_length"),
     fullName: z.string().min(2, "full_name_length").max(100, "full_name_length"),
     phone: z.string().min(1, "phone_required"),
     password: passwordSchema,
