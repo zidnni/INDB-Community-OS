@@ -83,6 +83,10 @@ jobs:
 
           python3 <<'PY'
           from pathlib import Path
+          from textwrap import dedent
+
+          def block(value: str) -> str:
+              return dedent(value).strip('\n')
 
           def replace_once(content: str, before: str, after: str, label: str) -> str:
               if before not in content:
@@ -111,15 +115,18 @@ jobs:
           action_path = Path("app/[locale]/server-actions.ts")
           actions = action_path.read_text()
 
-          auth_field_block = """type AuthFieldErrors = {
+          auth_field_block = block("""
+          type AuthFieldErrors = {
             fullName?: string;
             phone?: string;
             password?: string;
             confirmPassword?: string;
             general?: string;
-          };"""
+          };
+          """)
 
-          helper_block = """type AuthFieldErrors = {
+          helper_block = block("""
+          type AuthFieldErrors = {
             fullName?: string;
             phone?: string;
             password?: string;
@@ -230,7 +237,8 @@ jobs:
               .maybeSingle();
 
             return {profile: data as PhoneProfile | null, error, source};
-          }"""
+          }
+          """)
 
           actions = replace_once(
               actions,
@@ -241,18 +249,22 @@ jobs:
 
           actions = replace_once(
               actions,
-              """  if (error) {
-            console.error("LOGIN error:", { message: error.message, code: error.code, status: error.status });
-            if (error.message.toLowerCase().includes('invalid login') || error.message.toLowerCase().includes('invalid credentials')) {
-              return { error: { password: errorT("auth_invalid_credentials") } };
-            }
-            return { error: { general: errorT("auth_invalid_credentials") } };
-          }""",
-              """  if (error) {
-            console.error("LOGIN error:", { message: error.message, code: error.code, status: error.status });
-            if (isInvalidCredentialsError(error)) return { error: { password: errorT("auth_invalid_credentials") } };
-            return { error: { general: errorT("auth_invalid_credentials") } };
-          }""",
+              block("""
+              if (error) {
+                console.error("LOGIN error:", { message: error.message, code: error.code, status: error.status });
+                if (error.message.toLowerCase().includes('invalid login') || error.message.toLowerCase().includes('invalid credentials')) {
+                  return { error: { password: errorT("auth_invalid_credentials") } };
+                }
+                return { error: { general: errorT("auth_invalid_credentials") } };
+              }
+              """),
+              block("""
+              if (error) {
+                console.error("LOGIN error:", { message: error.message, code: error.code, status: error.status });
+                if (isInvalidCredentialsError(error)) return { error: { password: errorT("auth_invalid_credentials") } };
+                return { error: { general: errorT("auth_invalid_credentials") } };
+              }
+              """),
               'login error mapping',
           )
 
@@ -260,53 +272,59 @@ jobs:
               actions,
               "  const supabase = await createClient();\n\n  let existingProfileByPhone = null;",
               "\n  if (existingProfileByPhone) {",
-              """  const supabase = await createClient();
-            const existingProfileLookup = await findProfileByPhone(supabase, normalizedPhone);
-            const existingProfileByPhone = existingProfileLookup.profile;
+              block("""
+              const supabase = await createClient();
+              const existingProfileLookup = await findProfileByPhone(supabase, normalizedPhone);
+              const existingProfileByPhone = existingProfileLookup.profile;
 
-            console.log("REGISTER existing profile:", existingProfileByPhone);
+              console.log("REGISTER existing profile:", existingProfileByPhone);
 
-            if (existingProfileLookup.error) {
-              console.error("REGISTER: phone uniqueness check failed", {
-                source: existingProfileLookup.source,
-                message: existingProfileLookup.error.message,
-                code: existingProfileLookup.error.code,
-                details: existingProfileLookup.error.details,
-                hint: existingProfileLookup.error.hint,
-              });
-              return { error: { general: errorT("auth_generic_error") } };
-            }""",
+              if (existingProfileLookup.error) {
+                console.error("REGISTER: phone uniqueness check failed", {
+                  source: existingProfileLookup.source,
+                  message: existingProfileLookup.error.message,
+                  code: existingProfileLookup.error.code,
+                  details: existingProfileLookup.error.details,
+                  hint: existingProfileLookup.error.hint,
+                });
+                return { error: { general: errorT("auth_generic_error") } };
+              }
+              """),
               'register profile lookup',
           )
 
           actions = replace_once(
               actions,
-              """  if (error) {
-            console.error("REGISTER ERROR: auth signUp failed", { message: error.message, code: error.code, status: error.status });
-            if (error.message.includes('User already registered') || error.message.toLowerCase().includes('already registered')) {
-              return { error: { phone: "auth_phone_exists" } };
-            }
-            if (error.message.toLowerCase().includes('weak password') || error.message.toLowerCase().includes('at least 8')) {
-              return { error: { password: errorT("auth_weak_password") } };
-            }
-            if (error.message.toLowerCase().includes('rate limit')) {
-              return { error: { general: errorT("auth_rate_limited") } };
-            }
-            if (error.message.toLowerCase().includes('network') || error.message.toLowerCase().includes('fetch')) {
-              return { error: { general: errorT("auth_network_error") } };
-            }
-            console.error("REGISTER ERROR: unhandled auth error mapped to generic", { message: error.message });
-            return { error: { general: errorT("auth_generic_error") } };
-          }""",
-              """  if (error) {
-            console.error("REGISTER ERROR: auth signUp failed", { message: error.message, code: error.code, status: error.status });
-            if (isAuthUserAlreadyRegisteredError(error)) return { error: { phone: "auth_phone_exists" } };
-            if (isWeakPasswordError(error)) return { error: { password: errorT("auth_weak_password") } };
-            if (isRateLimitError(error)) return { error: { general: errorT("auth_rate_limited") } };
-            if (isNetworkError(error)) return { error: { general: errorT("auth_network_error") } };
-            console.error("REGISTER ERROR: unhandled auth error mapped to generic", { message: error.message });
-            return { error: { general: errorT("auth_generic_error") } };
-          }""",
+              block("""
+              if (error) {
+                console.error("REGISTER ERROR: auth signUp failed", { message: error.message, code: error.code, status: error.status });
+                if (error.message.includes('User already registered') || error.message.toLowerCase().includes('already registered')) {
+                  return { error: { phone: "auth_phone_exists" } };
+                }
+                if (error.message.toLowerCase().includes('weak password') || error.message.toLowerCase().includes('at least 8')) {
+                  return { error: { password: errorT("auth_weak_password") } };
+                }
+                if (error.message.toLowerCase().includes('rate limit')) {
+                  return { error: { general: errorT("auth_rate_limited") } };
+                }
+                if (error.message.toLowerCase().includes('network') || error.message.toLowerCase().includes('fetch')) {
+                  return { error: { general: errorT("auth_network_error") } };
+                }
+                console.error("REGISTER ERROR: unhandled auth error mapped to generic", { message: error.message });
+                return { error: { general: errorT("auth_generic_error") } };
+              }
+              """),
+              block("""
+              if (error) {
+                console.error("REGISTER ERROR: auth signUp failed", { message: error.message, code: error.code, status: error.status });
+                if (isAuthUserAlreadyRegisteredError(error)) return { error: { phone: "auth_phone_exists" } };
+                if (isWeakPasswordError(error)) return { error: { password: errorT("auth_weak_password") } };
+                if (isRateLimitError(error)) return { error: { general: errorT("auth_rate_limited") } };
+                if (isNetworkError(error)) return { error: { general: errorT("auth_network_error") } };
+                console.error("REGISTER ERROR: unhandled auth error mapped to generic", { message: error.message });
+                return { error: { general: errorT("auth_generic_error") } };
+              }
+              """),
               'register signup error mapping',
           )
 
@@ -319,58 +337,61 @@ jobs:
               actions,
               "  if (profileError) {\n    console.error(\"REGISTER ERROR: profile creation failed\"",
               "\n\nexport async function resendVerificationAction",
-              """  if (profileError) {
-            console.error("REGISTER ERROR: profile creation failed", { message: profileError.message, code: profileError.code, details: profileError.details, hint: profileError.hint });
-            const conflictLookup = await findProfileByPhone(supabase, normalizedPhone);
+              block("""
+              if (profileError) {
+                console.error("REGISTER ERROR: profile creation failed", { message: profileError.message, code: profileError.code, details: profileError.details, hint: profileError.hint });
+                const conflictLookup = await findProfileByPhone(supabase, normalizedPhone);
 
-            console.log("REGISTER existing profile:", conflictLookup.profile);
+                console.log("REGISTER existing profile:", conflictLookup.profile);
 
-            if (conflictLookup.error) {
-              console.error("REGISTER: post-signup phone lookup failed", {
-                source: conflictLookup.source,
-                message: conflictLookup.error.message,
-                code: conflictLookup.error.code,
-                details: conflictLookup.error.details,
-                hint: conflictLookup.error.hint,
-              });
-            }
+                if (conflictLookup.error) {
+                  console.error("REGISTER: post-signup phone lookup failed", {
+                    source: conflictLookup.source,
+                    message: conflictLookup.error.message,
+                    code: conflictLookup.error.code,
+                    details: conflictLookup.error.details,
+                    hint: conflictLookup.error.hint,
+                  });
+                }
 
-            if (isDuplicateDatabaseError(profileError)) {
-              if (conflictLookup.profile?.id === data.user.id) {
-                console.log("REGISTER: profile already exists for newly-created auth user", { normalizedPhone });
-                return registrationSuccess(locale, next, Boolean(data.session));
+                if (isDuplicateDatabaseError(profileError)) {
+                  if (conflictLookup.profile?.id === data.user.id) {
+                    console.log("REGISTER: profile already exists for newly-created auth user", { normalizedPhone });
+                    return registrationSuccess(locale, next, Boolean(data.session));
+                  }
+
+                  if (conflictLookup.profile) return { error: { phone: "auth_phone_exists" } };
+
+                  return { error: { general: errorT("auth_generic_error") } };
+                }
+
+                if (isPermissionDatabaseError(profileError)) {
+                  console.error("REGISTER ERROR: RLS policy blocked profile creation", profileError);
+                  if (conflictLookup.profile?.id === data.user.id) {
+                    return registrationSuccess(locale, next, Boolean(data.session));
+                  }
+                  return { error: { general: errorT("auth_generic_error") } };
+                }
+                if (profileError.message?.toLowerCase().includes('not null') || profileError.message?.toLowerCase().includes('constraint')) {
+                  console.error("REGISTER ERROR: database constraint violation", profileError);
+                  return { error: { general: errorT("auth_generic_error") } };
+                }
+                return { error: { general: errorT("auth_generic_error") } };
               }
 
-              if (conflictLookup.profile) return { error: { phone: "auth_phone_exists" } };
-
-              return { error: { general: errorT("auth_generic_error") } };
-            }
-
-            if (isPermissionDatabaseError(profileError)) {
-              console.error("REGISTER ERROR: RLS policy blocked profile creation", profileError);
-              if (conflictLookup.profile?.id === data.user.id) {
-                return registrationSuccess(locale, next, Boolean(data.session));
+              return registrationSuccess(locale, next, Boolean(data.session));
               }
-              return { error: { general: errorT("auth_generic_error") } };
-            }
-            if (profileError.message?.toLowerCase().includes('not null') || profileError.message?.toLowerCase().includes('constraint')) {
-              console.error("REGISTER ERROR: database constraint violation", profileError);
-              return { error: { general: errorT("auth_generic_error") } };
-            }
-            return { error: { general: errorT("auth_generic_error") } };
-          }
-
-          return registrationSuccess(locale, next, Boolean(data.session));
-          }""",
+              """),
               'profile error handling tail',
           )
 
-          if 'function isAuthUserAlreadyRegisteredError' not in actions:
-              raise RuntimeError('auth duplicate helper missing')
-          if ".upsert(profileData, {onConflict: 'id'})" not in actions:
-              raise RuntimeError('profile upsert conflict target missing')
-          if 'return registrationSuccess(locale, next, Boolean(data.session));' not in actions:
-              raise RuntimeError('registration success helper not used')
+          for needle in [
+              'function isAuthUserAlreadyRegisteredError',
+              ".upsert(profileData, {onConflict: 'id'})",
+              'return registrationSuccess(locale, next, Boolean(data.session));',
+          ]:
+              if needle not in actions:
+                  raise RuntimeError(f'missing verification needle: {needle}')
           if 'withoutInternationalPrefix' not in Path('lib/auth/phone.ts').read_text():
               raise RuntimeError('phone helper not updated')
           if 'result && "error" in result' not in register_form:
