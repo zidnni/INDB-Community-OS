@@ -40,7 +40,7 @@ import {
   profileSchema,
   registerSchema,
 } from '@/lib/validations/community';
-import { normalizePhone, phoneToEmail, isValidMauritaniaPhone } from '@/lib/auth/phone';
+import { normalizeMauritaniaPhone, toSyntheticPhoneEmail, isValidMauritaniaPhone } from '@/lib/auth/phone';
 import type {
   CommentWithAuthor,
   CommunityShareImage,
@@ -164,13 +164,16 @@ export async function loginAction(formData: FormData) {
   }
 
   const rawPhone = parsed.data.phone.trim();
-  const normalizedPhone = normalizePhone(rawPhone);
+  const normalizedPhone = normalizeMauritaniaPhone(rawPhone);
+  const syntheticEmail = toSyntheticPhoneEmail(normalizedPhone);
+
+  console.log("LOGIN raw phone:", rawPhone);
+  console.log("LOGIN normalized phone:", normalizedPhone);
+  console.log("LOGIN synthetic email:", syntheticEmail);
 
   if (!isValidMauritaniaPhone(normalizedPhone)) {
     return { error: { phone: errorT("auth_invalid_phone") } };
   }
-
-  const syntheticEmail = phoneToEmail(normalizedPhone);
 
   const ip = await getClientIp();
   const rateCheck = await checkRateLimit("login", `${ip}:${normalizedPhone}`);
@@ -186,11 +189,11 @@ export async function loginAction(formData: FormData) {
   });
 
   if (error) {
-    const errorMessage = getLocalizedAuthError(error, errorT);
+    console.error("LOGIN error:", { message: error.message, code: error.code, status: error.status });
     if (error.message.toLowerCase().includes('invalid login') || error.message.toLowerCase().includes('invalid credentials')) {
       return { error: { password: errorT("auth_invalid_credentials") } };
     }
-    return { error: { general: errorMessage } };
+    return { error: { general: errorT("auth_invalid_credentials") } };
   }
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -236,16 +239,18 @@ export async function registerAction(formData: FormData) {
   }
 
   const rawPhone = parsed.data.phone.trim();
-  const normalizedPhone = normalizePhone(rawPhone);
-  console.log("REGISTER: normalized phone", normalizedPhone);
+  const normalizedPhone = normalizeMauritaniaPhone(rawPhone);
+  const syntheticEmail = toSyntheticPhoneEmail(normalizedPhone);
+  const password = parsed.data.password;
+  const fullName = parsed.data.fullName;
+
+  console.log("REGISTER raw phone:", rawPhone);
+  console.log("REGISTER normalized phone:", normalizedPhone);
+  console.log("REGISTER synthetic email:", syntheticEmail);
 
   if (!isValidMauritaniaPhone(normalizedPhone)) {
     return { error: { phone: errorT("auth_invalid_phone") } };
   }
-
-  const syntheticEmail = phoneToEmail(normalizedPhone);
-  const password = parsed.data.password;
-  const fullName = parsed.data.fullName;
 
   const ip = await getClientIp();
   const rateCheck = await checkRateLimit("register", ip);
@@ -256,18 +261,29 @@ export async function registerAction(formData: FormData) {
 
   const supabase = await createClient();
 
+  const adminClient = createAdminClient();
+  let dbForPhoneCheck = supabase;
+  if (adminClient) {
+    dbForPhoneCheck = adminClient;
+    console.log("REGISTER: using admin client for phone uniqueness check");
+  } else {
+    console.log("REGISTER: admin client unavailable, using anon client for phone uniqueness check");
+  }
+
   console.log("REGISTER: checking phone uniqueness", { normalizedPhone });
 
-  const { data: existingProfileByPhone, error: phoneCheckError } = await supabase
+  const { data: existingProfileByPhone, error: phoneCheckError } = await dbForPhoneCheck
     .from('profiles')
-    .select('id')
+    .select('id, phone, full_name, created_at')
     .eq('phone', normalizedPhone)
     .maybeSingle();
 
   if (phoneCheckError) {
-    console.error("REGISTER ERROR: phone uniqueness check failed", phoneCheckError);
-    return { error: { phone: errorT("auth_phone_exists") } };
+    console.error("REGISTER ERROR: phone uniqueness check query failed", { message: phoneCheckError.message, code: phoneCheckError.code, details: phoneCheckError.details, hint: phoneCheckError.hint });
+    return { error: { general: errorT("auth_generic_error") } };
   }
+
+  console.log("REGISTER existing profile:", existingProfileByPhone);
 
   if (existingProfileByPhone) {
     console.log("REGISTER: phone already registered", { normalizedPhone });
@@ -303,7 +319,8 @@ export async function registerAction(formData: FormData) {
     if (error.message.toLowerCase().includes('network') || error.message.toLowerCase().includes('fetch')) {
       return { error: { general: errorT("auth_network_error") } };
     }
-    return { error: { phone: "auth_phone_exists" } };
+    console.error("REGISTER ERROR: unhandled auth error mapped to generic", { message: error.message });
+    return { error: { general: errorT("auth_generic_error") } };
   }
 
   if (!data.user?.id) {
