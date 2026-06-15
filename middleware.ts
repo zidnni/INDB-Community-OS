@@ -15,8 +15,18 @@ function matchPath(pathname: string, patterns: string[]): boolean {
 }
 
 export default async function middleware(request: NextRequest) {
-  const {pathname} = request.nextUrl;
+  const {pathname, searchParams} = request.nextUrl;
   request.headers.set("x-indb-pathname", pathname);
+
+  // OAuth code param detected — redirect to callback page immediately
+  const oauthCode = searchParams.get("code");
+  if (oauthCode) {
+    const locale = routing.locales.find((l) => pathname.startsWith(`/${l}/`) || pathname === `/${l}`) ?? routing.defaultLocale;
+    const cbUrl = new URL("/auth/callback", request.url);
+    cbUrl.searchParams.set("code", oauthCode);
+    cbUrl.searchParams.set("locale", locale);
+    return NextResponse.redirect(cbUrl);
+  }
 
   const locale = routing.locales.find((l) => pathname.startsWith(`/${l}/`) || pathname === `/${l}`) ?? routing.defaultLocale;
   const pathWithoutLocale = "/" + pathname.split("/").slice(2).join("/");
