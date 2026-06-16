@@ -261,7 +261,7 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
       animate={{opacity: 1, y: 0}}
       transition={{duration: 0.28, ease: "easeOut"}}
     >
-      <Card className="w-full overflow-hidden border-border/70 shadow-[0_14px_34px_rgba(8,33,56,0.08)]">
+      <Card className="w-full border-border/70 shadow-[0_14px_34px_rgba(8,33,56,0.08)]">
         {mediaItems.length > 0 ? (
           <MediaCarousel
             items={mediaItems}
