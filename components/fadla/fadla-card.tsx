@@ -105,6 +105,9 @@ export function FadlaCard({
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmActionLoading, setConfirmActionLoading] = useState(false);
   const [showRequests, setShowRequests] = useState(false);
+  const [liveSenderConfirmedAt, setLiveSenderConfirmedAt] = useState<string | null>(item.sender_confirmed_at);
+  const [liveReceiverConfirmedAt, setLiveReceiverConfirmedAt] = useState<string | null>(item.receiver_confirmed_at);
+  const [liveStatus, setLiveStatus] = useState(item.status);
   const articleRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -186,7 +189,11 @@ export function FadlaCard({
         schema: "public",
         table: "community_shares",
         filter: `id=eq.${item.id}`,
-      }, () => {
+      }, (payload) => {
+        const updated = payload.new as { status?: string; sender_confirmed_at?: string | null; receiver_confirmed_at?: string | null };
+        if (updated.sender_confirmed_at !== undefined) setLiveSenderConfirmedAt(updated.sender_confirmed_at);
+        if (updated.receiver_confirmed_at !== undefined) setLiveReceiverConfirmedAt(updated.receiver_confirmed_at);
+        if (updated.status) setLiveStatus(updated.status);
         router.refresh();
       })
       .on("postgres_changes", {
@@ -326,10 +333,10 @@ export function FadlaCard({
               <Badge
                 className={cn(
                   'rounded-full border px-3 py-1 text-[14px] font-medium leading-none',
-                  STATUS_STYLE[item.status],
+                  STATUS_STYLE[liveStatus],
                 )}
               >
-                {t(`status.${item.status}`)}
+                {t(`status.${liveStatus}`)}
               </Badge>
             </div>
             <h2 className="wrap-break-word text-xl font-bold leading-tight sm:text-2xl">
@@ -393,7 +400,7 @@ export function FadlaCard({
             </span>
           )}
 
-          {!isOwner && isRecipient && item.status === 'completed' && (
+          {!isOwner && isRecipient && liveStatus === 'completed' && (
             <span className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#22c55e] bg-[#22c55e] px-4 py-2 text-sm font-medium text-white">
               <Check size={16} />
               {t('requestAccepted')}
@@ -514,7 +521,7 @@ export function FadlaCard({
                   />
                   <div className="min-w-0">
                     <p className="truncate font-semibold text-green-900 dark:text-green-100">
-                      {item.status === 'completed' ? t('requestCompleted') : t('requestAccepted')}
+                      {liveStatus === 'completed' ? t('requestCompleted') : t('requestAccepted')}
                     </p>
                     <p className="truncate text-xs text-green-800/70 dark:text-green-200/70">
                       {acceptedRequest.requester?.username
@@ -523,9 +530,9 @@ export function FadlaCard({
                     </p>
                   </div>
                 </div>
-                {item.status !== 'completed' && (
+                {liveStatus !== 'completed' && (
                   <div className="mt-3">
-                    {!item.sender_confirmed_at ? (
+                    {!liveSenderConfirmedAt ? (
                       <Button
                         type="button"
                         disabled={confirmActionLoading}
@@ -585,11 +592,11 @@ export function FadlaCard({
             {!isOwner && isRecipient && (
               <div className="mb-3 rounded-2xl border border-green-200 bg-green-50/70 p-3 text-sm dark:border-green-900/50 dark:bg-green-950/20">
                 <p className="font-semibold text-green-900 dark:text-green-100">
-                  {item.status === 'completed' ? t('requestCompleted') : t('requestAcceptedBanner')}
+                  {liveStatus === 'completed' ? t('requestCompleted') : t('requestAcceptedBanner')}
                 </p>
-                {item.status !== 'completed' && (
+                {liveStatus !== 'completed' && (
                   <div className="mt-3">
-                    {!item.receiver_confirmed_at ? (
+                    {!liveReceiverConfirmedAt ? (
                       <Button
                         type="button"
                         disabled={confirmActionLoading}
