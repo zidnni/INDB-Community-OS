@@ -4,6 +4,7 @@ import {Eye, EyeOff, Loader2, AlertCircle, CheckCircle2} from "lucide-react";
 import {useTranslations} from "next-intl";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
+import {useTheme} from "next-themes";
 
 import {AuthLanguageSwitcher} from "@/components/auth/auth-language-switcher";
 import {ThemeToggle} from "@/components/layout/theme-toggle";
@@ -28,6 +29,7 @@ export function LoginForm({locale, next, phone: prefilledPhone, registered}: {lo
   const t = useTranslations("Auth.login");
   const errorT = useTranslations("Auth.errors");
   const router = useRouter();
+  const {setTheme} = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -79,8 +81,8 @@ export function LoginForm({locale, next, phone: prefilledPhone, registered}: {lo
       if (result?.error) {
         setErrors(result.error);
       } else if (result?.success) {
+        setTheme("light");
         router.push(result.redirect || "/feed");
-        router.refresh();
       }
     } catch {
       setErrors({general: errorT("auth_generic_error")});
