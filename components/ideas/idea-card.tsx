@@ -1,7 +1,7 @@
 "use client";
 
 import {motion} from "framer-motion";
-import {CalendarDays, ChevronDown, ChevronUp, Lightbulb, Loader2, MoreHorizontal, Share2, Trash2, X, ChevronUp as ChevronUpIcon} from "lucide-react";
+import {CalendarDays, ChevronDown, ChevronUp, Clock3, Loader2, MoreHorizontal, Share2, Trash2, X, ChevronUp as ChevronUpIcon} from "lucide-react";
 import Image from "next/image";
 import {useLocale, useTranslations} from "next-intl";
 import {useSearchParams} from "next/navigation";
@@ -99,6 +99,7 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
   const [showRequests, setShowRequests] = useState(false);
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const statusMenuRef = useRef<HTMLDivElement>(null);
+  const [submittingParticipation, setSubmittingParticipation] = useState(false);
   const [loadingParticipation, setLoadingParticipation] = useState(false);
   const [loadingSupport, setLoadingSupport] = useState(false);
   const [ideaStatus, setIdeaStatus] = useState(idea.status);
@@ -144,18 +145,30 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
 
   useEffect(() => {
     if (!effectiveCurrentUserId) return;
+    let cancelled = false;
     setLoadingParticipation(true);
     setLoadingSupport(true);
     (async () => {
-      const result = await getIdeaParticipationDataAction(idea.id);
-      if (result.success) {
-        setUserParticipation(result.userParticipation ?? null);
-        setUserSupported(result.userSupported ?? false);
-        setParticipants((result.acceptedParticipants ?? []) as unknown as IdeaParticipantWithUser[]);
+      try {
+        const result = await getIdeaParticipationDataAction(idea.id);
+        if (!cancelled && result.success) {
+          setUserParticipation(result.userParticipation ?? null);
+          setUserSupported(result.userSupported ?? false);
+          setParticipants(((result.participants ?? result.acceptedParticipants) ?? []) as unknown as IdeaParticipantWithUser[]);
+        }
+      } catch (err) {
+        console.error("participation data error", err);
+      } finally {
+        if (!cancelled) {
+          setLoadingParticipation(false);
+          setLoadingSupport(false);
+        }
       }
-      setLoadingParticipation(false);
-      setLoadingSupport(false);
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [idea.id, effectiveCurrentUserId]);
 
   const {highlight} = useContentScroll({
@@ -167,8 +180,57 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
     commentDomIdPrefix: "idea",
   });
 
+  useEffect(() => {
+    if (searchParams.get("idea") !== idea.id) return;
+
+    const focus = searchParams.get("focus");
+    if (focus === "requests" && isOwner) {
+      setShowRequests(true);
+      window.setTimeout(() => {
+        document.getElementById(`idea-${idea.id}-requests`)?.scrollIntoView({behavior: "smooth", block: "center"});
+      }, 350);
+      return;
+    }
+
+    if (focus === "participation") {
+      window.setTimeout(() => {
+        articleRef.current?.scrollIntoView({behavior: "smooth", block: "center"});
+      }, 350);
+      return;
+    }
+
+    if (focus !== "discussion" || !effectiveCurrentUserId || (!isOwner && userParticipation?.status !== "accepted")) {
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      if (messages.length === 0) {
+        const result = await getIdeaMessagesAction(idea.id);
+        if (!cancelled && result.success && result.messages) {
+          setMessages(result.messages);
+        }
+      }
+
+      if (!cancelled) {
+        setShowDiscussion(true);
+        window.setTimeout(() => {
+          document.getElementById(`idea-${idea.id}-discussion`)?.scrollIntoView({behavior: "smooth", block: "center"});
+        }, 350);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [effectiveCurrentUserId, idea.id, isOwner, messages.length, searchParams, userParticipation?.status]);
+
   const authorName = idea.author?.full_name ?? idea.author?.username ?? t("unknownAuthor");
   const authorUsername = idea.author?.username;
+  const currentParticipant = participants.find((participant) => participant.user_id === effectiveCurrentUserId);
+  const currentDiscussionUserName = isOwner
+    ? authorName
+    : currentParticipant?.user?.full_name ?? currentParticipant?.user?.username ?? null;
 
   if (process.env.NODE_ENV === "development") {
     console.log({
@@ -208,6 +270,9 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
               ? idea.category.name_wo
               : idea.category.name_en
     : null;
+  const participationBusy = loadingParticipation || submittingParticipation;
+  const participationPending = userParticipation?.status === "pending";
+  const participationDeclined = userParticipation?.status === "declined";
 
   async function handleShare() {
     const url = `${window.location.origin}/${window.location.pathname.split("/")[1]}/ideas?id=${idea.id}`;
@@ -273,7 +338,6 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
         <CardHeader className="pb-2.5">
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="inline-flex items-center gap-2 text-base sm:text-lg min-w-0">
-              <Lightbulb size={18} className="shrink-0" />
               <span className="line-clamp-2 overflow-hidden text-ellipsis">{idea.title}</span>
             </CardTitle>
             {canShowActions ? (
@@ -334,8 +398,7 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
             </div>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
               {categoryName ? (
-                <span className="inline-flex items-center gap-1.5">
-                  <Lightbulb size={14} />
+                <span className="inline-flex items-center">
                   {categoryName}
                 </span>
               ) : null}
@@ -410,7 +473,6 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
                 className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-border/60 px-4 py-2.5 text-sm transition hover:bg-muted hover:text-foreground"
                 title={t("support")}
               >
-                <Lightbulb size={16} className={userSupported ? "text-[#ED2124]" : ""} />
                 <span className="tabular-nums">{supportersCount}</span>
               </button>
               {!isOwner && effectiveCurrentUserId && (
@@ -419,15 +481,7 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
                   onClick={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (loadingParticipation) return;
-                    if (userParticipation?.status === "pending") {
-                      toast.info(t("participationPending"));
-                      return;
-                    }
-                    if (userParticipation?.status === "declined") {
-                      toast.error(t("participationDeclined"));
-                      return;
-                    }
+                    if (participationBusy || participationPending || participationDeclined) return;
                     if (userParticipation?.status === "accepted") {
                       if (!showDiscussion && messages.length === 0) {
                         const r = await getIdeaMessagesAction(idea.id);
@@ -439,6 +493,7 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
                       return;
                     }
                     try {
+                      setSubmittingParticipation(true);
                       const f = new FormData();
                       f.set("ideaId", idea.id);
                       f.set("message", "");
@@ -446,20 +501,42 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
                       if (r.success) {
                         setUserParticipation({status: "pending", message: null});
                         toast.success(t("participationRequested"));
+                      } else if (r.error === "already_requested") {
+                        setUserParticipation({status: "pending", message: null});
+                        toast.info(t("participationPending"));
                       } else {
                         toast.error(r.error ?? t("participationError"));
                       }
                     } catch (err) {
                       console.error("participate error", err);
                       toast.error(t("participationError"));
+                    } finally {
+                      setSubmittingParticipation(false);
                     }
                   }}
-                  className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-border/60 px-4 py-2.5 text-sm transition hover:bg-muted hover:text-foreground"
+                  disabled={participationBusy || participationPending || participationDeclined}
+                  aria-busy={participationBusy}
+                  aria-label={
+                    participationPending
+                      ? t("participationPending")
+                      : participationDeclined
+                        ? t("participationDeclined")
+                        : undefined
+                  }
+                  className={cn(
+                    "inline-flex min-h-11 min-w-[7.5rem] items-center justify-center gap-1.5 rounded-xl border border-border/60 px-4 py-2.5 text-sm transition hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-80",
+                    participationPending && "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-50 hover:text-amber-700 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-300",
+                    participationDeclined && "border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive/10 hover:text-destructive",
+                  )}
                 >
-                  {userParticipation?.status === "accepted" ? (
-                    <><ChevronUpIcon size={16} />{t("discussion")}</>
+                  {participationBusy ? (
+                    <>{t("participate")}</>
+                  ) : userParticipation?.status === "accepted" ? (
+                    <><ChevronUpIcon size={16} />{t("discussionButton")}</>
                   ) : userParticipation?.status === "pending" ? (
-                    <Loader2 size={16} className="animate-spin" />
+                    <><Clock3 size={16} />{t("participationPendingShort")}</>
+                  ) : userParticipation?.status === "declined" ? (
+                    <><X size={16} />{t("participationDeclinedShort")}</>
                   ) : (
                     <>{t("participate")}</>
                   )}
@@ -540,7 +617,7 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
           )}
 
           {showRequests && isOwner && (
-            <div className="space-y-2 pt-1">
+            <div id={`idea-${idea.id}-requests`} className="space-y-2 pt-1 scroll-mt-28">
               {participants.filter((p) => p.status === "pending").map((p) => (
                 <div key={p.id} className="flex items-center justify-between rounded-xl border border-border/60 p-3">
                   <div className="flex items-center gap-2">
@@ -600,11 +677,12 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
           )}
 
           {(userParticipation?.status === "accepted" || isOwner) && (
-            <div className="pt-2">
+            <div id={`idea-${idea.id}-discussion`} className="pt-2 scroll-mt-28">
               {showDiscussion ? (
                 <IdeaDiscussion
                   ideaId={idea.id}
                   currentUserId={effectiveCurrentUserId ?? ""}
+                  currentUserName={currentDiscussionUserName}
                   locale={locale}
                   initialMessages={messages}
                 />

@@ -613,12 +613,14 @@
     "deleteIdea": "حذف الفكرة",
     "allIdeas": "كل الأفكار",
     "support": "دعم",
-    "participate": "مشاركة",
-    "discussion": "نقاش",
+    "participate": "انضم",
+    "discussionButton": "نقاش",
     "participationPending": "طلبك قيد المراجعة",
+    "participationPendingShort": "قيد المراجعة",
     "participationDeclined": "تم رفض طلبك",
-    "participationRequested": "تم إرسال طلب المشاركة",
-    "participationError": "فشل إرسال طلب المشاركة",
+    "participationDeclinedShort": "مرفوض",
+    "participationRequested": "تم إرسال طلب الانضمام",
+    "participationError": "فشل إرسال طلب الانضمام",
     "changeStatus": "تغيير الحالة",
     "statusUpdated": "تم تحديث الحالة",
     "statusUpdateError": "فشل تحديث الحالة",
@@ -646,7 +648,10 @@
       "empty": "لا توجد رسائل بعد. ابدأ المحادثة.",
       "inputPlaceholder": "اكتب رسالة...",
       "send": "إرسال",
-      "sendError": "رسائل كثيرة جداً. يرجى الانتظار."
+      "sendError": "رسائل كثيرة جداً. يرجى الانتظار.",
+      "someone": "شخص ما",
+      "typingSingle": "{name} يكتب...",
+      "typingMultiple": "{names} يكتبون..."
     }
   },
   "IdeaForm": {

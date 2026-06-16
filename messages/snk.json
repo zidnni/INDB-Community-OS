@@ -487,9 +487,11 @@
     "allIdeas": "Miiji Fuu",
     "support": "Support",
     "participate": "Participate",
-    "discussion": "Discussion",
+    "discussionButton": "Discussion",
     "participationPending": "Your request is pending approval",
+    "participationPendingShort": "Pending",
     "participationDeclined": "Your request was declined",
+    "participationDeclinedShort": "Declined",
     "participationRequested": "Participation request sent",
     "participationError": "Failed to request participation",
     "changeStatus": "Change Status",
@@ -519,7 +521,10 @@
       "empty": "No messages yet. Start the conversation.",
       "inputPlaceholder": "Type a message...",
       "send": "Send",
-      "sendError": "Too many messages. Please wait."
+      "sendError": "Too many messages. Please wait.",
+      "someone": "Someone",
+      "typingSingle": "{name} is typing...",
+      "typingMultiple": "{names} are typing..."
     }
   },
   "IdeaForm": {

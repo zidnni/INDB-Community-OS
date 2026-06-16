@@ -33,7 +33,7 @@ import {
 } from '@/lib/data/notifications';
 import { toggleReaction, getPostReactionDetails } from '@/lib/data/reactions';
 import type { IdeaStatus, IdeaMessageWithSender } from '@/types/database';
-import { getIdeaVoteDetails, getIdeaById, isUserAcceptedParticipant, getIdeaUserParticipation, getIdeaUserSupport, getIdeaAcceptedParticipants } from '@/lib/data/ideas';
+import { getIdeaVoteDetails, getIdeaById, isUserAcceptedParticipant, getIdeaUserParticipation, getIdeaUserSupport, getIdeaAcceptedParticipants, getIdeaParticipants } from '@/lib/data/ideas';
 import { getMemoryReactionDetails } from '@/lib/data/memories';
 import { getTimelineMemoriesByYear } from '@/lib/data/memory-timeline';
 import {
@@ -225,6 +225,35 @@ export async function signOutAction(formData: FormData) {
   redirect(toPath(locale, '/'));
 }
 
+async function preserveForcedLightTheme() {
+  const cookieStore = await cookies();
+  const hasQrEntry =
+    cookieStore.get("qr_ref")?.value === "1" ||
+    cookieStore.get("entry")?.value === "qr";
+  const hasLightTheme = cookieStore.get("theme")?.value === "light";
+
+  if (!hasQrEntry && !hasLightTheme) return;
+
+  cookieStore.set("theme", "light", {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: "lax",
+  });
+
+  if (hasQrEntry) {
+    cookieStore.set("entry", "qr", {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+      sameSite: "lax",
+    });
+    cookieStore.set("qr_ref", "1", {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30,
+      sameSite: "lax",
+    });
+  }
+}
+
 export async function loginAction(formData: FormData) {
   const locale = normalizeLocale(formData.get('locale'));
   const errorT = await getTranslations({ locale, namespace: 'Auth.errors' });
@@ -329,8 +358,7 @@ export async function loginAction(formData: FormData) {
 
   }
 
-  const cookieStore = await cookies();
-  cookieStore.set("qr_ref", "", { path: "/", maxAge: 0 });
+  await preserveForcedLightTheme();
 
   const onboardingCompleted = profile?.onboarding_completed ?? false;
   const redirectPath = getPostAuthRedirectPath(locale, onboardingCompleted);
@@ -500,6 +528,7 @@ export async function registerAction(formData: FormData) {
   }
 
   console.log("REGISTER redirecting based on onboarding status");
+  await preserveForcedLightTheme();
   const redirectPath = getPostAuthRedirectPath(locale, false);
   return { success: true, redirect: redirectPath };
 }
@@ -4079,6 +4108,7 @@ export async function getIdeaParticipationDataAction(
   success: boolean;
   userParticipation?: {status: string; message: string | null} | null;
   userSupported?: boolean;
+  participants?: {id: string; user_id: string; status: string; message: string | null; user: {id: string; username: string | null; full_name: string | null; avatar_url: string | null} | null}[];
   acceptedParticipants?: {id: string; user_id: string; status: string; message: string | null; user: {id: string; username: string | null; full_name: string | null; avatar_url: string | null} | null}[];
   error?: string;
 }> {
@@ -4091,17 +4121,25 @@ export async function getIdeaParticipationDataAction(
     return { success: false, error: 'unauthorized' };
   }
 
-  const [participation, supported, acceptedParticipants] = await Promise.all([
+  const {data: idea} = await supabase
+    .from("ideas")
+    .select("author_id")
+    .eq("id", ideaId)
+    .maybeSingle();
+
+  const isOwner = idea?.author_id === user.id;
+  const [participation, supported, participants] = await Promise.all([
     getIdeaUserParticipation(ideaId, user.id),
     getIdeaUserSupport(ideaId, user.id),
-    getIdeaAcceptedParticipants(ideaId),
+    isOwner ? getIdeaParticipants(ideaId) : getIdeaAcceptedParticipants(ideaId),
   ]);
 
   return {
     success: true,
     userParticipation: participation,
     userSupported: supported,
-    acceptedParticipants,
+    participants,
+    acceptedParticipants: participants,
   };
 }
 

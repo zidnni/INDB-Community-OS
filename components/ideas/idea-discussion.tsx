@@ -13,6 +13,7 @@ import type {IdeaMessageRow, IdeaMessageWithSender} from "@/types/database";
 interface Props {
   ideaId: string;
   currentUserId: string;
+  currentUserName?: string | null;
   locale: string;
   initialMessages: IdeaMessageWithSender[];
 }
@@ -26,7 +27,21 @@ interface DisplayMessage {
   pending?: boolean;
 }
 
-export function IdeaDiscussion({ideaId, currentUserId, locale, initialMessages}: Props) {
+interface TypingUser {
+  id: string;
+  name: string;
+}
+
+interface RealtimeTypingPayload {
+  sender_id?: string;
+  sender_name?: string;
+  payload?: {
+    sender_id?: string;
+    sender_name?: string;
+  };
+}
+
+export function IdeaDiscussion({ideaId, currentUserId, currentUserName, locale, initialMessages}: Props) {
   const t = useTranslations("Ideas.discussion");
   const [messages, setMessages] = useState<DisplayMessage[]>(() =>
     initialMessages.map((m) => ({
@@ -40,13 +55,13 @@ export function IdeaDiscussion({ideaId, currentUserId, locale, initialMessages}:
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isNearBottomRef = useRef(true);
   const channelRef = useRef<RealtimeChannel | null>(null);
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const typingTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const lastTypingBroadcastRef = useRef(0);
 
   useEffect(() => {
@@ -69,7 +84,15 @@ export function IdeaDiscussion({ideaId, currentUserId, locale, initialMessages}:
   useEffect(() => {
     const supabase = createClient();
     const channel = supabase.channel(`idea-discussion-${ideaId}`);
+    const typingTimeouts = typingTimeoutsRef.current;
     channelRef.current = channel;
+
+    function clearTypingUser(userId: string) {
+      const timeout = typingTimeouts.get(userId);
+      if (timeout) clearTimeout(timeout);
+      typingTimeouts.delete(userId);
+      setTypingUsers((prev) => prev.filter((user) => user.id !== userId));
+    }
 
     channel
       .on("postgres_changes", {
@@ -80,6 +103,7 @@ export function IdeaDiscussion({ideaId, currentUserId, locale, initialMessages}:
       }, (payload) => {
         const newMsg = payload.new as IdeaMessageRow;
         if (newMsg.sender_id !== currentUserId) {
+          clearTypingUser(newMsg.sender_id);
           setMessages((prev) => [...prev, {
             id: newMsg.id,
             sender_id: newMsg.sender_id,
@@ -89,20 +113,37 @@ export function IdeaDiscussion({ideaId, currentUserId, locale, initialMessages}:
         }
       })
       .on("broadcast", {event: "typing"}, (payload) => {
-        if (payload.sender_id !== currentUserId) {
-          setOtherUserTyping(true);
-          if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-          typingTimeoutRef.current = setTimeout(() => setOtherUserTyping(false), 2500);
-        }
+        const eventPayload = payload as RealtimeTypingPayload;
+        const typingPayload = eventPayload.payload ?? eventPayload;
+        const senderId = typingPayload.sender_id;
+        if (!senderId || senderId === currentUserId) return;
+
+        const senderName = typingPayload.sender_name?.trim() || t("someone");
+        const existingTimeout = typingTimeouts.get(senderId);
+        if (existingTimeout) clearTimeout(existingTimeout);
+
+        setTypingUsers((prev) => {
+          const nextUser = {id: senderId, name: senderName};
+          return prev.some((user) => user.id === senderId)
+            ? prev.map((user) => (user.id === senderId ? nextUser : user))
+            : [...prev, nextUser];
+        });
+
+        const timeout = setTimeout(() => {
+          typingTimeouts.delete(senderId);
+          setTypingUsers((prev) => prev.filter((user) => user.id !== senderId));
+        }, 2500);
+        typingTimeouts.set(senderId, timeout);
       })
       .subscribe();
 
     return () => {
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeouts.forEach((timeout) => clearTimeout(timeout));
+      typingTimeouts.clear();
       supabase.removeChannel(channel);
       channelRef.current = null;
     };
-  }, [ideaId, currentUserId]);
+  }, [ideaId, currentUserId, t]);
 
   async function handleSend() {
     const trimmed = input.trim();
@@ -142,10 +183,13 @@ export function IdeaDiscussion({ideaId, currentUserId, locale, initialMessages}:
       channelRef.current?.send({
         type: "broadcast",
         event: "typing",
-        payload: {sender_id: currentUserId},
+        payload: {
+          sender_id: currentUserId,
+          sender_name: currentUserName?.trim() || t("someone"),
+        },
       });
     }
-  }, [currentUserId]);
+  }, [currentUserId, currentUserName, t]);
 
   function handleInputChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     setInput(e.target.value);
@@ -174,6 +218,9 @@ export function IdeaDiscussion({ideaId, currentUserId, locale, initialMessages}:
   }
 
   const rtl = locale === "ar";
+  const typingLabel = typingUsers.length === 1
+    ? t("typingSingle", {name: typingUsers[0].name})
+    : t("typingMultiple", {names: typingUsers.map((user) => user.name).slice(0, 2).join(", ")});
 
   return (
     <div>
@@ -238,14 +285,14 @@ export function IdeaDiscussion({ideaId, currentUserId, locale, initialMessages}:
         </p>
       )}
 
-      {otherUserTyping && (
+      {typingUsers.length > 0 && (
         <div className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground" dir={rtl ? "rtl" : "ltr"}>
           <span className="flex items-center gap-0.5">
             <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground" style={{animationDelay: "0ms"}} />
             <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground" style={{animationDelay: "200ms"}} />
             <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground" style={{animationDelay: "400ms"}} />
           </span>
-          <span>{rtl ? "يكتب..." : "typing..."}</span>
+          <span>{typingLabel}</span>
         </div>
       )}
 

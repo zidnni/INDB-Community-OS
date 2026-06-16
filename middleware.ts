@@ -18,8 +18,10 @@ export default async function middleware(request: NextRequest) {
   const {pathname, searchParams} = request.nextUrl;
 
   // QR visitor: force Arabic locale
-  const qrRef = request.cookies.get("qr_ref")?.value;
-  if (qrRef === "1") {
+  const isQrEntry =
+    request.cookies.get("qr_ref")?.value === "1" ||
+    request.cookies.get("entry")?.value === "qr";
+  if (isQrEntry) {
     const pathLocale = routing.locales.find(
       (l) => pathname === `/${l}` || pathname.startsWith(`/${l}/`),
     );

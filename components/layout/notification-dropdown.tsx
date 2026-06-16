@@ -249,11 +249,17 @@ export function NotificationDropdown({
 
   async function handleNotificationClick(n: NotificationWithActor) {
     if (!n.read) {
-      await supabase.from("notifications").update({read: true}).eq("id", n.id);
       setUnreadCount((c) => Math.max(0, c - 1));
       setNotifications((prev) =>
         prev.map((item) => (item.id === n.id ? {...item, read: true} : item)),
       );
+      void supabase
+        .from("notifications")
+        .update({read: true})
+        .eq("id", n.id)
+        .then(({error}) => {
+          if (error) console.error("mark notification read error", error);
+        });
     }
 
     setOpen(false);
@@ -285,8 +291,15 @@ export function NotificationDropdown({
           return;
         }
         case "idea": {
-          const ideaTypes = ["idea_comment", "idea_support", "idea_participate_request", "idea_participant_accepted", "idea_participant_declined", "idea_message", "idea_status_change"];
-          const ideaFocus = ["idea_comment"].includes(n.type) ? "comments" : ideaTypes.includes(n.type) ? "discussion" : "";
+          const ideaFocus = n.type === "idea_comment"
+            ? "comments"
+            : n.type === "idea_participate_request"
+              ? "requests"
+              : ["idea_participant_accepted", "idea_message", "idea_status_change"].includes(n.type)
+                ? "discussion"
+                : n.type === "idea_participant_declined"
+                  ? "participation"
+                : "";
           const ideaFocusQuery = ideaFocus ? `&focus=${ideaFocus}` : "";
           const ideaHash = ideaFocus === "comments" && metadata.commentId
             ? `#comment-${metadata.commentId}`

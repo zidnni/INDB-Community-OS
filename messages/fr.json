@@ -614,9 +614,11 @@
     "allIdeas": "Toutes les idées",
     "support": "Soutenir",
     "participate": "Participer",
-    "discussion": "Discussion",
+    "discussionButton": "Discussion",
     "participationPending": "Votre demande est en attente",
+    "participationPendingShort": "En attente",
     "participationDeclined": "Votre demande a été refusée",
+    "participationDeclinedShort": "Refusée",
     "participationRequested": "Demande de participation envoyée",
     "participationError": "Échec de la demande de participation",
     "changeStatus": "Changer le statut",
@@ -646,7 +648,10 @@
       "empty": "Aucun message pour l'instant. Lancez la conversation.",
       "inputPlaceholder": "Écrivez un message...",
       "send": "Envoyer",
-      "sendError": "Trop de messages. Veuillez patienter."
+      "sendError": "Trop de messages. Veuillez patienter.",
+      "someone": "Quelqu'un",
+      "typingSingle": "{name} écrit...",
+      "typingMultiple": "{names} écrivent..."
     }
   },
   "IdeaForm": {

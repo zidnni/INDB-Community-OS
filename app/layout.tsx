@@ -69,13 +69,24 @@ export default async function RootLayout({
     ? requestedLocale
     : routing.defaultLocale;
   const dir = locale === "ar" ? "rtl" : "ltr";
-  const isQrVisitor = cookieStore.get("qr_ref")?.value === "1";
+  const isQrVisitor =
+    cookieStore.get("qr_ref")?.value === "1" ||
+    cookieStore.get("entry")?.value === "qr";
+  const cookieTheme = cookieStore.get("theme")?.value;
+  const initialTheme = isQrVisitor ? "light" : cookieTheme === "dark" ? "dark" : "light";
+  const themeInitScript = `(function(){var d=document.documentElement,c=document.cookie||"",m=c.match(/(?:^|; )theme=([^;]+)/),ct=m?decodeURIComponent(m[1]):"",forced=/(?:^|; )qr_ref=1(?:;|$)/.test(c)||/(?:^|; )entry=qr(?:;|$)/.test(c),stored;try{stored=localStorage.getItem("theme")}catch(e){}var theme=forced?"light":(ct==="dark"||ct==="light"?ct:(stored==="dark"||stored==="light"?stored:"light"));if(forced||ct==="dark"||ct==="light"||!stored){try{localStorage.setItem("theme",theme)}catch(e){}}d.classList.toggle("dark",theme==="dark");d.style.colorScheme=theme;})();`;
   return (
-    <html lang={locale} dir={dir} suppressHydrationWarning style={isQrVisitor ? {colorScheme: "light"} as React.CSSProperties : undefined}>
+    <html
+      lang={locale}
+      dir={dir}
+      className={initialTheme === "dark" ? "dark" : undefined}
+      suppressHydrationWarning
+      style={{colorScheme: initialTheme} as React.CSSProperties}
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{__html: themeInitScript}} />
+      </head>
       <body className="antialiased">
-<script dangerouslySetInnerHTML={{
-  __html: `(function(){var t;try{t=localStorage.getItem("theme")}catch(e){}var q=document.cookie.indexOf("qr_ref=1")!==-1;if(q||!t){try{localStorage.setItem("theme","light")}catch(e){}}document.documentElement.classList.remove("dark");if(q){document.documentElement.style.colorScheme="light"}})()`,
-}} />
         {children}
         <script
           dangerouslySetInnerHTML={{
