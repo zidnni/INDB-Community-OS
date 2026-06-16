@@ -1,9 +1,8 @@
 export async function GET() {
   const html = `<!DOCTYPE html>
-<html>
+<html style="background:#f5f7fa;color-scheme:light">
 <head>
 <meta charset="utf-8">
-<meta name="color-scheme" content="light">
 <script>
 (function(){
   document.cookie="qr_ref=1;path=/;max-age=86400;samesite=lax";

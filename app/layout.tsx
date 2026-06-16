@@ -69,11 +69,12 @@ export default async function RootLayout({
     ? requestedLocale
     : routing.defaultLocale;
   const dir = locale === "ar" ? "rtl" : "ltr";
+  const isQrVisitor = cookieStore.get("qr_ref")?.value === "1";
   return (
-    <html lang={locale} dir={dir} suppressHydrationWarning>
+    <html lang={locale} dir={dir} suppressHydrationWarning style={isQrVisitor ? {colorScheme: "light"} as React.CSSProperties : undefined}>
       <body className="antialiased">
 <script dangerouslySetInnerHTML={{
-  __html: `(function(){var t;try{t=localStorage.getItem("theme")}catch(e){}var q=document.cookie.indexOf("qr_ref=1")!==-1;if(q||!t){try{localStorage.setItem("theme","light")}catch(e){}}document.documentElement.classList.remove("dark")})()`,
+  __html: `(function(){var t;try{t=localStorage.getItem("theme")}catch(e){}var q=document.cookie.indexOf("qr_ref=1")!==-1;if(q||!t){try{localStorage.setItem("theme","light")}catch(e){}}document.documentElement.classList.remove("dark");if(q){document.documentElement.style.colorScheme="light"}})()`,
 }} />
         {children}
         <script
