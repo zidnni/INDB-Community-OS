@@ -193,7 +193,7 @@ export function FadlaCard({
         const updated = payload.new as { status?: string; sender_confirmed_at?: string | null; receiver_confirmed_at?: string | null };
         if (updated.sender_confirmed_at !== undefined) setLiveSenderConfirmedAt(updated.sender_confirmed_at);
         if (updated.receiver_confirmed_at !== undefined) setLiveReceiverConfirmedAt(updated.receiver_confirmed_at);
-        if (updated.status) setLiveStatus(updated.status);
+        if (updated.status) setLiveStatus(updated.status as typeof liveStatus);
         router.refresh();
       })
       .on("postgres_changes", {
