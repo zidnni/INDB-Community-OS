@@ -74,9 +74,9 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning data-qr={isQrVisitor ? "1" : undefined}>
       <body className="antialiased">
-        {isQrVisitor && (
-          <style>{`html[data-qr="1"] .dark{--background:#f5f7fa!important;--foreground:#111827!important;--card:#ffffff!important;--card-elevated:#ffffff!important;--muted:#f8fafc!important;--muted-foreground:#6b7280!important;--border:#e5e7eb!important}`}</style>
-        )}
+{isQrVisitor && (
+  <style>{`html[data-qr="1"].dark{--background:#f5f7fa!important;--foreground:#111827!important;--card:#ffffff!important;--card-elevated:#ffffff!important;--muted:#f8fafc!important;--muted-foreground:#6b7280!important;--border:#e5e7eb!important}`}</style>
+)}
         {children}
         <script
           dangerouslySetInnerHTML={{

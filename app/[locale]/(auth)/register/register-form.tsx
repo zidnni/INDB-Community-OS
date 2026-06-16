@@ -6,6 +6,7 @@ import {useState} from "react";
 import {useRouter} from "next/navigation";
 
 import {AuthLanguageSwitcher} from "@/components/auth/auth-language-switcher";
+import {ThemeToggle} from "@/components/layout/theme-toggle";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Link} from "@/lib/i18n/routing";
@@ -120,7 +121,10 @@ export function RegisterForm({locale, next}: {locale: string; next?: string}) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-      <AuthLanguageSwitcher />
+      <div className="flex items-center justify-center gap-2">
+        <AuthLanguageSwitcher />
+        <ThemeToggle />
+      </div>
 
       <div className="space-y-2">
         <Input

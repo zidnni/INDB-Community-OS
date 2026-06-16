@@ -77,6 +77,7 @@ export default async function LocaleLayout({
   const pathWithoutLocale = stripLocale(pathname);
   const isAdminRoute = pathWithoutLocale === "/admin" || pathWithoutLocale.startsWith("/admin/");
   const isOnboardingRoute = pathWithoutLocale === "/onboarding";
+  const isAuthRoute = pathWithoutLocale === "/login" || pathWithoutLocale === "/register" || pathWithoutLocale === "/forgot-password";
 
   return (
     <ThemeProvider>
@@ -90,7 +91,7 @@ export default async function LocaleLayout({
           dir={isRtl ? "rtl" : "ltr"}
           className={cn(
             "min-h-screen overflow-x-clip text-start",
-            !isOnboardingRoute && "pb-[calc(5rem+var(--safe-bottom))] lg:pb-0",
+            !isAuthRoute && !isOnboardingRoute && "pb-[calc(5rem+var(--safe-bottom))] lg:pb-0",
             isRtl ? "font-[var(--font-arabic)]" : "font-[var(--font-latin)]",
           )}
         >
@@ -99,6 +100,10 @@ export default async function LocaleLayout({
               <PageTransition>{children}</PageTransition>
             </main>
           ) : isOnboardingRoute ? (
+            <main className="min-h-screen">
+              <PageTransition>{children}</PageTransition>
+            </main>
+          ) : isAuthRoute ? (
             <main className="min-h-screen">
               <PageTransition>{children}</PageTransition>
             </main>

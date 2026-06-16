@@ -6,6 +6,7 @@ import {useState} from "react";
 import {useRouter} from "next/navigation";
 
 import {AuthLanguageSwitcher} from "@/components/auth/auth-language-switcher";
+import {ThemeToggle} from "@/components/layout/theme-toggle";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Link} from "@/lib/i18n/routing";
@@ -90,7 +91,10 @@ export function LoginForm({locale, next, phone: prefilledPhone, registered}: {lo
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-      <AuthLanguageSwitcher />
+      <div className="flex items-center justify-center gap-2">
+        <AuthLanguageSwitcher />
+        <ThemeToggle />
+      </div>
 
       {registered && (
         <div className="flex items-center gap-2.5 rounded-xl border border-green-200 bg-green-50 px-4 py-3.5 text-sm text-green-800">

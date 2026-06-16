@@ -13,7 +13,6 @@ export function ThemeProvider({children}: {children: React.ReactNode}) {
       attribute="class"
       defaultTheme={isQr ? "light" : "system"}
       enableSystem={!isQr}
-      forcedTheme={isQr ? "light" : undefined}
     >
       {children}
     </NextThemesProvider>
