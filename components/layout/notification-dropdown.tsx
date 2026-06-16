@@ -289,7 +289,9 @@ export function NotificationDropdown({
           router.push("/profile");
           return;
         case "community_share": {
-          const focusParam = n.type === "fadla_request" ? "&focus=requests" : "";
+          let focusParam = "";
+          if (n.type === "fadla_request") focusParam = "&focus=requests";
+          else if (n.type === "fadla_message") focusParam = "&focus=discussion";
           router.push(`/fadla?item=${n.entity_id}&notification=${n.id}${focusParam}#fadla-${n.entity_id}`);
           return;
         }

@@ -1246,9 +1246,20 @@
     "waitingHandover": "En attente de la confirmation de remise par le propri?taire",
     "requestStatus": {
       "pending": "En attente",
-      "accepted": "Accept?e",
-      "declined": "Refus?e",
-      "cancelled": "Annul?e"
+      "accepted": "Accept\u00e9e",
+      "declined": "Refus\u00e9e",
+      "cancelled": "Annul\u00e9e"
+    },
+    "discussion": {
+      "title": "Discussion",
+      "inputPlaceholder": "\u00c9crire un message",
+      "send": "Envoyer",
+      "empty": "Aucun message pour l'instant. Lancez la discussion.",
+      "loading": "Chargement de la discussion...",
+      "error": "Impossible de charger la discussion",
+      "maxLength": "500 caract\u00e8res maximum",
+      "sendError": "Impossible d'envoyer le message",
+      "notificationTitle": "Nouveau message sur votre annonce Fadla"
     }
   },
   "Translating": {

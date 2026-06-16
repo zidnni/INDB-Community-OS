@@ -1243,6 +1243,17 @@
       "accepted": "Accepted",
       "declined": "Declined",
       "cancelled": "Cancelled"
+    },
+    "discussion": {
+      "title": "Discussion",
+      "inputPlaceholder": "Write a message",
+      "send": "Send",
+      "empty": "No messages yet. Start the conversation.",
+      "loading": "Loading discussion...",
+      "error": "Failed to load discussion",
+      "maxLength": "Maximum 500 characters",
+      "sendError": "Failed to send message",
+      "notificationTitle": "New message on your Fadla item"
     }
   },
   "ConfirmDialog": {

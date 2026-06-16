@@ -1249,6 +1249,17 @@
       "accepted": "مقبول",
       "declined": "مرفوض",
       "cancelled": "ملغي"
+    },
+    "discussion": {
+      "title": "المحادثة",
+      "inputPlaceholder": "اكتب رسالة",
+      "send": "إرسال",
+      "empty": "لا توجد رسائل بعد. ابدأ المحادثة.",
+      "loading": "جارٍ تحميل المحادثة...",
+      "error": "تعذر تحميل المحادثة",
+      "maxLength": "الحد الأقصى 500 حرف",
+      "sendError": "تعذر إرسال الرسالة",
+      "notificationTitle": "رسالة جديدة في الفظلة"
     }
   },
   "Translating": {

@@ -314,6 +314,19 @@ export interface FadlaRequestRow {
   updated_at: string;
 }
 
+export interface FadlaRequestMessageRow {
+  id: string;
+  share_id: string;
+  request_id: string;
+  sender_id: string;
+  message: string;
+  created_at: string;
+}
+
+export interface FadlaRequestMessageWithSender extends FadlaRequestMessageRow {
+  sender: Pick<ProfileRow, "id" | "username" | "full_name" | "avatar_url"> | null;
+}
+
 export interface FadlaImpact {
   people_helped: number;
   items_shared: number;

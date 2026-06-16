@@ -7,6 +7,7 @@ import {
   Loader2,
   ListFilter,
   MapPin,
+  MessageCircle,
   Pencil,
   Share2,
   Trash2,
@@ -24,13 +25,15 @@ import {
   requestFadlaItemAction,
   shareCommunityShareAction,
 } from '@/app/[locale]/server-actions';
+import { FadlaDiscussion } from '@/components/fadla/fadla-discussion';
 import { UserAvatar } from '@/components/layout/user-avatar';
 import { MediaCarousel } from '@/components/media/media-carousel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useRouter } from '@/lib/i18n/routing';
+import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils/cn';
-import type { FadlaWithOwner } from '@/types/database';
+import type { FadlaRequestMessageWithSender, FadlaWithOwner } from '@/types/database';
 
 const CATEGORY_EMOJI: Record<string, string> = {
   food: '🍲',
@@ -108,6 +111,11 @@ export function FadlaCard({
       articleRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       setHighlight(true);
       window.setTimeout(() => setHighlight(false), 1500);
+      if (searchParams.get('focus') === 'discussion') {
+        window.setTimeout(() => {
+          document.getElementById(`discussion-${item.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 400);
+      }
     }, 300);
     return () => clearTimeout(timer);
   }, [searchParams, item.id]);
@@ -144,6 +152,25 @@ export function FadlaCard({
     isOwner &&
     pendingRequests.length > 0 &&
     (item.status === 'published' || item.status === 'requested');
+
+  const acceptedRequestId = acceptedRequest?.id ?? null;
+  const [discussionMessages, setDiscussionMessages] = useState<FadlaRequestMessageWithSender[]>([]);
+  const [discussionLoading, setDiscussionLoading] = useState(false);
+
+  useEffect(() => {
+    if (!acceptedRequestId) return;
+    setDiscussionLoading(true);
+    const supabase = createClient();
+    supabase
+      .from('fadla_request_messages')
+      .select('*, sender:sender_id(id, username, full_name, avatar_url)')
+      .eq('request_id', acceptedRequestId)
+      .order('created_at', {ascending: true})
+      .then(({data}) => {
+        if (data) setDiscussionMessages(data);
+        setDiscussionLoading(false);
+      });
+  }, [acceptedRequestId]);
 
   async function handleRequest() {
     if (!canRequest) return;
@@ -434,6 +461,28 @@ export function FadlaCard({
                     </p>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {item.status === 'completed' && acceptedRequest && (isOwner || isRecipient) && currentUserId && (
+              <div id={`discussion-${item.id}`} className="mt-3 border-t border-border/40 pt-3">
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2">
+                  <MessageCircle size={14} />
+                  <span>{t('discussion.title')}</span>
+                </div>
+                {discussionLoading ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 size={18} className="animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <FadlaDiscussion
+                    requestId={acceptedRequest.id}
+                    shareId={item.id}
+                    currentUserId={currentUserId}
+                    locale={locale}
+                    initialMessages={discussionMessages}
+                  />
+                )}
               </div>
             )}
 

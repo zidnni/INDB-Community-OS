@@ -3437,6 +3437,87 @@ export async function declineFadlaRequestAction(
   return { success: true };
 }
 
+export async function sendFadlaMessageAction(
+  formData: FormData,
+): Promise<{success: true; message: {id: string; created_at: string}} | {success: false; error: string}> {
+  const localeRaw = formData.get('locale');
+  const shareId = formData.get('shareId');
+  const requestId = formData.get('requestId');
+  const message = formData.get('message');
+  const supabase = await createClient();
+  const {data: {user}} = await supabase.auth.getUser();
+
+  if (!user || typeof localeRaw !== 'string' || typeof shareId !== 'string' || typeof requestId !== 'string' || typeof message !== 'string') {
+    return {success: false, error: 'submitFailed'};
+  }
+
+  const locale = localeRaw;
+
+  const trimmed = message.trim();
+  if (!trimmed || trimmed.length > 500) {
+    return {success: false, error: 'submitFailed'};
+  }
+
+  const {allowed} = await checkRateLimit('fadla_message', user.id);
+  if (!allowed) {
+    return {success: false, error: 'rate_limited'};
+  }
+
+  const item = await supabase
+    .from('community_shares')
+    .select('owner_id, title, accepted_request_id')
+    .eq('id', shareId)
+    .single()
+    .then(r => r.data);
+
+  if (!item || item.accepted_request_id !== requestId) {
+    return {success: false, error: 'submitFailed'};
+  }
+
+  const requestRow = await supabase
+    .from('community_share_requests')
+    .select('requester_id, status')
+    .eq('id', requestId)
+    .single()
+    .then(r => r.data);
+
+  if (!requestRow || requestRow.status !== 'accepted') {
+    return {success: false, error: 'submitFailed'};
+  }
+
+  const isOwner = item.owner_id === user.id;
+  const isRequester = requestRow.requester_id === user.id;
+  if (!isOwner && !isRequester) {
+    return {success: false, error: 'submitFailed'};
+  }
+
+  const {data: newMessage, error} = await supabase
+    .from('fadla_request_messages')
+    .insert({share_id: shareId, request_id: requestId, sender_id: user.id, message: trimmed})
+    .select('id, created_at')
+    .single();
+
+  if (error || !newMessage) {
+    console.error('sendFadlaMessageAction error:', error);
+    return {success: false, error: 'submitFailed'};
+  }
+
+  const otherUserId = isOwner ? requestRow.requester_id : item.owner_id;
+  const fadlaT = await getTranslations({locale, namespace: 'Fadla'});
+  await createNotification({
+    userId: otherUserId,
+    actorId: user.id,
+    type: 'fadla_message',
+    entityType: 'community_share',
+    entityId: shareId,
+    title: fadlaT('discussion.notificationTitle'),
+    metadata: {requestId, message: trimmed.slice(0, 100)},
+  });
+
+  revalidatePath(toPath(locale, '/fadla'));
+  return {success: true, message: {id: newMessage.id, created_at: newMessage.created_at}};
+}
+
 // backward-compatible aliases
 export const submitCommunityShareAction = submitFadlaItemAction;
 export const updateCommunityShareAction = updateFadlaItemAction;

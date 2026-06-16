@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import type {
   CommunityShareImage,
   FadlaImpact,
+  FadlaRequestMessageWithSender,
   FadlaRequestWithRequester,
   FadlaWithOwner,
 } from '@/types/database';
@@ -277,6 +278,18 @@ export async function getArchiveItems({
   }));
 
   return { items, page: safePage, pageSize: safePageSize, hasNextPage: rows.length > safePageSize };
+}
+
+export async function getMessagesForRequest(
+  requestId: string,
+): Promise<FadlaRequestMessageWithSender[]> {
+  const supabase = await createClient();
+  const {data} = await supabase
+    .from('fadla_request_messages')
+    .select('*, sender:sender_id(id, username, full_name, avatar_url)')
+    .eq('request_id', requestId)
+    .order('created_at', {ascending: true});
+  return data ?? [];
 }
 
 // ---- Backward-compatible aliases ----

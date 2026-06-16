@@ -11,6 +11,7 @@ export type RateLimitKind =
   | "reaction"
   | "follow"
   | "upload"
+  | "fadla_message"
   | "login"
   | "register"
   | "passwordReset"
@@ -23,6 +24,7 @@ const RATE_LIMITS: Record<RateLimitKind, {limit: number; windowSeconds: number}>
   reaction: {limit: 120, windowSeconds: 60},
   follow: {limit: 30, windowSeconds: 60},
   upload: {limit: 40, windowSeconds: 300},
+  fadla_message: {limit: 15, windowSeconds: 60},
   login: {limit: 5, windowSeconds: 600},
   register: {limit: 3, windowSeconds: 1800},
   passwordReset: {limit: 3, windowSeconds: 3600},
