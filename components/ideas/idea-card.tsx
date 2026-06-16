@@ -429,6 +429,12 @@ export function IdeaCard({idea, totalUsers, currentUserId, autoOpenComments = fa
                       return;
                     }
                     if (userParticipation?.status === "accepted") {
+                      if (!showDiscussion && messages.length === 0) {
+                        const r = await getIdeaMessagesAction(idea.id);
+                        if (r.success && r.messages) {
+                          setMessages(r.messages);
+                        }
+                      }
                       setShowDiscussion((p) => !p);
                       return;
                     }

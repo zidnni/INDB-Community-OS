@@ -118,7 +118,6 @@ export function IdeaDiscussion({ideaId, currentUserId, locale, initialMessages}:
     setInput("");
 
     const formData = new FormData();
-    formData.set("locale", locale);
     formData.set("ideaId", ideaId);
     formData.set("message", trimmed);
 
