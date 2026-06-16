@@ -71,9 +71,9 @@ const REQUEST_STATUS_STYLE: Record<string, string> = {
 };
 
 const PRIMARY_ACTION_CLASS =
-  'bg-[#22c55e] text-white shadow-sm hover:bg-[#16a34a] hover:text-white border border-[#22c55e]';
+  'bg-[#22c55e] text-white hover:bg-[#16a34a] hover:text-white border border-[#22c55e]';
 const SECONDARY_ACTION_CLASS =
-  'bg-[#3b82f6] text-white shadow-sm hover:bg-[#2563eb] hover:text-white border border-[#3b82f6]';
+  'bg-[#3b82f6] text-white hover:bg-[#2563eb] hover:text-white border border-[#3b82f6]';
 const DANGER_OUTLINE_ACTION_CLASS =
   'border border-[#64748b]/40 bg-transparent text-[#64748b] hover:bg-[#64748b]/10 hover:text-[#475569]';
 const OUTLINE_ACTION_CLASS =
@@ -84,7 +84,7 @@ export function FadlaCard({
   currentUserId,
   locale,
   onEdit,
-  compact = false,
+  compact: _compact,
 }: {
   item: FadlaWithOwner;
   currentUserId?: string | null;
@@ -294,86 +294,85 @@ export function FadlaCard({
       ref={articleRef}
       id={`fadla-${item.id}`}
       className={cn(
-        'overflow-hidden rounded-[1.75rem] border border-border bg-card shadow-[0_20px_50px_rgba(8,33,56,0.12)] transition-all duration-500',
+        'overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm transition-all duration-500',
         highlight && 'ring-2 ring-primary/40 bg-primary/5',
       )}
     >
+      {/* --- Image / Placeholder --- */}
       {item.images.length > 0 ? (
         <MediaCarousel
           items={item.images.map((image) => ({ url: image.url, type: 'image', alt: item.title }))}
           alt={item.title}
-          aspectClassName={compact ? 'aspect-[4/3]' : 'aspect-[5/4]'}
+          aspectClassName="aspect-[4/3]"
           className="rounded-none border-0"
         />
       ) : (
-        <div
-          className={cn(
-            'flex items-center justify-center bg-linear-to-br from-primary/10 via-card to-emerald-100/60 dark:to-emerald-950/20',
-            compact ? 'aspect-4/3' : 'aspect-5/4',
-          )}
-        >
-          <div className="text-center">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-background/80 text-primary shadow-sm">
-              <Gift size={30} />
-            </div>
-            <p className="mt-3 text-sm font-semibold text-muted-foreground">
-              {t('imagePlaceholder')}
-            </p>
+        <div className="flex aspect-[4/3] items-center justify-center bg-gradient-to-br from-primary/[0.08] via-card to-emerald-100/50 dark:to-emerald-950/20">
+          <div className="flex size-12 items-center justify-center rounded-full bg-background/80 text-primary/60">
+            <Gift size={22} />
           </div>
         </div>
       )}
 
-      <div className="space-y-4 p-4 sm:p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="mb-2 flex flex-wrap items-center gap-2">
-              <Badge className="rounded-full bg-primary/10 px-3 py-1 text-primary hover:bg-primary/10">
-                {categoryEmoji} {t(`categories.${item.category}`)}
-              </Badge>
-              <Badge
-                className={cn(
-                  'rounded-full border px-3 py-1 text-[14px] font-medium leading-none',
-                  STATUS_STYLE[liveStatus],
-                )}
-              >
-                {t(`status.${liveStatus}`)}
-              </Badge>
-            </div>
-            <h2 className="wrap-break-word text-xl font-bold leading-tight sm:text-2xl">
-              {item.title}
-            </h2>
+      {/* --- Body --- */}
+      <div className="space-y-3 p-3 sm:p-4">
+        {/* Header: badges + date */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+            <Badge className="rounded-full bg-primary/[0.08] px-2.5 py-[3px] text-[11px] font-medium text-primary hover:bg-primary/[0.08]">
+              {categoryEmoji} {t(`categories.${item.category}`)}
+            </Badge>
+            <Badge
+              className={cn(
+                'rounded-full border px-2.5 py-[3px] text-[11px] font-medium leading-none',
+                STATUS_STYLE[liveStatus],
+              )}
+            >
+              {t(`status.${liveStatus}`)}
+            </Badge>
           </div>
-          <span className="shrink-0 text-xs text-muted-foreground">{createdAt}</span>
+          <span className="shrink-0 whitespace-nowrap text-[11px] text-muted-foreground">{createdAt}</span>
         </div>
 
-        <p className="wrap-break-word text-sm leading-6 text-foreground/85 sm:text-base">
+        {/* Title */}
+        <h2 className="wrap-break-word text-base font-bold leading-snug sm:text-lg">
+          {item.title}
+        </h2>
+
+        {/* Description (truncated to 2 lines) */}
+        <p className="wrap-break-word line-clamp-2 text-[13px] leading-relaxed text-foreground/75 sm:text-sm">
           {item.description}
         </p>
 
-        <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+        {/* Meta chips */}
+        <div className="flex flex-wrap gap-1.5">
           {item.location ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5">
-              <MapPin size={15} />
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted/70 px-2.5 py-1 text-[11px] text-muted-foreground">
+              <MapPin size={12} />
               {item.location}
             </span>
           ) : null}
           {item.quantity > 1 && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1.5">
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted/70 px-2.5 py-1 text-[11px] text-muted-foreground">
               {t('qty')}: {item.quantity}
             </span>
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-4">
+        {/* Divider */}
+        <div className="border-t border-border/50" />
+
+        {/* Owner row + primary action */}
+        <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
             <UserAvatar
               label={ownerName}
               avatarUrl={item.owner?.avatar_url}
-              className="h-10 w-10 shrink-0 text-xs"
+              className="size-8 shrink-0 text-[9px]"
             />
             <span className="min-w-0">
-              <span className="block truncate text-sm font-semibold">{ownerName}</span>
-              <span className="block text-xs text-muted-foreground">{t('sharedForHelp')}</span>
+              <span className="block truncate text-[13px] font-semibold leading-tight">{ownerName}</span>
+              <span className="block text-[11px] text-muted-foreground">{t('sharedForHelp')}</span>
             </span>
           </div>
 
@@ -382,88 +381,92 @@ export function FadlaCard({
               type="button"
               disabled={isRequestLoading}
               onClick={handleRequest}
-              className={cn('min-h-11 rounded-full px-5', SECONDARY_ACTION_CLASS)}
+              className={cn('h-9 shrink-0 rounded-full px-4 text-[13px]', SECONDARY_ACTION_CLASS)}
             >
               {isRequestLoading ? (
-                <Loader2 size={17} className="animate-spin" />
+                <Loader2 size={14} className="animate-spin" />
               ) : (
-                <HandHeart size={17} />
+                <HandHeart size={14} />
               )}
               {t('needThis')}
             </Button>
           )}
 
           {!isOwner && requestSent && !isRecipient && (
-            <span className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#3b82f6] bg-[#3b82f6] px-4 py-2 text-sm font-medium text-white">
-              <Check size={16} />
+            <span className="inline-flex h-9 shrink-0 items-center gap-1 rounded-full border border-[#3b82f6] bg-[#3b82f6] px-3.5 text-[13px] font-medium text-white">
+              <Check size={14} />
               {t('requestSent')}
             </span>
           )}
 
           {!isOwner && isRecipient && liveStatus === 'completed' && (
-            <span className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#22c55e] bg-[#22c55e] px-4 py-2 text-sm font-medium text-white">
-              <Check size={16} />
-              {t('requestAccepted')}
+            <span className="inline-flex h-9 shrink-0 items-center gap-1 rounded-full border border-[#22c55e] bg-[#22c55e] px-3.5 text-[13px] font-medium text-white">
+              <Check size={14} />
+              {t('requestCompleted')}
             </span>
           )}
         </div>
 
+        {/* --- Owner-only section --- */}
         {isOwner && (
-          <div className="space-y-3 border-t border-border/60 pt-4">
+          <div className="space-y-2 border-t border-border/50 pt-3">
+            {/* View requests button */}
             {ownerCanViewRequests && !showRequests && (
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setShowRequests(true)}
-                className={cn('min-h-11 w-full rounded-full', OUTLINE_ACTION_CLASS)}
+                className={cn('h-9 w-full rounded-xl text-[13px]', OUTLINE_ACTION_CLASS)}
               >
-                <ListFilter size={16} />
+                <ListFilter size={14} />
                 {t('viewRequests')}
               </Button>
             )}
 
+            {/* Request list */}
             {ownerCanManageRequests && showRequests && (
               <div className="space-y-2">
-                <p className="text-sm font-semibold text-muted-foreground">
-                  {t('requests')} ({pendingRequests.length})
-                </p>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setShowRequests(false)}
-                  className="min-h-10 w-full justify-start rounded-xl px-3 text-sm text-muted-foreground"
-                >
-                  {t('hideRequests')}
-                </Button>
+                <div className="flex items-center justify-between">
+                  <p className="text-[13px] font-semibold text-muted-foreground">
+                    {t('requests')} ({pendingRequests.length})
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowRequests(false)}
+                    className="text-[12px] text-muted-foreground hover:text-foreground"
+                  >
+                    {t('hideRequests')}
+                  </button>
+                </div>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {pendingRequests.map((request) => (
                     <div
                       key={request.id}
-                      className="space-y-3 rounded-2xl border border-border/70 bg-card p-3 shadow-sm"
+                      className="space-y-2.5 rounded-xl border border-border/70 bg-card p-3"
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-2.5">
                         <UserAvatar
                           label={request.requester?.full_name ?? request.requester?.username ?? '?'}
                           avatarUrl={request.requester?.avatar_url}
-                          className="h-10 w-10 shrink-0 text-[10px]"
+                          className="size-8 shrink-0 text-[9px]"
                         />
                         <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="min-w-0 truncate text-sm font-semibold text-foreground">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <p className="min-w-0 truncate text-[13px] font-semibold text-foreground">
                               {request.requester?.full_name ??
                                 request.requester?.username ??
                                 t('unknownOwner')}
                             </p>
                             <Badge
                               className={cn(
-                                'rounded-full border px-2.5 py-1 text-[14px] font-medium leading-none',
+                                'rounded-full border px-2 py-[2px] text-[10px] font-medium leading-none',
                                 REQUEST_STATUS_STYLE[request.status],
                               )}
                             >
                               {t(`requestStatus.${request.status}`)}
                             </Badge>
                           </div>
-                          <p className="mt-1 text-xs text-muted-foreground">
+                          <p className="mt-0.5 text-[11px] text-muted-foreground">
                             {formatRequestDate(request.created_at)}
                             {request.requester?.username ? ` · @${request.requester.username}` : ''}
                           </p>
@@ -471,23 +474,23 @@ export function FadlaCard({
                       </div>
                       {request.message && (
                         <p
-                          className="whitespace-pre-wrap wrap-break-word rounded-xl bg-muted/50 px-3 py-2 text-sm leading-6 text-foreground/85"
+                          className="whitespace-pre-wrap wrap-break-word rounded-lg bg-muted/50 px-2.5 py-1.5 text-[13px] leading-relaxed text-foreground/80"
                           dir="auto"
                         >
                           {request.message}
                         </p>
                       )}
-                      <div className="grid gap-2 sm:grid-cols-2">
+                      <div className="flex gap-2">
                         <Button
                           type="button"
                           disabled={actionLoading === `accept-${request.id}`}
                           onClick={() => handleAccept(request.id)}
-                          className={cn('min-h-11 rounded-full px-4', PRIMARY_ACTION_CLASS)}
+                          className={cn('h-9 flex-1 rounded-xl text-[13px]', PRIMARY_ACTION_CLASS)}
                         >
                           {actionLoading === `accept-${request.id}` ? (
-                            <Loader2 size={15} className="animate-spin" />
+                            <Loader2 size={14} className="animate-spin" />
                           ) : (
-                            <Check size={15} />
+                            <Check size={14} />
                           )}
                           {t('accept')}
                         </Button>
@@ -495,12 +498,12 @@ export function FadlaCard({
                           type="button"
                           disabled={actionLoading === `decline-${request.id}`}
                           onClick={() => handleDecline(request.id)}
-                          className={cn('min-h-11 rounded-full px-4', DANGER_OUTLINE_ACTION_CLASS)}
+                          className={cn('h-9 flex-1 rounded-xl text-[13px]', DANGER_OUTLINE_ACTION_CLASS)}
                         >
                           {actionLoading === `decline-${request.id}` ? (
-                            <Loader2 size={15} className="animate-spin" />
+                            <Loader2 size={14} className="animate-spin" />
                           ) : (
-                            <X size={15} />
+                            <X size={14} />
                           )}
                           {t('decline')}
                         </Button>
@@ -511,19 +514,20 @@ export function FadlaCard({
               </div>
             )}
 
+            {/* Accepted request / confirm handover */}
             {acceptedRequest && (
-              <div className="rounded-2xl border border-green-200 bg-green-50/70 p-3 text-sm dark:border-green-900/50 dark:bg-green-950/20">
+              <div className="rounded-xl border border-green-200/70 bg-green-50/50 p-3 dark:border-green-900/40 dark:bg-green-950/10">
                 <div className="flex items-center gap-2.5">
                   <UserAvatar
                     label={acceptedRequesterName}
                     avatarUrl={acceptedRequest.requester?.avatar_url}
-                    className="h-9 w-9 shrink-0 text-[10px]"
+                    className="size-8 shrink-0 text-[9px]"
                   />
                   <div className="min-w-0">
-                    <p className="truncate font-semibold text-green-900 dark:text-green-100">
+                    <p className="truncate text-[13px] font-semibold text-green-900 dark:text-green-100">
                       {liveStatus === 'completed' ? t('requestCompleted') : t('requestAccepted')}
                     </p>
-                    <p className="truncate text-xs text-green-800/70 dark:text-green-200/70">
+                    <p className="truncate text-[11px] text-green-800/60 dark:text-green-200/60">
                       {acceptedRequest.requester?.username
                         ? `@${acceptedRequest.requester.username}`
                         : t('unknownOwner')}
@@ -531,20 +535,20 @@ export function FadlaCard({
                   </div>
                 </div>
                 {liveStatus !== 'completed' && (
-                  <div className="mt-3">
+                  <div className="mt-2.5">
                     {!liveSenderConfirmedAt ? (
                       <Button
                         type="button"
                         disabled={confirmActionLoading}
                         onClick={handleConfirmHandedOver}
-                        className="min-h-11 w-full rounded-full bg-[#22c55e] text-white hover:bg-[#16a34a]"
+                        className="h-9 w-full rounded-xl bg-[#22c55e] text-[13px] text-white hover:bg-[#16a34a]"
                       >
-                        {confirmActionLoading ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+                        {confirmActionLoading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                         {t('confirmHandedOver')}
                       </Button>
                     ) : (
-                      <div className="flex items-center gap-2 text-xs text-green-700 dark:text-green-300">
-                        <Check size={14} />
+                      <div className="flex items-center gap-1.5 text-[12px] text-green-700 dark:text-green-300">
+                        <Check size={13} />
                         {t('waitingOtherConfirmation')}
                       </div>
                     )}
@@ -553,22 +557,24 @@ export function FadlaCard({
               </div>
             )}
 
+            {/* Edit / Delete (published only) */}
             {item.status === 'published' && (
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="flex gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => onEdit?.(item)}
-                  className="min-h-11 gap-1.5 rounded-full border-border bg-card"
+                  className="h-9 flex-1 gap-1 rounded-xl border-border bg-card text-[13px]"
                 >
-                  <Pencil size={15} />
+                  <Pencil size={14} />
                   {t('actions.edit')}
                 </Button>
                 <form
                   action={async (formData) => {
                     await deleteFadlaItemAction(formData);
                   }}
+                  className="flex-1"
                 >
                   <input type="hidden" name="locale" value={locale} />
                   <input type="hidden" name="shareId" value={item.id} />
@@ -576,9 +582,9 @@ export function FadlaCard({
                     type="submit"
                     variant="outline"
                     size="sm"
-                    className={cn('min-h-11 w-full rounded-full', DANGER_OUTLINE_ACTION_CLASS)}
+                    className={cn('h-9 w-full gap-1 rounded-xl text-[13px]', DANGER_OUTLINE_ACTION_CLASS)}
                   >
-                    <Trash2 size={15} />
+                    <Trash2 size={14} />
                     {t('actions.delete')}
                   </Button>
                 </form>
@@ -587,28 +593,30 @@ export function FadlaCard({
           </div>
         )}
 
+        {/* --- Accepted request: confirmation & discussion --- */}
         {acceptedRequest && (isOwner || isRecipient) && currentUserId && (
-          <div className="border-t border-border/60 pt-4">
+          <div className="border-t border-border/50 pt-3">
+            {/* Recipient confirm received */}
             {!isOwner && isRecipient && (
-              <div className="mb-3 rounded-2xl border border-green-200 bg-green-50/70 p-3 text-sm dark:border-green-900/50 dark:bg-green-950/20">
-                <p className="font-semibold text-green-900 dark:text-green-100">
+              <div className="mb-3 rounded-xl border border-green-200/70 bg-green-50/50 p-3 dark:border-green-900/40 dark:bg-green-950/10">
+                <p className="text-[13px] font-semibold text-green-900 dark:text-green-100">
                   {liveStatus === 'completed' ? t('requestCompleted') : t('requestAcceptedBanner')}
                 </p>
                 {liveStatus !== 'completed' && (
-                  <div className="mt-3">
+                  <div className="mt-2.5">
                     {!liveReceiverConfirmedAt ? (
                       <Button
                         type="button"
                         disabled={confirmActionLoading}
                         onClick={handleConfirmReceived}
-                        className="min-h-11 w-full rounded-full bg-[#22c55e] text-white hover:bg-[#16a34a]"
+                        className="h-9 w-full rounded-xl bg-[#22c55e] text-[13px] text-white hover:bg-[#16a34a]"
                       >
-                        {confirmActionLoading ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
+                        {confirmActionLoading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                         {t('confirmReceived')}
                       </Button>
                     ) : (
-                      <div className="flex items-center gap-2 text-xs text-green-700 dark:text-green-300">
-                        <Check size={14} />
+                      <div className="flex items-center gap-1.5 text-[12px] text-green-700 dark:text-green-300">
+                        <Check size={13} />
                         {t('waitingOtherConfirmation')}
                       </div>
                     )}
@@ -617,8 +625,8 @@ export function FadlaCard({
               </div>
             )}
             <div id={`discussion-${item.id}`}>
-              <div className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-                <MessageCircle size={14} />
+              <div className="mb-1.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <MessageCircle size={13} />
                 <span>
                   {isOwner
                     ? t('discussion.withReceiver')
@@ -626,8 +634,8 @@ export function FadlaCard({
                 </span>
               </div>
               {discussionLoading ? (
-                <div className="flex items-center justify-center py-6">
-                  <Loader2 size={18} className="animate-spin text-muted-foreground" />
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 size={16} className="animate-spin text-muted-foreground" />
                 </div>
               ) : (
                 <FadlaDiscussion
@@ -643,7 +651,8 @@ export function FadlaCard({
           </div>
         )}
 
-        <div className="flex border-t border-border/60 pt-4">
+        {/* --- Share row --- */}
+        <div className="border-t border-border/50 pt-2">
           <button
             type="button"
             onClick={async () => {
@@ -674,9 +683,9 @@ export function FadlaCard({
                 setSharesCount((count) => Math.max(0, count - 1));
               }
             }}
-            className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground"
+            className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-[12px] text-muted-foreground transition hover:bg-muted hover:text-foreground"
           >
-            <Share2 size={16} />
+            <Share2 size={14} />
             <span className="tabular-nums">{sharesCount}</span>
           </button>
         </div>
