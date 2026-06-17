@@ -344,6 +344,7 @@ export function FadlaDiscussion({
   const youLabel = rtl ? "\u0623\u0646\u062a" : "You";
   const fallbackSenderName = rtl ? "\u0634\u062e\u0635 \u0645\u0627" : "Someone";
   const conversationLabel = rtl ? "\u0623\u0646\u062a \u062a\u062a\u062d\u062f\u062b \u0645\u0639:" : "You are talking with:";
+  const completedClosedMessage = rtl ? "\u062a\u0645 \u0625\u063a\u0644\u0627\u0642 \u0627\u0644\u0645\u062d\u0627\u062f\u062b\u0629 \u0628\u0639\u062f \u0625\u0643\u0645\u0627\u0644 \u0627\u0644\u0641\u0638\u0644\u0629" : t("completedSubtitle");
   const firstReceivedMessage = messages.find((msg) => msg.sender_id !== currentUserId);
   const activeConversationName = conversationWithName?.trim() || firstReceivedMessage?.sender_name || fallbackSenderName;
   const activeConversationAvatarUrl = conversationWithAvatarUrl ?? firstReceivedMessage?.sender_avatar_url ?? null;
@@ -359,50 +360,49 @@ export function FadlaDiscussion({
           className={`flex w-full ${isMine ? "justify-end" : "justify-start"}`}
           dir="ltr"
         >
-          <div
-            className={`flex max-w-[86%] gap-2 sm:max-w-[76%] ${
-              isMine ? "justify-end" : "justify-start"
-            }`}
-          >
-            {!isMine && (
+          {isMine ? (
+            <div className="flex w-full max-w-[75%] flex-col items-end sm:max-w-[72%]">
+              <p className="mb-1 px-1 text-xs font-semibold leading-none text-[#ED2124]" dir={rtl ? "rtl" : "ltr"}>
+                {youLabel}
+              </p>
+              <div
+                className={`max-w-full rounded-2xl rounded-br-md bg-[#ED2124] px-3.5 py-2.5 text-[15px] leading-relaxed text-white shadow-sm ${
+                  msg.pending ? "opacity-70" : ""
+                }`}
+                dir={rtl ? "rtl" : "ltr"}
+              >
+                <p className="whitespace-pre-wrap break-words">{msg.message}</p>
+              </div>
+              <p className="mt-1 px-1 text-[11px] leading-none text-muted-foreground" dir={rtl ? "rtl" : "ltr"}>
+                {msg.pending ? <Loader2 size={10} className="inline animate-spin" /> : sentAt}
+              </p>
+            </div>
+          ) : (
+            <div className="flex w-full max-w-[82%] items-start gap-2.5 sm:max-w-[75%]">
               <UserAvatar
                 label={senderName}
                 avatarUrl={msg.sender_avatar_url}
                 className="mt-5 size-9 shrink-0 text-[10px]"
               />
-            )}
-            <div className={`flex min-w-0 flex-col ${isMine ? "items-end" : "items-start"}`}>
-              {!isMine && (
-                <div className="mb-1 flex max-w-full items-center gap-2 px-1 text-[11px] leading-none text-muted-foreground">
-                  <span className="truncate font-semibold text-foreground" dir="auto">{senderName}</span>
-                  <span className="shrink-0">{sentAt}</span>
-                </div>
-              )}
-              <div
-                className={`rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed shadow-sm ${
-                  isMine
-                    ? "rounded-br-md bg-[#ED2124] text-white"
-                    : "rounded-bl-md border border-border/60 bg-[#f4f5f7] text-slate-900 dark:bg-muted dark:text-foreground"
-                } ${msg.pending ? "opacity-70" : ""}`}
-                dir={rtl ? "rtl" : "ltr"}
-              >
-                {isMine && (
-                  <div className="mb-1 flex items-center justify-end gap-2 text-[11px] leading-none text-white/80">
-                    <span className="font-semibold text-white">{youLabel}</span>
-                    <span className="shrink-0">
-                      {msg.pending ? <Loader2 size={10} className="animate-spin" /> : sentAt}
-                    </span>
-                  </div>
-                )}
-                <p className="whitespace-pre-wrap break-words">{msg.message}</p>
-                {!isMine && (
+              <div className="flex min-w-0 flex-1 flex-col items-start">
+                <p className="mb-1 max-w-full truncate px-1 text-xs font-semibold leading-none text-foreground" dir="auto">
+                  {senderName}
+                </p>
+                <div
+                  className="max-w-full rounded-2xl rounded-bl-md border border-border/70 bg-white px-3.5 py-2.5 text-[15px] leading-relaxed text-slate-900 shadow-sm dark:bg-card dark:text-foreground"
+                  dir={rtl ? "rtl" : "ltr"}
+                >
+                  <p className="whitespace-pre-wrap break-words">{msg.message}</p>
                   <span className="sr-only">
                     {senderName} {sentAt}
                   </span>
-                )}
+                </div>
+                <p className="mt-1 px-1 text-[11px] leading-none text-muted-foreground" dir={rtl ? "rtl" : "ltr"}>
+                  {sentAt}
+                </p>
               </div>
             </div>
-          </div>
+          )}
         </div>
       );
     });
@@ -410,47 +410,30 @@ export function FadlaDiscussion({
 
   function renderConversationHeader() {
     return (
-      <div className="mb-3 flex items-center gap-2.5 rounded-xl border border-border/60 bg-card px-3 py-2.5" dir={rtl ? "rtl" : "ltr"}>
+      <div className="mb-3 flex items-center gap-3 rounded-2xl border border-border/70 bg-card px-3.5 py-3 shadow-sm" dir={rtl ? "rtl" : "ltr"}>
         <UserAvatar
           label={activeConversationName}
           avatarUrl={activeConversationAvatarUrl}
-          className="size-9 shrink-0 text-[10px]"
+          className="size-10 shrink-0 text-[11px]"
         />
         <div className="min-w-0">
-          <p className="text-[11px] leading-tight text-muted-foreground">{conversationLabel}</p>
-          <p className="truncate text-sm font-semibold text-foreground" dir="auto">{activeConversationName}</p>
+          <p className="text-xs leading-tight text-muted-foreground">{conversationLabel}</p>
+          <p className="truncate text-base font-bold leading-tight text-foreground" dir="auto">{activeConversationName}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="w-full">
       {renderConversationHeader()}
 
-      {/* Messages container - always collapsed when completed (history shown in separate block) */}
-      <div
-        ref={containerRef}
-        className={`mb-3 flex flex-col gap-3 overflow-y-auto rounded-2xl border border-border/60 bg-muted/30 ${
-          isCompleted ? "max-h-0 min-h-0 overflow-hidden border-0 mb-0" : "p-3.5 max-h-80 min-h-[140px]"
-        }`}
-        dir="ltr"
-      >
-        {!isCompleted && messages.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground" dir={rtl ? "rtl" : "ltr"}>{t("empty")}</p>
-        ) : !isCompleted ? (
-          renderMessages()
-        ) : null}
-      </div>
       {isCompleted && (
-        <div className="mb-3 rounded-2xl border border-green-200 bg-green-50/70 p-4 text-center dark:border-green-900/50 dark:bg-green-950/20">
+        <div className="mb-3 rounded-2xl border border-green-200 bg-green-50/80 p-4 text-center dark:border-green-900/50 dark:bg-green-950/20" dir={rtl ? "rtl" : "ltr"}>
           <div className="flex items-center justify-center gap-2 text-green-700 dark:text-green-300">
-            <Check size={18} />
-            <span className="font-semibold">{t("completedTitle")}</span>
+            <Check size={18} className="shrink-0" />
+            <span className="text-sm font-semibold">{completedClosedMessage}</span>
           </div>
-          <p className="mt-1 text-xs text-green-600/80 dark:text-green-400/80">
-            {t("completedSubtitle")}
-          </p>
           {messages.length > 0 && (
             <button
               type="button"
@@ -467,66 +450,83 @@ export function FadlaDiscussion({
         </div>
       )}
 
-      {error && (
-        <p className="mb-2 flex items-center gap-1.5 text-xs text-red-600">
-          <AlertCircle size={12} />
-          {error}
-        </p>
-      )}
-
-      {otherUserTyping && !isCompleted && (
-        <div className="mb-2 flex items-center gap-1.5 text-xs text-muted-foreground" dir={rtl ? "rtl" : "ltr"}>
-          <span className="flex items-center gap-0.5">
-            <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground" style={{animationDelay: "0ms"}} />
-            <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground" style={{animationDelay: "200ms"}} />
-            <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground" style={{animationDelay: "400ms"}} />
-          </span>
-          <span>
-            {otherUserTypingName
-              ? rtl
-                ? `${otherUserTypingName} \u064a\u0643\u062a\u0628...`
-                : `${otherUserTypingName} typing...`
-              : rtl
-                ? "\u064a\u0643\u062a\u0628..."
-                : "typing..."}
-          </span>
-        </div>
-      )}
-
       {!isCompleted && (
-        <div className="flex items-end gap-2">
-          <textarea
-            ref={inputRef}
-            value={input}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            placeholder={t("inputPlaceholder")}
-            rows={1}
-            maxLength={500}
-            className="min-h-[44px] flex-1 resize-none rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-[15px] outline-none transition focus:border-[#ED2124]/50 focus:ring-1 focus:ring-[#ED2124]/20"
-            dir={rtl ? "rtl" : "ltr"}
-          />
-          <Button
-            onClick={handleSend}
-            disabled={!input.trim() || sending || input.trim().length > 500}
-            className="mb-px flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-xl bg-[#ED2124] p-0 hover:bg-[#ED2124]/90 disabled:opacity-50"
-            aria-label={t("send")}
+        <div className="overflow-hidden rounded-2xl border border-border/70 bg-[#f7f8fa] shadow-sm dark:bg-muted/20">
+          <div
+            ref={containerRef}
+            className="flex max-h-[440px] min-h-[220px] flex-col gap-5 overflow-y-auto px-3.5 py-4 [scrollbar-gutter:stable] sm:px-4"
+            dir="ltr"
           >
-            {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} className="text-white" />}
-          </Button>
-        </div>
-      )}
+            {messages.length === 0 ? (
+              <p className="py-10 text-center text-sm text-muted-foreground" dir={rtl ? "rtl" : "ltr"}>{t("empty")}</p>
+            ) : (
+              renderMessages()
+            )}
+          </div>
 
-      {!isCompleted && input.length > 450 && (
-        <p className="mt-1 text-right text-[11px] text-muted-foreground">
-          {input.length}/500
-        </p>
+          {error && (
+            <p className="mx-3 mb-2 flex items-center gap-1.5 text-xs text-red-600" dir={rtl ? "rtl" : "ltr"}>
+              <AlertCircle size={12} />
+              {error}
+            </p>
+          )}
+
+          {otherUserTyping && (
+            <div className="mx-3 mb-2 flex items-center gap-1.5 text-xs text-muted-foreground" dir={rtl ? "rtl" : "ltr"}>
+              <span className="flex items-center gap-0.5">
+                <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground" style={{animationDelay: "0ms"}} />
+                <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground" style={{animationDelay: "200ms"}} />
+                <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground" style={{animationDelay: "400ms"}} />
+              </span>
+              <span>
+                {otherUserTypingName
+                  ? rtl
+                    ? `${otherUserTypingName} \u064a\u0643\u062a\u0628...`
+                    : `${otherUserTypingName} typing...`
+                  : rtl
+                    ? "\u064a\u0643\u062a\u0628..."
+                    : "typing..."}
+              </span>
+            </div>
+          )}
+
+          <div className="sticky bottom-0 z-10 border-t border-border/70 bg-background/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
+            <div className="flex items-end gap-2">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder={t("inputPlaceholder")}
+                rows={1}
+                maxLength={500}
+                className="max-h-32 min-h-[44px] flex-1 resize-none rounded-xl border border-border/70 bg-background px-3.5 py-2.5 text-[15px] leading-relaxed outline-none transition focus:border-[#ED2124]/50 focus:ring-1 focus:ring-[#ED2124]/20"
+                dir={rtl ? "rtl" : "ltr"}
+              />
+              <Button
+                type="button"
+                onClick={handleSend}
+                disabled={!input.trim() || sending || input.trim().length > 500}
+                className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-xl bg-[#ED2124] p-0 hover:bg-[#ED2124]/90 disabled:opacity-50"
+                aria-label={t("send")}
+              >
+                {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} className="text-white" />}
+              </Button>
+            </div>
+
+            {input.length > 450 && (
+              <p className="mt-1 text-right text-[11px] text-muted-foreground">
+                {input.length}/500
+              </p>
+            )}
+          </div>
+        </div>
       )}
 
       {/* History shown below the completion banner when user expands it */}
       {isCompleted && showHistory && messages.length > 0 && (
         <div
-          className="mb-3 flex max-h-80 flex-col gap-3 overflow-y-auto rounded-2xl border border-border/60 bg-muted/30 p-3.5"
+          className="mb-3 flex max-h-[420px] min-h-[160px] flex-col gap-5 overflow-y-auto rounded-2xl border border-border/70 bg-[#f7f8fa] p-4 [scrollbar-gutter:stable] dark:bg-muted/20"
           dir="ltr"
         >
           {renderMessages()}
