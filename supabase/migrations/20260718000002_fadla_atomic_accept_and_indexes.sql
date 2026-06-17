@@ -56,7 +56,18 @@ alter table if exists public.ideas replica identity full;
 alter table if exists public.community_shares replica identity full;
 
 -- 5. Prevent duplicate active notifications
--- entity_id is uuid, so cast to text for coalesce
+-- First deduplicate: keep only the newest row per unique key
+delete from public.notifications n1
+using public.notifications n2
+where n1.id < n2.id
+  and n1.user_id = n2.user_id
+  and n1.actor_id = n2.actor_id
+  and n1.type = n2.type
+  and coalesce(n1.entity_type, '') = coalesce(n2.entity_type, '')
+  and coalesce(n1.entity_id::text, '') = coalesce(n2.entity_id::text, '')
+  and n1.read = false
+  and n2.read = false;
+-- Then create the unique index (entity_id is uuid, cast to text for coalesce)
 create unique index if not exists notifications_unique_active
   on public.notifications (user_id, actor_id, type, coalesce(entity_type, ''), coalesce(entity_id::text, ''))
   where read = false;
