@@ -46,7 +46,6 @@ export function FadlaDiscussion({requestId, shareId, currentUserId, currentUserN
   const [showHistory, setShowHistory] = useState(false);
   const [isCompleted, setIsCompleted] = useState(initialStatus === "completed");
   const [otherUserTyping, setOtherUserTyping] = useState(false);
-  const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isNearBottomRef = useRef(true);
@@ -55,11 +54,19 @@ export function FadlaDiscussion({requestId, shareId, currentUserId, currentUserN
   const lastTypingBroadcastRef = useRef(0);
   const senderNameCacheRef = useRef<Map<string, string>>(new Map());
 
+  function scrollMessagesToBottom(behavior: ScrollBehavior = "smooth") {
+    const container = containerRef.current;
+    if (!container) return;
+    window.requestAnimationFrame(() => {
+      container.scrollTo({top: container.scrollHeight, behavior});
+    });
+  }
+
   useEffect(() => {
-    if (isNearBottomRef.current) {
-      bottomRef.current?.scrollIntoView({behavior: "smooth"});
+    if (isNearBottomRef.current && !isCompleted) {
+      scrollMessagesToBottom();
     }
-  }, [messages]);
+  }, [messages, isCompleted]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -191,7 +198,7 @@ export function FadlaDiscussion({requestId, shareId, currentUserId, currentUserN
       setError(result.error === "rate_limited" ? t("sendError") : result.error);
     }
     setSending(false);
-    inputRef.current?.focus();
+    inputRef.current?.focus({preventScroll: true});
   }
 
   const broadcastTyping = useCallback(() => {
@@ -299,7 +306,6 @@ export function FadlaDiscussion({requestId, shareId, currentUserId, currentUserN
         ) : !isCompleted ? (
           renderMessages()
         ) : null}
-        <div ref={bottomRef} />
       </div>
 
       {isCompleted && (
@@ -382,7 +388,6 @@ export function FadlaDiscussion({requestId, shareId, currentUserId, currentUserN
           dir={rtl ? "rtl" : "ltr"}
         >
           {renderMessages()}
-          <div ref={bottomRef} />
         </div>
       )}
     </div>
