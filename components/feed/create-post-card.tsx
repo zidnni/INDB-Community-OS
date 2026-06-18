@@ -10,7 +10,7 @@ import {MediaUpload, type MediaItem} from "@/components/shared/media-upload";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent} from "@/components/ui/card";
 import {Textarea} from "@/components/ui/textarea";
-import {Link, usePathname, useRouter} from "@/lib/i18n/routing";
+import {usePathname, useRouter} from "@/lib/i18n/routing";
 import {createPostAction} from "@/app/[locale]/server-actions";
 
 const PLACEHOLDER: Record<string, string> = {
@@ -20,15 +20,6 @@ const PLACEHOLDER: Record<string, string> = {
   snk: "Mu siiɓen Nuwaadibu?",
   wo: "Lu bees ci Nuwadibu?",
   en: "What\u2019s new in Nouadhibou?",
-};
-
-const SECONDARY_LINKS: Record<string, {memory: string; idea: string}> = {
-  ar: {memory: "شارك ذكرى", idea: "اقترح فكرة"},
-  fr: {memory: "Partager un souvenir", idea: "Proposer une idée"},
-  ff: {memory: "Yeɗ Jikku", idea: "Yeɗ Miijo"},
-  snk: {memory: "Ntene Jikku", idea: "Ntene Miijo"},
-  wo: {memory: "Ngalif Jikku", idea: "Ngalif Xalaat"},
-  en: {memory: "Share a memory", idea: "Suggest an idea"},
 };
 
 function SubmitButton({label, loading, pending}: {label: string; loading: string; pending: boolean}) {
@@ -54,7 +45,6 @@ export function CreatePostCard({avatarUrl, profileName}: {avatarUrl?: string | n
   const mediaUploading = mediaItems.some((item) => item.uploading);
 
   const placeholder = PLACEHOLDER[locale] ?? PLACEHOLDER.en;
-  const links = SECONDARY_LINKS[locale] ?? SECONDARY_LINKS.en;
 
   function handleMediaChange(files: MediaItem[], removed: string[]) {
     setMediaItems(files);
@@ -124,24 +114,6 @@ export function CreatePostCard({avatarUrl, profileName}: {avatarUrl?: string | n
               <ImagePlus size={20} />
               {t("quickActions.image")}
             </button>
-
-            <span className="text-muted-foreground/30">|</span>
-
-            <Link
-              href="/memory/submit"
-              className="text-xs text-muted-foreground transition hover:text-primary"
-            >
-              {links.memory}
-            </Link>
-
-            <span className="text-muted-foreground/20">·</span>
-
-            <Link
-              href="/ideas/submit"
-              className="text-xs text-muted-foreground transition hover:text-primary"
-            >
-              {links.idea}
-            </Link>
           </div>
         </CardContent>
       </Card>
@@ -183,12 +155,6 @@ export function CreatePostCard({avatarUrl, profileName}: {avatarUrl?: string | n
           />
 
           <div className="flex items-center justify-between gap-2 border-t border-border/60 pt-3">
-            <div className="flex gap-3 text-xs text-muted-foreground">
-              <Link href="/memory/submit" className="transition hover:text-primary">{links.memory}</Link>
-              <span>·</span>
-              <Link href="/ideas/submit" className="transition hover:text-primary">{links.idea}</Link>
-            </div>
-
             <div className="flex items-center gap-2 max-sm:w-full max-sm:flex-row-reverse">
               <Button type="button" variant="ghost" onClick={() => setShowForm(false)} className="min-h-10 max-sm:min-h-12 max-sm:flex-1 max-sm:text-base" disabled={submitting}>
                 {t("cancel")}

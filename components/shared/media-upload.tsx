@@ -1,6 +1,6 @@
 "use client";
 
-import {CheckCircle2, Film, ImagePlus, Loader2, RefreshCw, X} from "lucide-react";
+import {CheckCircle2, ImagePlus, Loader2, RefreshCw, X} from "lucide-react";
 import Image from "next/image";
 import {useTranslations} from "next-intl";
 import {useCallback, useRef, useState} from "react";
@@ -53,7 +53,6 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind, allowVide
   >(null);
   const [replacingKey, setReplacingKey] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
   const replaceInputRef = useRef<HTMLInputElement>(null);
 
   const hasVideo = newItems.some((item) => item.type === "video") || (existingMedia ?? []).some(
@@ -115,9 +114,29 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind, allowVide
     const files = Array.from(e.target.files ?? []);
     if (files.length === 0) return;
 
-    if (allowVideo && hasVideo) {
+    const imageFiles = files.filter((f) => f.type.startsWith("image/"));
+    const videoFiles = files.filter((f) => f.type.startsWith("video/"));
+
+    if (allowVideo && (hasImage || getImageCount() > 0) && videoFiles.length > 0) {
       toast.error(t("imagesOrVideo"));
       e.target.value = "";
+      return;
+    }
+
+    if (allowVideo && hasVideo && imageFiles.length > 0) {
+      toast.error(t("imagesOrVideo"));
+      e.target.value = "";
+      return;
+    }
+
+    if (videoFiles.length > 0 && imageFiles.length > 0) {
+      toast.error(t("imagesOrVideo"));
+      e.target.value = "";
+      return;
+    }
+
+    if (videoFiles.length > 0) {
+      await handleVideoSelect(e);
       return;
     }
 
@@ -343,7 +362,7 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind, allowVide
           <input
             ref={imageInputRef}
             type="file"
-            accept={ACCEPTED_IMAGE_EXTENSIONS}
+            accept={allowVideo ? `${ACCEPTED_IMAGE_EXTENSIONS},${ACCEPTED_VIDEO_EXTENSIONS}` : ACCEPTED_IMAGE_EXTENSIONS}
             multiple
             className="hidden"
             disabled={uploading}
@@ -358,21 +377,6 @@ export function MediaUpload({existingMedia, onMediaChange, uploadKind, allowVide
           className="hidden"
           onChange={(e) => void handleReplaceImageSelect(e)}
         />
-
-        {allowVideo ? (
-          <label className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-3.5 text-sm font-medium text-muted-foreground transition hover:border-primary/40 hover:text-foreground max-sm:h-12 max-sm:px-4 max-sm:text-base max-sm:flex-1">
-            <Film size={20} />
-            {t("chooseVideo")}
-            <input
-              ref={videoInputRef}
-              type="file"
-              accept={ACCEPTED_VIDEO_EXTENSIONS}
-              className="hidden"
-              disabled={uploading}
-              onChange={(e) => void handleVideoSelect(e)}
-            />
-          </label>
-        ) : null}
 
         {uploading ? (
           <span className="flex items-center gap-1.5 text-sm text-muted-foreground max-sm:text-base max-sm:py-2">
