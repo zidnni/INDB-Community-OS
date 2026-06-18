@@ -7,7 +7,7 @@
     "skip": "Salti e jooni",
     "getStarted": "Fuuɗo",
     "step1": {
-      "title": "Hollu kuurdu ɗam",
+      "title": "Hollu renndo ɗam",
       "subtitle": "Wi'tan min tawo e ɗum (optionnel)",
       "fullName": "Innde timmuɗo",
       "fullNamePlaceholder": "Naatnu innde maa timmuɗo",
@@ -24,30 +24,30 @@
     },
     "step2": {
       "title": "I ❤️ NDB ko honngo?",
-      "subtitle": "Hiiɗo ko kuurdu maa ɓuri",
-      "whatIsINDB": "Laawol kuurdu ngal Nouadhibou, waɗɓe yimɓe ender pos, jikku, baawo e ballondir.",
+      "subtitle": "Hiiɗo ko renndo maa ɓuri",
+      "whatIsINDB": "Laawol renndo ngal Nouadhibou, waɗɓe yimɓe ender pos, tesko, baawo e ballondir.",
       "skip": "Salti e jooni",
       "next": "Ɓennuɗo",
       "features": {
         "home": {
           "title": "Jaɓɓo",
-          "description": "Kesum cuɓe e kuurdu."
+          "description": "Kesum cuɓe e renndo."
         },
         "community": {
-          "title": "Kuurdu",
-          "description": "Yel pos, nate, wi'ɗe e baawo."
+          "title": "Renndo",
+          "description": "Yeɗit binndanɗe, nate, wiɗtooji e jaabitaaje."
         },
         "memory": {
-          "title": "Jikku",
-          "description": "Dowta hibe, nate e taariha Nouadhibou."
+          "title": "Tesko",
+          "description": "Hifnu teskooji, nate e taariha Nuwadibu."
         },
         "ideas": {
           "title": "Baawo",
-          "description": "Wattin baawo ngam yahude wuro ngam e dooɓe."
+          "description": "Wattin miijooji ngam ɓeyngu saare e suɓo e majji."
         },
         "fadla": {
           "title": "Graatek",
-          "description": "Yel huɗe goɗɗe nde aɗa waɗii e yimɓe nde ɓe haaɓii."
+          "description": "Yeɗit huɗe nafooje nde aɗa waɗii e yimɓe nde ɓe haaɗii."
         },
         "profile": {
           "title": "Profil",
@@ -56,25 +56,25 @@
       }
     },
     "step3": {
-      "title": "A jaɓɓo e kuurdu Nouadhibou",
-      "message": "Nde, men dowta jikku, yel goɗɗe, e yahdu kature e ɓam.",
+      "title": "A jaɓɓo e renndo Nouadhibou",
+      "message": "Nde, men dowta tesko, yel goɗɗe, e yahdu kature e ɓam.",
       "getStarted": "Fuuɗo"
     }
   },
   "Meta": {
     "siteTitle": "I love NDB",
-    "siteDescription": "Kuurdu Nuwaadibu : jikku siwil, tawtital, e fasluuji nokkuuje.",
+    "siteDescription": "Renndo Nuwadibu : tesko renndo, tawtital, e fasluuji nokkuuje.",
     "home": {
       "title": "Galle",
-      "description": "Anndu kuurdu INDB ngam jikku, tawtital, e gollal nokkuwal."
+      "description": "Anndu renndo INDB ngam teskooji, tawtital, e gollal nokkuwal."
     },
     "feed": {
-      "title": "Kesɗitine",
-      "description": "Rew kawral kuurdu, daarti, e yeewte mahooje."
+      "title": "Feed",
+      "description": "Rew kawral renndu, daarti, e yeewte mahooje."
     },
     "memory": {
-      "title": "Mbangiyawol Jikku",
-      "description": "Yiylo jikkuuji kuurdu, daarti, e ngalu nokkuwal."
+      "title": "Tesko",
+      "description": "Yiylo teskooji renndo, daarti, e ngalu nokkuwal."
     },
     "events": {
       "title": "ɗewte",
@@ -86,7 +86,7 @@
     },
     "polls": {
       "title": "Nootorgal",
-      "description": "Tawtu e nootorgal kuurdu ngam fasluuji mbaawɗi tawtude kala."
+      "description": "Tawtu e nootorgal renndo ngam fasluuji mbaawɗi tawtude kala."
     },
     "ideas": {
       "title": "Miijooji",
@@ -98,27 +98,27 @@
     },
     "fadlaArchive": {
       "title": "Graatek Archive",
-      "description": "Yiylo huɗe timmaaɗe e marƴaaɗe, rewr nafuuda maa e kuurdu."
+      "description": "Yiylo huɗe timmaaɗe e marƴaaɗe, rewr nafuuda maa e renndo."
     },
     "timeline": {
-      "title": "Laawol Wakkati",
-      "description": "Yiylo sahaaji mawɗi jikku kuurdu Nuwaadibu."
+      "title": "Timmindi",
+      "description": "Yiylo sahaaji mawɗi tesko renndo Nuwaadibu."
     },
     "profile": {
       "title": "Profil",
-      "description": "Yeru profil maa e kuurdu, darnde maa, e golle maa."
+      "description": "Yeru profil maa e renndo, darnde maa, e golle maa."
     },
     "admin": {
       "title": "Lindowal Njuɓɓudi",
-      "description": "Njuɓɓu huutortooɓe kuurdu, kiredi, e finaa-ñiiwa keso."
+      "description": "Njuɓɓu huutortooɓe renndo, kiredi, e finaa-ñiiwa keso."
     },
     "memorySubmit": {
-      "title": "Yeɗ Jikku",
-      "description": "Yeɗ jikku kuurdu e nder yowre e tefteede."
+      "title": "Yeɗ Tesko",
+      "description": "Yeɗ tesko renndo e nder yowre e tefteede."
     },
     "ideaSubmit": {
       "title": "Yeɗ Miijo",
-      "description": "Yeɗ miijo siwil balluɗo e sifaade ko adii e nder kuurdu."
+      "description": "Yeɗ miijo siwil balluɗo e sifaade ko adii e nder renndo."
     },
     "ideaEdit": {
       "title": "Taƴto Miijo",
@@ -134,8 +134,8 @@
     "changeTo": "Taƴto ɗemngal fah {language}"
   },
   "Navbar": {
-    "memberAvatarLabel": "Profil terɗo kuurdu",
-    "createAccount": "Mah huunde",
+    "memberAvatarLabel": "Profil terɗo renndo",
+    "createAccount": "Mah konte",
     "login": "Naatu",
     "logout": "Yaalti",
     "loggingOut": "No yaaltino..."
@@ -147,12 +147,12 @@
         "short": "Galle"
       },
       "feed": {
-        "label": "Kesɗitine",
-        "short": "Kesɗi"
+        "label": "Feed",
+        "short": "Feed"
       },
       "memory": {
-        "label": "Jikkuuji",
-        "short": "Jikku"
+        "label": "Teskooji",
+        "short": "Tesko"
       },
       "ideas": {
         "label": "Miijooji",
@@ -184,26 +184,26 @@
     "toggle": "Taƴto mbaydi"
   },
   "Search": {
-    "title": "ɗaɓɓitde",
-    "placeholder": "ɗaɓɓit nder kuurdu",
-    "clear": "Muynu ɗaɓɓitde",
+    "title": "Yiylo",
+    "placeholder": "Yiylo e renndo",
+    "clear": "Muynu yiylo",
     "noResults": "Alaa ko tawaa",
-    "viewAll": "Yiylo kala ko tawaa",
-    "searching": "No ɗaɓɓito...",
-    "error": "Dañii timminirde ɗaɓɓitde",
-    "minLength": "Winndu ko ɓuri 2 binndi ngam ɗaɓɓitde.",
-    "resultsFor": "Kuumɗi ɗaɓɓitde ngam \"{query}\"",
+    "viewAll": "Yiylo kala",
+    "searching": "No yiyloo...",
+    "error": "Yiylo waawaano",
+    "minLength": "Winndu 2 binndi walla ɓuri ngam yiylo.",
+    "resultsFor": "Kuumɗi yiylo: \"{query}\"",
     "sections": {
       "posts": "Blaŋtooji",
       "ideas": "Miijooji",
-      "memories": "Jikkuuji",
+      "memories": "Teskooji",
       "fadla": "Graatek",
       "people": "Yimɓe"
     },
     "types": {
       "post": "Blaŋto",
       "idea": "Miijo",
-      "memory": "Jikku",
+      "memory": "Tesko",
       "fadla": "Huunde Graatek",
       "profile": "Neɗɗo"
     }
@@ -220,47 +220,47 @@
     "commentedOnPost": "{actorName} wiɗtii blaŋto maa",
     "commentedOnYourIdea": "{actorName} wiɗtii miijo maa",
     "sharedYourIdea": "{actorName} yeɗitike miijo maa",
-    "reactedToMemory": "{actorName} jaabitike jikku maa",
-    "commentedOnYourMemory": "{actorName} commented on your memory",
-    "sharedYourMemory": "{actorName} yeɗitike jikku maa",
+    "reactedToMemory": "{actorName} jaabitike tesko maa",
+    "commentedOnYourMemory": "{actorName} wiɗtii tesko maa",
+    "sharedYourMemory": "{actorName} yeɗitike tesko maa",
     "creditAwarded": "Heɓii {points} kiredi ballondiral",
     "communityShareRequested": "Goɗɗo ƴami huunde nde yeɗuɗaa",
     "fadlaRequested": "{actorName} ƴami huunde nde yeɗuɗaa",
     "fadlaCompleted": "{actorName} yaltini huunde nde Graatek maa",
-    "fadlaMessage": "{actorName} sent you a message about Graatek",
-    "fadlaReceiverConfirmed": "{actorName} confirmed they received the item",
-    "fadlaSenderConfirmed": "{actorName} confirmed they handed over the item",
-    "fadlaBothCompleted": "Graatek was completed successfully",
-    "fadlaRequestAccepted": "Your request was accepted by {actorName}",
-    "fadlaRequestDeclined": "Your request was declined by {actorName}",
+    "fadlaMessage": "{actorName} nelima ɗum e Graatek",
+    "fadlaReceiverConfirmed": "{actorName} tabitinii heɓgol Graatek",
+    "fadlaSenderConfirmed": "{actorName} tabitinii yeɗgol Graatek",
+    "fadlaBothCompleted": "Graatek timmii no moƴƴi",
+    "fadlaRequestAccepted": "Ƴamle maa jaɓaama e juuɗe {actorName}",
+    "fadlaRequestDeclined": "Ƴamle maa saltaama e juuɗe {actorName}",
     "someone": "Goɗɗo",
-    "loadMore": "Load more",
-    "ideaSupported": "{actorName} supported your idea",
-    "ideaParticipateRequest": "{actorName} wants to join your project",
-    "ideaParticipantAccepted": "{actorName} accepted you as a participant",
-    "ideaParticipantDeclined": "{actorName} declined your participation",
-    "ideaMessage": "{actorName} sent a message about your idea",
-    "ideaStatusChange": "{actorName} updated the idea status"
+    "loadMore": "Ɓeydu",
+    "ideaSupported": "{actorName} ballitike miijo maa",
+    "ideaParticipateRequest": "{actorName} yiɗi tawtude prooje maa",
+    "ideaParticipantAccepted": "{actorName} jaɓii ma tawtuɗo",
+    "ideaParticipantDeclined": "{actorName} salti tawtital maa",
+    "ideaMessage": "{actorName} nelima ɗum ko fayti miijo maa",
+    "ideaStatusChange": "{actorName} waylitii darnde miijo ngo"
   },
   "RightSidebar": {
     "trendingTopics": "Toɓɓe No Mberlaa",
-    "featuredMemories": "Jikkuuji Cuɓaaɗi",
+    "featuredMemories": "Teskooji Cuɓaaɗi",
     "activePoll": "Nootorgal Fuɗɗungal",
     "votes": "{count} noota",
     "upcomingEvents": "ɗewte Garooje"
   },
   "Landing": {
-    "tagline": "Jikku - Tawtital - Arande",
-    "heroTitle": "Moorna Jikku. Mah Arande.",
-    "heroDescription": "Kuurdu dijital wonande Daqlat Nuwaadibu.",
-    "mottoPrimary": "Nuwaadibu ko heen kala.",
-    "mottoSecondary": "Jikku kuurdu ardotoo ɓamtaare wonande kala.",
-    "joinCommunity": "Tawtu e Kuurdu",
-    "exploreMemories": "Yiylo Jikkuuji",
-    "latestPosts": "Blaŋtooji Kesɗi",
-    "pollPreview": "Préfiguration Nootorgal",
-    "featuredMemories": "Jikkuuji Cuɓaaɗi",
-    "communityIdeas": "Miijooji Kuurdu",
+    "tagline": "Tesko • Renndo • Jango",
+    "heroTitle": "Hifnu tesko. Maha jango.",
+    "heroDescription": "Renndo dijital wonande Daqlat Nuwadibu.",
+    "mottoPrimary": "Nuwadibu ko en fuu.",
+    "mottoSecondary": "Tesko renndo wallita yeeso.",
+    "joinCommunity": "Naatu e renndo",
+    "exploreMemories": "Yiylo arsifuuji",
+    "latestPosts": "Binndanɗe hesere",
+    "pollPreview": "Njiylawu Nootorgal",
+    "featuredMemories": "Teskooji Cuɓaaɗi",
+    "communityIdeas": "Miijooji Renndo",
     "createAccount": "Mah huunde",
     "login": "Naatu"
   },
@@ -278,9 +278,9 @@
     "unknownAuthor": "Anndaa",
     "all": "Fuu",
     "categories": {
-      "community": "Kuurdu",
+      "community": "Renndo",
       "events": "ɗewte",
-      "memory": "Jikku",
+      "memory": "Tesko",
       "ideas": "Miijooji"
     },
     "reactions": {
@@ -306,16 +306,17 @@
   },
   "FeedComposer": {
     "title": "Mah blaŋto",
-    "placeholder": "Yeɗit huunde e kuurdu...",
+    "placeholder": "Yeɗit huunde e renndo...",
     "quickActions": {
       "text": "Binndi",
       "image": "Nate",
       "event": "ɗewal",
       "photo": "Foto",
-      "memory": "Jikku",
-      "idea": "Miijo"
+      "memory": "Tesko",
+      "idea": "Miijo",
+      "community": "Renndo"
     },
-    "composerTitle": "Yeɗit hesɗitine e kuurdu maa",
+    "composerTitle": "Yeɗit hesɗitine e renndo maa",
     "form": {
       "title": "Hoore",
       "content": "Ko waɗi? Ko eɓɓo nguɗatnoɗaa?",
@@ -335,40 +336,40 @@
     "errors": {
       "submitFailed": "Firtde blaŋto waawaa. Eɗen mballu en, eto kadi.",
       "postFailed": "Firtde blaŋto waawaa. Eɗen mballu en, eto kadi.",
-      "uploading": "Please wait until media upload finishes."
+      "uploading": "Raɓo haa loowde timma."
     }
   },
   "Memory": {
-    "title": "Mbangiyawol Jikku",
-    "description": "Musee dijital daarti kuurdu, nate, e yowre taariika.",
-    "openTimeline": "Uddit Laawol Wakkati",
-    "submitNew": "Yeɗ jikku keso",
+    "title": "Tesko",
+    "description": "Musee dijital daarti renndo, nate, e yowre taariika.",
+    "openTimeline": "Uddit Timmindi",
+    "submitNew": "Yeɗ tesko keso",
     "contributedBy": "Tawtike e juuɗe {name}",
-    "relatedMemories": "Jikkuuji Jokkondirɗi",
+    "relatedMemories": "Teskooji Jokkondirɗi",
     "noImage": "Alaa nate",
     "unknownContributor": "Tawtuɗo anndaa",
     "share": "Yeɗit",
-    "linkCopied": "Jokkorgal jikku ngal jattinaama",
+    "linkCopied": "Jokkorgal tesko ngal jattinaama",
     "shareFailed": "Yeɗitde waawaa",
-    "edit": "Taƴto jikku",
-    "delete": "Momtu jikku",
+    "edit": "Taƴto tesko",
+    "delete": "Momtu tesko",
     "confirmDelete": "Momtu",
-    "confirmDeleteTitle": "Momtu jikku",
-    "deleteConfirm": "ɗaɗɗii aɗa yiɗi momtude jikku ɗoo?",
-    "memoryDeleted": "Jikku momtaama",
-    "deleteFailed": "Momtugol jikku waawaano",
+    "confirmDeleteTitle": "Momtu tesko",
+    "deleteConfirm": "ɗaɗɗii aɗa yiɗi momtude tesko ɗoo?",
+    "memoryDeleted": "Tesko momtaama",
+    "deleteFailed": "Momtugol tesko waawaano",
     "cancel": "Haaytu",
-    "storyMemory": "Jikku Daartol",
+    "storyMemory": "Tesko Daartol",
     "verification": {
       "pending": "No ƴeewte",
       "approved": "Jaɓaama",
       "rejected": "Yeppaama",
       "needsMoreInfo": "Haajeji ɓeydi heɓde"
     },
-    "memoryShared": "Jikku yeɗitaama no moƴƴi",
-    "memoryUpdated": "Jikku hesɗitinaama",
-    "memorySaved": "Jikku danndaama",
-    "memoryUnsaved": "Jikku ittaama e danndiiji"
+    "memoryShared": "Tesko yeɗitaama no moƴƴi",
+    "memoryUpdated": "Tesko hesɗitinaama",
+    "memorySaved": "Tesko danndaama",
+    "memoryUnsaved": "Tesko ittaama e danndiiji"
   },
   "MemoryReactions": {
     "love": "Yiɗi",
@@ -378,13 +379,13 @@
     "failed": "Jaabital dañii"
   },
   "MemoryForm": {
-    "title": "Yeɗ jikku kuurdu",
-    "editTitle": "Taƴto jikku",
-    "update": "Hesɗitin jikku",
-    "ready": "Jikku maa no maraama ngam yeɗitde.",
-    "imageHelper": "Ɓeydu foto si aɗa mari. Jikkuuji mbaawi kadi yeɗitde no daarti.",
+    "title": "Yeɗ tesko renndo",
+    "editTitle": "Taƴto tesko",
+    "update": "Hesɗitin tesko",
+    "ready": "Tesko maa no maraama ngam yeɗitde.",
+    "imageHelper": "Ɓeydu foto si aɗa mari. Teskooji mbaawi kadi yeɗitde no daarti.",
     "fields": {
-      "title": "Hoore jikku",
+      "title": "Hoore tesko",
       "story": "Yeɗit daartol e yowre",
       "category": "Suɓo cate",
       "eraLabel": "Jamanu (suɓaare)",
@@ -397,22 +398,22 @@
       "submitFailed": "Huunde waɗii e nder yeɗitde"
     },
     "submitting": "No neldoo...",
-    "submit": "Yeɗ jikku",
+    "submit": "Yeɗ tesko",
     "cancel": "Haaytu",
-    "successMessage": "Jikku yeɗitaama no moƴƴi"
+    "successMessage": "Tesko yeɗitaama no moƴƴi"
   },
   "MemoryTimeline": {
-    "title": "Laawol Wakkati Jikku",
-    "subtitle": "Yiylo jikkuuji kuurdu e nder duuɓi, citaaɗi, e cate",
+    "title": "Timmindi Tesko",
+    "subtitle": "Yiylo teskooji renndo e nder duuɓi, citaaɗi, e cate",
     "browseDecades": "Yiylo e duuɓi sappo",
     "noDecades": "Alaa duuɓi sappo haa jooni",
     "pickYear": "Suɓo hitaande",
     "noYears": "Alaa duuɓi e nduu citaa haa jooni",
-    "memoriesFrom": "Jikkuuji gila {year}",
-    "noMemories": "Alaa jikkuuji no foti e cuɓooji maa",
-    "noMemoriesInYear": "Alaa jikkuuji gila {year}",
+    "memoriesFrom": "Teskooji gila {year}",
+    "noMemories": "Alaa teskooji no foti e cuɓooji maa",
+    "noMemoriesInYear": "Alaa teskooji gila {year}",
     "loadMore": "Ɓeydu",
-    "loadingMemories": "No loowata jikkuuji...",
+    "loadingMemories": "No loowata teskooji...",
     "filterByCategory": "Tuɗo e cate",
     "filterByLocation": "Tuɗo e nokku",
     "allCategories": "Cate fuu",
@@ -422,12 +423,12 @@
     "sortMostReacted": "Ɓurngo jaabitaade",
     "sortMostSaved": "Ɓurngo danndeede",
     "sortMostCommented": "Ɓurngo wiɗteede",
-    "totalMemories": "{count} jikkuuji",
+    "totalMemories": "{count} teskooji",
     "topCategories": "Cate ɓurɗe",
     "topLocations": "Nokkuuje ɓurɗe",
-    "backToTimeline": "Rutto e laawol wakkati",
+    "backToTimeline": "Rutto e timmindi",
     "backToDecades": "Rutto e duuɓi sappo",
-    "memoryCount": "{count} jikkuuji",
+    "memoryCount": "{count} teskooji",
     "categories": {
       "port": "Port",
       "railway": "Laawol njamndi",
@@ -450,7 +451,7 @@
     }
   },
   "Ideas": {
-    "title": "Miijooji Kuurdu",
+    "title": "Miijooji Renndo",
     "description": "Suɓo eɓɓooji kuuɓtuɗi balluɗo e sifaade ko adii ngam Nuwaadibu.",
     "voteLabel": "Suɓo",
     "voteLabelVoted": "Suɓaama",
@@ -460,7 +461,7 @@
     "badgeNewIdea": "Miijo Keso",
     "badgeGrowingSupport": "Ballal No Ɓeydoo",
     "badgePopular": "Jaaɓii",
-    "badgeCommunityPriority": "Ko Adii e Kuurdu",
+    "badgeCommunityPriority": "Ko Adii e Renndo",
     "badgeTopPriority": "Ko Adii Fof",
     "share": "Yeɗit",
     "linkCopied": "Jokkorgal miijo ngal jattinaama",
@@ -486,31 +487,31 @@
     "editIdea": "Taƴto miijo",
     "deleteIdea": "Momtu miijo",
     "allIdeas": "Miijooji Fuu",
-    "support": "Support",
-    "participate": "Participate",
-    "discussionButton": "Discussion",
-    "participationPending": "Your request is pending approval",
-    "participationPendingShort": "Pending",
-    "participationDeclined": "Your request was declined",
-    "participationDeclinedShort": "Declined",
-    "participationRequested": "Participation request sent",
-    "participationError": "Failed to request participation",
-    "changeStatus": "Change Status",
-    "statusUpdated": "Status updated",
-    "statusUpdateError": "Failed to update status",
-    "requests": "Requests ({count})",
-    "accept": "Accept",
-    "decline": "Decline",
-    "participantAccepted": "Participant accepted",
-    "participantDeclined": "Participant declined",
-    "openDiscussion": "Open discussion",
+    "support": "Ballal",
+    "participate": "Tawtu",
+    "discussionButton": "Yeewtu",
+    "participationPending": "Ƴamle maa no ƴeewte",
+    "participationPendingShort": "No ƴeewte",
+    "participationDeclined": "Ƴamle maa saltaama",
+    "participationDeclinedShort": "Saltaama",
+    "participationRequested": "Ƴamle tawtital neldii",
+    "participationError": "Tawtital waawaano",
+    "changeStatus": "Waylu darnde",
+    "statusUpdated": "Darnde hesɗitinaama",
+    "statusUpdateError": "Waylugol darnde waawaano",
+    "requests": "Ƴamle ({count})",
+    "accept": "Jaɓ",
+    "decline": "Saltu",
+    "participantAccepted": "Tawtuɗo jaɓaama",
+    "participantDeclined": "Tawtuɗo saltaama",
+    "openDiscussion": "Uddit yeewtere",
     "status": {
-      "published": "Published",
-      "interested": "Interested",
-      "discussion": "Discussion",
-      "in_progress": "In Progress",
-      "completed": "Completed",
-      "archived": "Archived"
+      "published": "Firtaama",
+      "interested": "Nafooɗo",
+      "discussion": "Yeewtere",
+      "in_progress": "No Golloo",
+      "completed": "Timmii",
+      "archived": "Marƴaama"
     },
     "editComment": "Taƴto wiɗto",
     "deleteComment": "Momtu wiɗto",
@@ -519,13 +520,13 @@
     "commentDeleted": "Wiɗto momtaama",
     "commentUpdateFailed": "Dañii hesɗitinde wiɗto",
     "discussion": {
-      "empty": "No messages yet. Start the conversation.",
-      "inputPlaceholder": "Type a message...",
-      "send": "Send",
-      "sendError": "Too many messages. Please wait.",
-      "someone": "Someone",
-      "typingSingle": "{name} is typing...",
-      "typingMultiple": "{names} are typing..."
+      "empty": "Alaa ɗatal haa jooni. Fuɗɗo yeewtere.",
+      "inputPlaceholder": "Winndu ɗatal...",
+      "send": "Neldu",
+      "sendError": "Ɗatal keewi. Eɗen mballu en raɓo.",
+      "someone": "Goɗɗo",
+      "typingSingle": "{name} no windoo...",
+      "typingMultiple": "{names} no windoo..."
     }
   },
   "IdeaForm": {
@@ -551,12 +552,12 @@
     "successMessage": "Miijo yeɗitaama no moƴƴi"
   },
   "Events": {
-    "title": "ɗewte Kuurdu",
-    "description": "Yiylo ɗewte garooje e tawtude darnde nokkuuje.",
+    "title": "Kewu Renndo",
+    "description": "Yiylo kewu garooje e tawtude darnde nokkuuje.",
     "rsvp": "No Tawtaami"
   },
   "Projects": {
-    "title": "Proje Kuurdu",
+    "title": "Proje Renndo",
     "description": "Rew ɓamtaare, gollotooɓe, e nafuuda e proje siwil.",
     "progress": "ɓamtaare",
     "volunteers": "{count} gollotooɓe sakkitiŋɓe",
@@ -567,20 +568,20 @@
     }
   },
   "Polls": {
-    "title": "Nootorgal Kuurdu",
+    "title": "Nootorgal Renndo",
     "description": "Nootorgal weeɓngal ngam ballondirde e fasluuji mahooji e tawtiiɗi.",
     "totalVotes": "{count} nootiral fuu",
     "voteButton": "Suɓo"
   },
   "Timeline": {
-    "title": "Laawol Wakkati Nuwaadibu"
+    "title": "Timmindi Nuwaadibu"
   },
   "Profile": {
-    "bio": "Golloowo kuurdu, daartoowo, e balloowo sukaaɓe.",
+    "bio": "Golloowo renndo, daartoowo, e balloowo sukaaɓe.",
     "location": "Nuwaadibu, Gànnaar",
     "stats": {
       "posts": "Blaŋtooji",
-      "memories": "Jikkuuji",
+      "memories": "Teskooji",
       "ideas": "Miijooji",
       "comments": "Wiɗtooji"
     },
@@ -591,17 +592,17 @@
     "tabsTitle": "Caate Profil",
     "tabs": {
       "posts": "Blaŋtooji",
-      "memories": "Jikkuuji",
+      "memories": "Teskooji",
       "ideas": "Miijooji",
       "shares": "Graatek",
-      "about": "Ko woni"
+      "about": "Fayti"
     },
     "joined": "Tawtike",
     "role": {
       "admin": "Njuɓɓuɗo",
       "moderator": "Wasiya"
     },
-    "recentMemories": "Jikkuuji Haa Jooni",
+    "recentMemories": "Teskooji Haa Jooni",
     "save": "Danndu taƴtooji",
     "saving": "No danndoo...",
     "updated": "Profil hesɗitinaama no moƴƴi",
@@ -614,7 +615,7 @@
     "uploadFailed": "Loowde foto dañii",
     "noCity": "Alaa saare.",
     "createPost": "Mah blaŋto",
-    "noPostsYet": "Alaa blaŋtooji haa jooni. Yeɗit kesɗitine maa arandeere.",
+    "noPostsYet": "Alaa blaŋtooji haa jooni. Yeɗit kesɗitine maa jangoere.",
     "fields": {
       "username": "Innde huutorteende",
       "fullName": "Innde timmunde",
@@ -630,8 +631,8 @@
     "contributionRanks": {
       "member": "Tergal",
       "contributor": "Tawtuɗo",
-      "communityBuilder": "Mahooɗo Kuurdu",
-      "communityLeader": "Ardoowo Kuurdu",
+      "communityBuilder": "Mahooɗo Renndo",
+      "communityLeader": "Ardoowo Renndo",
       "ndbChampion": "Mbadi NDB"
     }
   },
@@ -647,11 +648,11 @@
     "failed": "Taƴtirde darnde rewde waawaa"
   },
   "ProfileCard": {
-    "bio": "Daartoowo kuurdu no winda jikkuuji, miijooji, e proje nokkuuje.",
+    "bio": "Daartoowo renndo no winda teskooji, miijooji, e proje nokkuuje.",
     "location": "Daqlat Nuwaadibu",
     "stats": {
       "posts": "Blaŋtooji",
-      "memories": "Jikkuuji",
+      "memories": "Teskooji",
       "ideas": "Miijooji"
     },
     "badges": {
@@ -662,14 +663,14 @@
   "Admin": {
     "stats": {
       "postsToday": "Blaŋtooji hannde",
-      "pendingMemories": "Jikkuuji no ƴeewte",
+      "pendingMemories": "Teskooji no ƴeewte",
       "openIdeas": "Miijooji udditiiɗi",
       "reportsQueue": "Jeŋle jeertine"
     },
     "moderationQueue": "Jeŋle ƴeewtu",
     "noPendingReports": "Alaa jeertine no ƴeewte.",
     "targetType": {
-      "memory": "Jikku",
+      "memory": "Tesko",
       "post": "Blaŋto"
     },
     "status": {
@@ -681,12 +682,12 @@
     },
     "commandCenter": "Markazi INDB",
     "nouadhibouSignal": "Nafigo Nuwaadibu",
-    "eyebrow": "Markazi Ardungal Kuurdu",
+    "eyebrow": "Markazi Ardungal Renndo",
     "signedInLabel": "Naatuɗo no",
     "signedInAs": "Njuɓɓuɗo: {name}",
     "hero": {
       "title": "Nuwaadibu no wuuri. Ngoo ko nafigo mum.",
-      "description": "Rew yimɓe, miijooji, jikkuuji, e darnde no mahata INDB. Ngoo nokku ko ngam ardude kuurdu wuuru, wonaa ngam njuɓɓude database."
+      "description": "Rew yimɓe, miijooji, teskooji, e darnde no mahata INDB. Ngoo nokku ko ngam ardude renndo wuuru, wonaa ngam njuɓɓude database."
     },
     "nav": {
       "dashboard": "Lindowal",
@@ -703,12 +704,12 @@
       "content": "Fin-ñiiwa"
     },
     "health": {
-      "eyebrow": "Cellal Kuurdu",
+      "eyebrow": "Cellal Renndo",
       "title": "Ko Wonata Jooni",
       "members": "Terɗe",
       "posts": "Blaŋtooji",
       "ideas": "Miijooji",
-      "memories": "Jikkuuji",
+      "memories": "Teskooji",
       "activeToday": "Gollotooɗe hannde",
       "newToday": "+{count} hannde",
       "today": "+{count} hannde",
@@ -716,13 +717,13 @@
       "totalComments": "{count} wiɗtooji"
     },
     "pulse": {
-      "eyebrow": "Nafigo Kuurdu",
+      "eyebrow": "Nafigo Renndo",
       "title": "Yeewte No Dimmbagu Saare",
-      "noPreview": "Alaa préfiguration haa jooni.",
+      "noPreview": "Alaa njiylawu haa jooni.",
       "type": {
         "post": "Yeewtal ɓurngal gollude",
         "idea": "Miijo ɓurngo gollude",
-        "memory": "Jikku teeŋtuɗo",
+        "memory": "Tesko teeŋtuɗo",
         "member": "Tergal keso"
       }
     },
@@ -732,36 +733,36 @@
     },
     "contributors": {
       "eyebrow": "Tawtuɓe ɓurɓe tawtude",
-      "title": "Yimɓe No Mahata Kuurdu",
+      "title": "Yimɓe No Mahata Renndo",
       "rank": {
         "member": "Tergal",
         "contributor": "Tawtuɗo",
-        "communityBuilder": "Mahooɗo Kuurdu",
-        "communityLeader": "Ardoowo Kuurdu",
+        "communityBuilder": "Mahooɗo Renndo",
+        "communityLeader": "Ardoowo Renndo",
         "ndbChampion": "Mbadi NDB"
       }
     },
     "actions": {
       "eyebrow": "Markazi Golle",
-      "title": "Dimmbu Kuurdu Yaaso",
+      "title": "Dimmbu Renndo Yaaso",
       "awardCredits": "Yeɗ Kiredi",
       "awardCreditsDescription": "Anndir terɗe ballooje.",
       "reviewReports": "Ƴeewto Jeertine",
       "reviewReportsDescription": "Ƴeewto ko haaje yiɗe.",
       "viewUsers": "Yiylo Huutortooɓe",
       "viewUsersDescription": "Yiylo terɗe e taƴto darndeeji.",
-      "analytics": "Analytik Kuurdu",
+      "analytics": "Analytik Renndo",
       "analyticsDescription": "Janngu nafigo e golle."
     },
     "overview": {
       "totalUsers": "Huutortooɓe",
       "totalPosts": "Blaŋtooji",
       "totalIdeas": "Miijooji",
-      "totalMemories": "Jikkuuji",
+      "totalMemories": "Teskooji",
       "totalComments": "Wiɗtooji"
     },
     "users": {
-      "eyebrow": "Yimɓe Kuurdu",
+      "eyebrow": "Yimɓe Renndo",
       "title": "Njuɓɓudi Terɗe",
       "description": "Huutortooɓe poti wonde terɗe. Njuɓɓuɗo waawi momtude huunde si haaje.",
       "search": "ɗaɓɓit huutortooɓe",
@@ -776,7 +777,7 @@
       "updateRole": "Hesɗitin",
       "selfRoleProtected": "Huunde maa njuɓɓudi no reenaa",
       "deleteUser": "Momtu huunde",
-      "deleteConfirm": "Momtu huunde huutortooɗo ɗoo e kuurdu? Ngal waawaa taƴtireede e lindowal."
+      "deleteConfirm": "Momtu huunde huutortooɗo ɗoo e renndo? Ngal waawaa taƴtireede e lindowal."
     },
     "roles": {
       "member": "Tergal",
@@ -784,7 +785,7 @@
     },
     "credits": {
       "eyebrow": "Kiredi ballondiral",
-      "title": "Njoddu nafuuda kuurdu",
+      "title": "Njoddu nafuuda renndo",
       "description": "Yeɗ kiredi ballondiral e danndu daartol.",
       "user": "Huutortooɗo",
       "points": "Kiredi",
@@ -796,8 +797,8 @@
       "empty": "Alaa kiredi yeɗaama haa jooni."
     },
     "creditReasons": {
-      "helpedCommunity": "Ballike kuurdu",
-      "sharedValuableMemory": "Yeɗitike jikku himmɗo",
+      "helpedCommunity": "Ballike renndo",
+      "sharedValuableMemory": "Yeɗitike tesko himmɗo",
       "proposedUsefulIdea": "Eɓɓi miijo nafoore",
       "volunteerWork": "Gollal sakkitiŋgal",
       "cityImprovementAction": "Gollal ɓeyngu saare",
@@ -805,30 +806,30 @@
     },
     "content": {
       "eyebrow": "Njiylawu fin-ñiiwa",
-      "title": "Blaŋtooji, miijooji, e jikkuuji haa jooni",
-      "description": "ƒewto blaŋtooji, miijooji, e jikkuuji haa jooni.",
+      "title": "Blaŋtooji, miijooji, e teskooji haa jooni",
+      "description": "ƒewto blaŋtooji, miijooji, e teskooji haa jooni.",
       "by": "e juuɗe {name}",
       "view": "Yeru",
       "delete": "Momtu",
       "type": {
         "post": "Blaŋto",
         "idea": "Miijo",
-        "memory": "Jikku"
+        "memory": "Tesko"
       }
     },
     "activity": {
       "eyebrow": "Gollegol Haa Jooni",
-      "title": "Laawol wakkati kuurdu",
+      "title": "Laawol wakkati renndo",
       "type": {
         "post": "{name} yeɗitike blaŋto: {title}",
         "idea": "{name} eɓɓi miijo: {title}",
-        "memory": "{name} yeɗitike jikku: {title}",
+        "memory": "{name} yeɗitike tesko: {title}",
         "credit": "{name} heɓi kiredi {title}",
-        "member": "{title} tawtike kuurdu"
+        "member": "{title} tawtike renndo"
       }
     },
     "identity": {
-      "eyebrow": "Jeyngu Kuurdu",
+      "eyebrow": "Jeyngu Renndo",
       "title": "Hiɗa mah galle dijital Nuwaadibu.",
       "description": "Kiredi kala, ƴeewto, e taƴto darnde poti wallude yimɓe yi'de no kawrirta, nafooɓe, e jokkondirta e saare.",
       "settingsNote": "Mbaydi e analytik ɓurɗi teewde mbaɗataa caggal. MVP fawii ko yimɓe e darnde."
@@ -842,7 +843,7 @@
       "creditError": "Kiredi yeɗde waawaa. Tabitin Supabase migration no huutoraa.",
       "deleteError": "Fin-ñiiwa momtude waawaa.",
       "selfRoleBlocked": "A waawaa ittude darnde maa njuɓɓudi e ngoo hello.",
-      "userDeleted": "Huunde huutortooɗo ittaama e kuurdu.",
+      "userDeleted": "Huunde huutortooɗo ittaama e renndo.",
       "userDeleteError": "Momtude huunde huutortooɗo waawaa. Ƴeewto Supabase service role permissions, ɗeen eto kadi.",
       "selfDeleteBlocked": "A waawaa momtude huunde maa njuɓɓudi e ngoo hello.",
       "userDeleteConfigError": "Suppu Supabase service role majjii. Ɓeydu SUPABASE_SERVICE_ROLE_KEY e Vercel arano."
@@ -908,50 +909,50 @@
     },
     "errors": {
       "auth_invalid_credentials": "Nimitoor maa finnde wowre fotaani",
-      "auth_email_not_confirmed": "Veuillez confirmer votre e-mail avant de vous connecter",
-      "auth_email_provider_disabled": "Connexion synthétique par téléphone exige que le fournisseur e-mail soit activé dans les paramètres Supabase Auth.",
-      "auth_phone_provider_disabled": "Connexion par téléphone exige que le fournisseur téléphone soit activé dans les paramètres Supabase Auth.",
+      "auth_email_not_confirmed": "Tabitin iimeel maa yeeso naatgol.",
+      "auth_email_provider_disabled": "Naatgol iimeel hiɗa haaje, waɗugol provider iimeel to Supabase Auth.",
+      "auth_phone_provider_disabled": "Naatgol nimitoor hiɗa haaje, waɗugol provider nimitoor to Supabase Auth.",
       "auth_user_exists": "Konte ena woodi kadi e namba ndee.",
-      "auth_weak_password": "Le mot de passe doit contenir au moins 8 caractères",
-      "auth_invalid_email": "Veuillez entrer une adresse e-mail valide",
-      "auth_link_expired": "Ce lien a expiré ou est invalide",
-      "auth_rate_limited": "Trop de tentatives. Veuillez réessayer plus tard",
-      "auth_generic_error": "Une erreur est survenue. Veuillez réessayer",
-      "auth_session_expired": "Votre session a expiré. Veuillez vous reconnecter",
-      "auth_network_error": "Erreur réseau. Veuillez vérifier votre connexion",
-      "password_length": "Le mot de passe doit contenir au moins 8 caractères",
-      "password_requirements": "Le mot de passe doit contenir au moins 8 caractères",
-      "password_mismatch": "Les mots de passe ne correspondent pas",
-      "username_length": "Le nom d'utilisateur doit contenir entre 3 et 24 caractères",
-      "full_name_length": "Le nom complet doit contenir entre 2 et 100 caractères",
+      "auth_weak_password": "Finnde haa ɓuri 8 binndi",
+      "auth_invalid_email": "Naatnu adres iimeel moƴƴo",
+      "auth_link_expired": "Jokkorgal ngal gasii walla moƴƴaani",
+      "auth_rate_limited": "Eto keewi. Eɗen mballu en raɓo caggal ɗum.",
+      "auth_generic_error": "Huunde waɗii. Eɗen mballu en eto kadi.",
+      "auth_session_expired": "Session maa gasii. Eɗen mballu en naatu kadi.",
+      "auth_network_error": "Jokkondiral caɗii. Ƴeewto jokkondiral maa.",
+      "password_length": "Finnde haa ɓuri 8 binndi",
+      "password_requirements": "Finnde haa ɓuri 8 binndi",
+      "password_mismatch": "Finnde ɗiɗi fotaani",
+      "username_length": "Innde huutorteende hakkunde 3 e 24 binndi",
+      "full_name_length": "Innde timmunde hakkunde 2 e 100 binndi",
       "username_taken": "Innde kuutoro ndee huutoraama kisa",
-      "incorrect_password": "Finnde ndee mo??aani",
+      "incorrect_password": "Finnde ndee moƴƴaani",
       "account_not_found": "Alaa konte yiytaa e ndee email",
-      "email_required": "Email ena wa??ii",
-      "phone_required": "Nimitoor ena wa??ii",
+      "email_required": "Iimeel haaje",
+      "phone_required": "Nimitoor haaje",
       "auth_invalid_phone": "Naatnu nimitoor moƴƴo",
       "auth_phone_exists": "Konte ena woodi kadi e nimitoor ngal",
       "phone_exists_title": "Konte ena jokkondiri e nimitoor ngal",
       "phone_exists_login": "Naatu e nimitoor ngal",
-      "password_required": "Finnde ena wa??ii",
-      "username_required": "Innde kuutoro ena wa??ii",
-      "full_name_required": "Innde timmunde ena wa??ii",
-      "confirm_password_required": "Tee?tin finnde maa"
+      "password_required": "Finnde haaje",
+      "username_required": "Innde huutorteende haaje",
+      "full_name_required": "Innde timmunde haaje",
+      "confirm_password_required": "Tabitin finnde maa"
     },
     "success": {
-      "auth_registered": "Inscription terminée ! Vérifiez votre e-mail pour confirmer votre compte.",
-      "auth_password_reset_sent": "Si un compte existe, vous recevrez un e-mail de réinitialisation.",
-      "auth_password_updated": "Mot de passe mis à jour avec succès.",
-      "auth_email_confirmed": "E-mail confirmé ! Vous pouvez maintenant vous connecter.",
-      "auth_logged_out": "Vous avez été déconnecté.",
-      "auth_email_confirmation_sent": "E-mail de confirmation envoyé. Veuillez vérifier votre boîte de réception."
+      "auth_registered": "Mahgol timmii! Ƴeewto iimeel maa ngam tabitingol konte.",
+      "auth_password_reset_sent": "Si konte woodi, a heɓay iimeel fuɗɗorde finnde.",
+      "auth_password_updated": "Finnde hesɗitinaama no moƴƴi.",
+      "auth_email_confirmed": "Iimeel tabitinaama! A waawi jooni naatde.",
+      "auth_logged_out": "A yaaltii.",
+      "auth_email_confirmation_sent": "Iimeel tabitingol neldaama. Ƴeewto boite maa."
     },
     "validation": {
-      "password_requirements": "Au moins 8 caractères",
-      "password_length": "Au moins 8 caractères",
-      "password_mismatch": "Les mots de passe ne correspondent pas",
-      "username_length": "Entre 3 et 24 caractères",
-      "full_name_length": "Entre 2 et 100 caractères"
+      "password_requirements": "Ɓurɗo 8 binndi",
+      "password_length": "Ɓurɗo 8 binndi",
+      "password_mismatch": "Finnde ɗiɗi fotaani",
+      "username_length": "Hakkunde 3 e 24 binndi",
+      "full_name_length": "Hakkunde 2 e 100 binndi"
     }
   },
   "Toasts": {
@@ -961,20 +962,20 @@
     "commentDeleted": "Wiɗto momtaama",
     "postDeleted": "Blaŋto momtaama",
     "postSaved": "Blaŋto danndaama",
-    "memorySubmitted": "Jikku yeɗitaama no moƴƴi",
+    "memorySubmitted": "Tesko yeɗitaama no moƴƴi",
     "ideaSubmitted": "Miijo yeɗitaama no moƴƴi",
     "voteAdded": "Suɓo ɓeydaama",
     "updated": "Profil hesɗitinaama",
     "linkCopied": "Jokkorgal blaŋto ngal jattinaama",
     "emailSent": "Ƴeewto iimeel maa ngam jokkorgal fuɗɗorde",
-    "emailConfirmation": "Inscription terminée. Veuillez vérifier votre e-mail pour confirmer votre compte.",
+    "emailConfirmation": "Mahgol timmii. Ƴeewto iimeel maa ngam tabitingol.",
     "comingSoon": "No ara"
   },
   "Errors": {
     "invalidInput": "Naatgol moƴƴaŋngal",
     "invalidPost": "Blaŋto moƴƴaŋngal",
     "invalidProfile": "Profil moƴƴaŋngal",
-    "invalidMemory": "Jikku moƴƴaŋngal",
+    "invalidMemory": "Tesko moƴƴaŋngal",
     "invalidIdea": "Miijo moƴƴaŋngal",
     "saveFailed": "Dannde dañii",
     "reactionFailed": "Hesɗitirde jaabital dañii",
@@ -1000,7 +1001,7 @@
     "compressionFailed": "Tappirde nate ngam loowde dañii.",
     "notAuthenticated": "Eɗen mballu en naatu yeeso loowde.",
     "noFile": "Eɗen mballu en suɓo faylo ngam loowde.",
-    "uploadingImagesProgress": "Uploading images {current} of {total}..."
+    "uploadingImagesProgress": "No loowata nate {current} e {total}..."
   },
   "Brand": {
     "title": "INDB Community OS",
@@ -1017,57 +1018,57 @@
   },
   "EmptyStates": {
     "posts": {
-      "title": "No community stories yet",
-      "description": "Be the first to share what is happening in Nouadhibou.",
-      "cta": "Create a post"
+      "title": "Alaa daartol renndo haa jooni",
+      "description": "Warna aɗa yeɗitita ko waɗata e Nuwadibu.",
+      "cta": "Mah blaŋto"
     },
     "memories": {
-      "title": "No memories yet",
-      "description": "Preserve a story, photo, or moment from Nouadhibou.",
-      "cta": "Share a memory"
+      "title": "Alaa teskooji haa jooni",
+      "description": "Danndu daartol, nate walla sahaa goɗɗo e Nuwadibu.",
+      "cta": "Yeɗit tesko"
     },
     "ideas": {
-      "title": "No ideas yet",
-      "description": "Start the next community improvement idea.",
-      "cta": "Share an idea"
+      "title": "Alaa miijooji haa jooni",
+      "description": "Fuɗɗo miijo janngo ngam ɓeyngu renndo.",
+      "cta": "Yeɗit miijo"
     },
     "fadla": {
-      "title": "No shares yet",
-      "description": "Share something useful you no longer need and help a neighbor.",
-      "cta": "Share something"
+      "title": "Alaa yeɗitine haa jooni",
+      "description": "Yeɗit huunde nafoore nde aɗa waɗii ngam wallude hoɗdiiɗo.",
+      "cta": "Yeɗit huunde"
     },
     "events": {
-      "title": "Alaa ɗewte haa jooni",
-      "description": "Mah ɗewal aranndu ngam tawtindir yimɓe e gollal nokkuwal.",
-      "cta": "Yiylo kesɗitine"
+      "title": "Alaa kewu haa jooni",
+      "description": "Mah kewu aranndu ngam tawtindir yimɓe e gollal nokkuwal.",
+      "cta": "Yiylo binndanɗe"
     },
     "profile": {
-      "title": "Alaa blaŋtooji haa jooni",
+      "title": "Alaa binndanɗe haa jooni",
       "description": "Yeɗit kesɗitine maa arandeere.",
       "cta": "Mah blaŋto"
     },
     "polls": {
       "title": "Alaa nootorgal haa jooni",
-      "description": "Mah nootorgal aranndu ngam heɓde miijooji kuurdu.",
-      "cta": "Yiylo kesɗitine"
+      "description": "Mah nootorgal aranndu ngam heɓde miijooji renndo.",
+      "cta": "Yiylo binndanɗe"
     },
     "projects": {
-      "title": "Alaa proje haa jooni",
-      "description": "Fuɗɗo proje siwil ngam tawtindir kuurdu e gollal nokkuwal.",
-      "cta": "Yiylo kesɗitine"
+      "title": "Alaa prooje haa jooni",
+      "description": "Fuɗɗo prooje siwil ngam tawtindir renndo e gollal nokkuwal.",
+      "cta": "Yiylo binndanɗe"
     }
   },
   "Fadla": {
     "title": "Graatek",
-    "eyebrow": "Yeɗitine kuurdu",
-    "description": "Yeɗit ko njiɗaa koo ko heddii e juuɗe maa ngam heɓooɓe ɗum en. Paɗi lootere, ɓeydu tiiɗndiral, Nuwaadibu ɓurngu.",
+    "eyebrow": "Yeɗitine renndo",
+    "description": "Yeɗit ko njiɗaa koo ko heddii e juuɗe maa ngam heɓooɓe ɗum en. Paɗi lootere, ɓeydu ballal, Nuwadibu ɓurngu tiiɗude.",
     "notMarketplace": "Alaa coggu. Alaa njoɓdi. Ko yeɗitde e ballondirde tan.",
     "shareButton": "Yeɗit Huunde",
     "searchPlaceholder": "ɗaɓɓit e yeɗitine",
     "allCategories": "Cate fuu",
     "allUrgency": "Accelel fuu",
     "allStatus": "Darnde fuu",
-    "unknownOwner": "Tergal kuurdu",
+    "unknownOwner": "Tergal renndo",
     "sharedForHelp": "Yeɗitaama ngam ballal",
     "imagePlaceholder": "Huunde nafoore",
     "needThis": "Meŋa yiɗi ɗum",
@@ -1078,7 +1079,7 @@
     "archive": "Marƴu e profil",
     "requests": "Ƴamle",
     "archiveTitle": "Graatek Archive",
-    "archiveDescription": "Yiylo huɗe timmaaɗe e marƴaaɗe, rewr nafuuda maa e kuurdu.",
+    "archiveDescription": "Yiylo huɗe timmaaɗe e marƴaaɗe, rewr nafuuda maa e renndo.",
     "completedOn": "Timmi e",
     "archivedOn": "Marƴaa e",
     "backToActive": "Rutto e yeɗitine wuuruɗe",
@@ -1138,9 +1139,9 @@
       "accepted": "Ƴamle jaɓaama",
       "declined": "Ƴamle saltaama",
       "collected": "Moƴƴinaama tingol",
-      "completed": "Item completed and archived",
+      "completed": "Huunde timmii e marƴaama",
       "archived": "Huunde maraama",
-      "handedOver": "Handover confirmed"
+      "handedOver": "Yeɗgol tabitinaama"
     },
     "errors": {
       "saveFailed": "Dannde yeɗitine waawaa",
@@ -1149,24 +1150,26 @@
       "notFound": "Huunde ndeya tawaaka",
       "ownItem": "A waawaa yiɗe huunde maa",
       "notAvailable": "Ndee huunde heɓotaako",
-      "collectionNotConfirmed": "The recipient must confirm collection first."
+      "collectionNotConfirmed": "Heɓoowo haa jooni tabitinii heɓgol."
     },
     "empty": {
       "title": "Alaa yeɗitine haa jooni",
-      "description": "Warna aɗa yeɗitit huunde nafoore e kuurdu."
+      "description": "Warna aɗa yeɗitit huunde nafoore e renndo."
     },
-    "markHandedOver": "Mark as Handed Over",
-    "completeAndArchive": "Complete and Archive",
-    "reservedFor": "Reserved for {name}",
-    "waitingCollection": "Waiting for the recipient to confirm collection.",
-    "recipientConfirmed": "Recipient confirmed collection. Confirm the handover to continue.",
-    "waitingHandover": "Waiting for owner handover confirmation",
+    "markHandedOver": "Waɗu no yeɗaa",
+    "completeAndArchive": "Timminu e marƴu",
+    "reservedFor": "Marƴaama ngam {name}",
+    "waitingCollection": "No raɓi heɓoowo tabitina heɓgol.",
+    "recipientConfirmed": "Heɓoowo tabitinii heɓgol. Tabitin yeɗgol ngam jokkitde.",
+    "waitingHandover": "No raɓi jom huunde tabitina yeɗgol",
     "requestStatus": {
-      "pending": "Pending",
-      "accepted": "Accepted",
-      "declined": "Declined",
-      "cancelled": "Cancelled"
-    }
+      "pending": "No ƴeewte",
+      "accepted": "Jaɓaama",
+      "declined": "Saltaama",
+      "cancelled": "Futtaama"
+    },
+    "confirmReceived": "Mi heɓii Graatek",
+    "confirmHandedOver": "Mi yeɗii Graatek"
   },
   "ConfirmDialog": {
     "title": "Accit taƴtooji?",
@@ -1175,10 +1178,10 @@
     "discard": "Accu"
   },
   "Translating": {
-    "seeTranslation": "See translation",
-    "showOriginal": "Show original",
-    "translating": "Translating...",
-    "unavailable": "Translation unavailable"
+    "seeTranslation": "Yiylo firo",
+    "showOriginal": "Hollu asli",
+    "translating": "No firoo...",
+    "unavailable": "Firo alaa"
   },
   "ProfileAbout": {
     "overview": "Yiyndee",
