@@ -46,7 +46,7 @@
           "description": "Suggérez des idées pour améliorer la ville et votez pour elles."
         },
         "fadla": {
-          "title": "Graatek",
+          "title": "Gar3tak",
           "description": "Un espace de solidarite et de partage ou les membres de la communaute partagent nourriture, vetements, outils et tout ce qui peut etre utile aux autres."
         },
         "profile": {
@@ -121,11 +121,11 @@
       "description": "Mettez à jour votre publication."
     },
     "fadla": {
-      "title": "Graatek",
+      "title": "Gar3tak",
       "description": "Un espace de solidarite et de partage ou les membres de la communaute partagent nourriture, vetements, outils et tout ce qui peut etre utile aux autres."
     },
     "fadlaArchive": {
-      "title": "Archives Graatek",
+      "title": "Archives Gar3tak",
       "description": "Consultez les objets terminés et archivés et suivez votre impact communautaire."
     },
     "privacy": {
@@ -154,20 +154,20 @@
       "Publications et commentaires : le contenu que vous publiez sur le fil d'actualité, y compris le texte, les liens et les réactions.",
       "Souvenirs : les histoires, photos et contenus historiques que vous contribuez aux archives.",
       "Idées : les suggestions et propositions que vous soumettez pour améliorer la ville.",
-      "Articles Graatek : les articles que vous listez pour les partager avec la communauté.",
+      "Articles Gar3tak : les articles que vous listez pour les partager avec la communauté.",
       "Médias : les images et vidéos que vous téléchargez sur la plateforme.",
       "Cookies et données de session : les données techniques collectées via les cookies et technologies similaires."
     ],
     "accountsTitle": "Comptes utilisateurs",
     "accountsBody": "Lorsque vous créez un compte sur I ❤️ NDB, nous collectons votre nom et votre adresse e-mail. Vous pouvez éventuellement fournir des informations de profil supplémentaires telles qu'une bio, une photo de profil et votre ville. Votre profil est visible par les autres membres de la communauté. Vous pouvez contrôler les informations affichées en modifiant les paramètres de votre profil à tout moment.",
-    "contentTitle": "Publications, Souvenirs, Idées et Graatek",
-    "contentBody": "Tout contenu que vous publiez sur la plateforme — y compris les publications, souvenirs, idées, commentaires et annonces Graatek — est stocké sur nos serveurs et peut être visible par d'autres utilisateurs selon vos paramètres de confidentialité et la nature de la fonctionnalité. Nous conservons ce contenu pour fournir nos services et maintenir les archives communautaires. Vous pouvez supprimer votre contenu à tout moment et nous le retirerons de la vue publique.",
+    "contentTitle": "Publications, Souvenirs, Idées et Gar3tak",
+    "contentBody": "Tout contenu que vous publiez sur la plateforme — y compris les publications, souvenirs, idées, commentaires et annonces Gar3tak — est stocké sur nos serveurs et peut être visible par d'autres utilisateurs selon vos paramètres de confidentialité et la nature de la fonctionnalité. Nous conservons ce contenu pour fournir nos services et maintenir les archives communautaires. Vous pouvez supprimer votre contenu à tout moment et nous le retirerons de la vue publique.",
     "mediaTitle": "Images et vidéos téléchargées",
     "mediaBody": "Les images et vidéos que vous téléchargez sont stockées en toute sécurité sur nos serveurs. Nous utilisons ces fichiers uniquement pour les afficher sur la plateforme comme vous le souhaitez. Nous n'utilisons pas vos médias téléchargés à d'autres fins que la fourniture de nos services. Vous pouvez supprimer tout média que vous avez téléchargé à tout moment via l'interface de la plateforme.",
     "cookiesTitle": "Cookies et utilisation des sessions",
     "cookiesBody": "Nous utilisons des cookies et des technologies de suivi similaires pour maintenir votre session, mémoriser vos préférences et améliorer votre expérience. Les cookies sont de petits fichiers texte stockés sur votre appareil. Vous pouvez contrôler les paramètres des cookies via votre navigateur. Les cookies essentiels sont nécessaires au bon fonctionnement de la plateforme. Les cookies d'analyse nous aident à comprendre comment la plateforme est utilisée afin que nous puissions l'améliorer.",
     "rightsTitle": "Droits des utilisateurs",
-    "rightsBody": "Vous avez le droit d'accéder, de mettre à jour ou de supprimer vos informations personnelles à tout moment. Vous pouvez :\n- Modifier les informations de votre profil via les paramètres de la plateforme.\n- Supprimer vos publications, souvenirs, idées et articles Graatek individuellement.\n- Demander la suppression complète du compte en contactant les administrateurs de la plateforme.\n- Retirer votre consentement au traitement des données le cas échéant.\n- Exporter vos données en nous contactant.\nNous répondrons à toute demande de données dans un délai raisonnable.",
+    "rightsBody": "Vous avez le droit d'accéder, de mettre à jour ou de supprimer vos informations personnelles à tout moment. Vous pouvez :\n- Modifier les informations de votre profil via les paramètres de la plateforme.\n- Supprimer vos publications, souvenirs, idées et articles Gar3tak individuellement.\n- Demander la suppression complète du compte en contactant les administrateurs de la plateforme.\n- Retirer votre consentement au traitement des données le cas échéant.\n- Exporter vos données en nous contactant.\nNous répondrons à toute demande de données dans un délai raisonnable.",
     "contactTitle": "Informations de contact",
     "contactBody": "Si vous avez des questions, préoccupations ou demandes concernant cette politique de confidentialité ou vos données personnelles, veuillez contacter les administrateurs de la plateforme via les canaux de contact disponibles ou en contactant l'équipe de gestion communautaire."
   },
@@ -229,8 +229,8 @@
     "memoriesBody": "Les souvenirs que vous avez contribués peuvent être supprimés depuis les archives. Accédez au souvenir que vous souhaitez supprimer et utilisez les options disponibles. Si vous avez besoin d'aide pour supprimer des souvenirs ou souhaitez supprimer toutes vos contributions, contactez les administrateurs de la plateforme.",
     "ideasTitle": "Supprimer vos idées",
     "ideasBody": "Les idées que vous avez soumises peuvent être supprimées via l'interface de la plateforme. Veuillez noter que la suppression d'une idée supprimera également les votes et commentaires associés. Si vous rencontrez des problèmes, contactez les administrateurs de la plateforme.",
-    "fadlaTitle": "Supprimer les articles Graatek",
-    "fadlaBody": "Les articles Graatek que vous avez listés peuvent être supprimés depuis la section Graatek. Une fois supprimés, l'article ne sera plus visible par les autres membres de la communauté. Pour une suppression en masse ou une assistance, veuillez contacter les administrateurs de la plateforme.",
+    "fadlaTitle": "Supprimer les articles Gar3tak",
+    "fadlaBody": "Les articles Gar3tak que vous avez listés peuvent être supprimés depuis la section Gar3tak. Une fois supprimés, l'article ne sera plus visible par les autres membres de la communauté. Pour une suppression en masse ou une assistance, veuillez contacter les administrateurs de la plateforme.",
     "contactTitle": "Contactez-nous",
     "contactBody": "Pour demander la suppression de données ou poser des questions sur ce processus, veuillez contacter les administrateurs de la plateforme via les canaux de communication disponibles. Nous répondrons à votre demande dans un délai raisonnable et confirmerons une fois la suppression effectuée."
   },
@@ -280,8 +280,8 @@
         "short": "Profil"
       },
       "fadla": {
-        "label": "Graatek",
-        "short": "Graatek"
+        "label": "Gar3tak",
+        "short": "Gar3tak"
       }
     }
   },
@@ -303,14 +303,14 @@
       "ideas": "Idées",
       "memories": "Souvenirs",
       "people": "Personnes",
-      "fadla": "Graatek"
+      "fadla": "Gar3tak"
     },
     "types": {
       "post": "Publication",
       "idea": "Idée",
       "memory": "Souvenir",
       "profile": "Personne",
-      "fadla": "Article Graatek"
+      "fadla": "Article Gar3tak"
     }
   },
   "Notifications": {
@@ -332,11 +332,11 @@
     "someone": "Quelqu'un",
     "communityShareRequested": "Quelqu'un souhaite recevoir l'objet que vous avez partage",
     "fadlaRequested": "{actorName} a demande l'objet que vous partagez",
-    "fadlaCompleted": "{actorName} a terminé votre objet Graatek",
-    "fadlaMessage": "{actorName} vous a envoyé un message à propos de Graatek",
-    "fadlaReceiverConfirmed": "{actorName} a confirmé avoir reçu Graatek",
-    "fadlaSenderConfirmed": "{actorName} a confirmé avoir remis Graatek",
-    "fadlaBothCompleted": "Graatek a été terminée avec succès",
+    "fadlaCompleted": "{actorName} a terminé votre objet Gar3tak",
+    "fadlaMessage": "{actorName} vous a envoyé un message à propos de Gar3tak",
+    "fadlaReceiverConfirmed": "{actorName} a confirmé avoir reçu Gar3tak",
+    "fadlaSenderConfirmed": "{actorName} a confirmé avoir remis Gar3tak",
+    "fadlaBothCompleted": "Gar3tak a été terminée avec succès",
     "fadlaRequestAccepted": "Votre demande a été acceptée par {actorName}",
     "fadlaRequestDeclined": "Votre demande a été refusée par {actorName}",
     "loadMore": "Charger plus",
@@ -721,7 +721,7 @@
       "memories": "Souvenirs",
       "ideas": "Idées",
       "about": "À propos",
-      "shares": "Graatek"
+      "shares": "Gar3tak"
     },
     "joined": "Membre depuis",
     "role": {
@@ -1191,7 +1191,7 @@
     "discard": "Ignorer"
   },
   "Fadla": {
-    "title": "Graatek",
+    "title": "Gar3tak",
     "eyebrow": "Partage communautaire",
     "description": "Un espace de solidarite et de partage ou les membres de la communaute partagent nourriture, vetements, outils et tout ce qui peut etre utile aux autres.",
     "notMarketplace": "Pas de prix. Pas de paiement. Seulement le partage et l'entraide.",
@@ -1244,8 +1244,8 @@
     },
     "accept": "Accepter",
     "decline": "Refuser",
-    "confirmReceived": "J'ai recu Graatek",
-    "confirmHandedOver": "J'ai remis Graatek",
+    "confirmReceived": "J'ai recu Gar3tak",
+    "confirmHandedOver": "J'ai remis Gar3tak",
     "waitingOtherConfirmation": "En attente de la confirmation de l'autre personne",
     "requestCompleted": "Terminé",
     "form": {
@@ -1305,19 +1305,19 @@
       "error": "Impossible de charger la discussion",
       "maxLength": "500 caractères maximum",
       "sendError": "Impossible d'envoyer le message",
-      "notificationTitle": "Nouveau message sur votre annonce Graatek",
+      "notificationTitle": "Nouveau message sur votre annonce Gar3tak",
       "withOwner": "Discussion avec le propriétaire",
       "withReceiver": "Discussion avec le bénéficiaire",
-      "completedTitle": "Graatek terminee avec succes",
+      "completedTitle": "Gar3tak terminee avec succes",
       "completedSubtitle": "La discussion a été fermée après confirmation des deux personnes.",
       "viewHistory": "Afficher l'historique de la discussion",
       "hideHistory": "Masquer l'historique de la discussion"
     },
     "requestAcceptedBanner": "Votre demande a été acceptée. Vous pouvez maintenant discuter pour organiser la récupération.",
     "notifications": {
-      "receiverConfirmed": "Le beneficiaire a confirme la reception de Graatek",
-      "senderConfirmed": "Le proprietaire de Graatek a confirme la remise",
-      "bothCompleted": "Graatek a ete terminee avec succes"
+      "receiverConfirmed": "Le beneficiaire a confirme la reception de Gar3tak",
+      "senderConfirmed": "Le proprietaire de Gar3tak a confirme la remise",
+      "bothCompleted": "Gar3tak a ete terminee avec succes"
     }
   },
   "Translating": {

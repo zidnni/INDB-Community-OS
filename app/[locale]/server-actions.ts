@@ -3312,7 +3312,7 @@ export async function requestFadlaItemAction(
     type: 'fadla_request',
     entityType: 'community_share',
     entityId: itemId,
-    title: 'New Graatek request',
+    title: 'New Gar3tak request',
     metadata: {
       shareId: itemId,
       requestId,
@@ -3530,7 +3530,7 @@ export async function declineFadlaRequestAction(
     type: 'fadla_request_declined',
     entityType: 'community_share',
     entityId: req.share_id,
-    title: 'Your Graatek request was declined',
+    title: 'Your Gar3tak request was declined',
   });
 
   // Check if there are any other pending requests for this item
@@ -3629,7 +3629,7 @@ export async function sendFadlaMessageAction(
     type: 'fadla_message',
     entityType: 'community_share',
     entityId: shareId,
-    title: 'sent you a message about Graatek',
+    title: 'sent you a message about Gar3tak',
     metadata: {requestId, message: trimmed.slice(0, 100), senderId: user.id},
   });
 

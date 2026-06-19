@@ -46,7 +46,7 @@
           "description": "Suggest ideas to improve the city and vote on them."
         },
         "fadla": {
-          "title": "Graatek",
+          "title": "Gar3tak",
           "description": "A space for solidarity and sharing, where community members share food, clothing, tools, and anything that can benefit others."
         },
         "profile": {
@@ -93,11 +93,11 @@
       "description": "Vote and contribute to practical ideas for Nouadhibou."
     },
     "fadla": {
-      "title": "Graatek",
+      "title": "Gar3tak",
       "description": "A space for solidarity and sharing, where community members share food, clothing, tools, and anything that can benefit others."
     },
     "fadlaArchive": {
-      "title": "Graatek Archive",
+      "title": "Gar3tak Archive",
       "description": "Browse completed and archived shared items and track community impact."
     },
     "timeline": {
@@ -154,20 +154,20 @@
       "Posts and Comments: Content you publish on the feed, including text, links, and reactions.",
       "Memories: Stories, photos, and historical content you contribute to the memory archive.",
       "Ideas: Suggestions and proposals you submit to improve the city.",
-      "Graatek Items: Items you list to share with the community.",
+      "Gar3tak Items: Items you list to share with the community.",
       "Media: Images and videos you upload to the platform.",
       "Cookies and Session Data: Technical data collected through cookies and similar technologies."
     ],
     "accountsTitle": "User Accounts",
     "accountsBody": "When you create an account on I ❤️ NDB, we collect your name and email address. You may optionally provide additional profile information such as a bio, profile picture, and city. Your profile is visible to other community members. You can control what information is displayed by editing your profile settings at any time.",
-    "contentTitle": "Posts, Memories, Ideas, and Graatek",
-    "contentBody": "Any content you post on the platform — including feed posts, memories, ideas, comments, and Graatek listings — is stored on our servers and may be visible to other users according to your privacy settings and the nature of the feature. We retain this content to provide our services and maintain the community archive. You can delete your content at any time, and we will remove it from public view.",
+    "contentTitle": "Posts, Memories, Ideas, and Gar3tak",
+    "contentBody": "Any content you post on the platform — including feed posts, memories, ideas, comments, and Gar3tak listings — is stored on our servers and may be visible to other users according to your privacy settings and the nature of the feature. We retain this content to provide our services and maintain the community archive. You can delete your content at any time, and we will remove it from public view.",
     "mediaTitle": "Uploaded Images and Videos",
     "mediaBody": "Images and videos you upload are stored securely on our servers. We use these media files only to display them on the platform as you intend. We do not use your uploaded media for any purpose other than providing our services. You may delete any media you have uploaded at any time through the platform interface.",
     "cookiesTitle": "Cookies and Session Usage",
     "cookiesBody": "We use cookies and similar tracking technologies to maintain your session, remember your preferences, and improve your experience. Cookies are small text files stored on your device. You can control cookie settings through your browser. Essential cookies are required for the platform to function properly. Analytics cookies help us understand how the platform is used so we can improve it.",
     "rightsTitle": "User Rights",
-    "rightsBody": "You have the right to access, update, or delete your personal information at any time. You can:\n- Edit your profile information through the platform settings.\n- Delete your posts, memories, ideas, and Graatek items individually.\n- Request full account deletion by contacting the platform administrators.\n- Withdraw consent for data processing where applicable.\n- Export your data by contacting us.\nWe will respond to any data request within a reasonable timeframe.",
+    "rightsBody": "You have the right to access, update, or delete your personal information at any time. You can:\n- Edit your profile information through the platform settings.\n- Delete your posts, memories, ideas, and Gar3tak items individually.\n- Request full account deletion by contacting the platform administrators.\n- Withdraw consent for data processing where applicable.\n- Export your data by contacting us.\nWe will respond to any data request within a reasonable timeframe.",
     "contactTitle": "Contact Information",
     "contactBody": "If you have any questions, concerns, or requests regarding this Privacy Policy or your personal data, please contact the platform administrators through the platform's contact channels or by reaching out to the community management team."
   },
@@ -229,8 +229,8 @@
     "memoriesBody": "Memories you have contributed can be deleted from the memory archive. Navigate to the memory you wish to delete and use the available options. If you need help deleting memories or wish to remove all your memory contributions, contact the platform administrators.",
     "ideasTitle": "Deleting Your Ideas",
     "ideasBody": "Ideas you have submitted can be deleted through the platform interface. Please note that deleting an idea will also remove associated votes and comments. If you encounter any issues, reach out to the platform administrators.",
-    "fadlaTitle": "Deleting Graatek Items",
-    "fadlaBody": "Graatek items you have listed can be deleted from the Graatek section. Once deleted, the item will no longer be visible to other community members. For bulk deletion or assistance, please contact the platform administrators.",
+    "fadlaTitle": "Deleting Gar3tak Items",
+    "fadlaBody": "Gar3tak items you have listed can be deleted from the Gar3tak section. Once deleted, the item will no longer be visible to other community members. For bulk deletion or assistance, please contact the platform administrators.",
     "contactTitle": "Contact Us",
     "contactBody": "To request data deletion or ask any questions about this process, please contact the platform administrators through the platform's communication channels. We will respond to your request within a reasonable timeframe and confirm once the deletion has been completed."
   },
@@ -264,8 +264,8 @@
         "short": "Ideas"
       },
       "fadla": {
-        "label": "Graatek",
-        "short": "Graatek"
+        "label": "Gar3tak",
+        "short": "Gar3tak"
       },
       "polls": {
         "label": "Polls",
@@ -302,14 +302,14 @@
       "posts": "Posts",
       "ideas": "Ideas",
       "memories": "Memories",
-      "fadla": "Graatek",
+      "fadla": "Gar3tak",
       "people": "People"
     },
     "types": {
       "post": "Post",
       "idea": "Idea",
       "memory": "Memory",
-      "fadla": "Graatek item",
+      "fadla": "Gar3tak item",
       "profile": "Person"
     }
   },
@@ -331,11 +331,11 @@
     "creditAwarded": "You received {points} contribution points",
     "communityShareRequested": "Someone requested the item you shared",
     "fadlaRequested": "{actorName} requested an item you shared",
-    "fadlaCompleted": "{actorName} completed your Graatek item",
-    "fadlaMessage": "{actorName} sent you a message about Graatek",
+    "fadlaCompleted": "{actorName} completed your Gar3tak item",
+    "fadlaMessage": "{actorName} sent you a message about Gar3tak",
     "fadlaReceiverConfirmed": "{actorName} confirmed they received the item",
     "fadlaSenderConfirmed": "{actorName} confirmed they handed over the item",
-    "fadlaBothCompleted": "Graatek was completed successfully",
+    "fadlaBothCompleted": "Gar3tak was completed successfully",
     "fadlaRequestAccepted": "Your request was accepted by {actorName}",
     "fadlaRequestDeclined": "Your request was declined by {actorName}",
     "someone": "Someone",
@@ -720,7 +720,7 @@
       "posts": "Posts",
       "memories": "Memories",
       "ideas": "Ideas",
-      "shares": "Graatek",
+      "shares": "Gar3tak",
       "about": "About"
     },
     "joined": "Joined",
@@ -1185,7 +1185,7 @@
     }
   },
   "Fadla": {
-    "title": "Graatek",
+    "title": "Gar3tak",
     "eyebrow": "Community sharing",
     "description": "A space for solidarity and sharing, where community members share food, clothing, tools, and anything that can benefit others. Less waste, more solidarity, stronger Nouadhibou.",
     "notMarketplace": "No prices. No payments. Only sharing and helping.",
@@ -1238,8 +1238,8 @@
     },
     "accept": "Accept",
     "decline": "Decline",
-    "confirmReceived": "I received Graatek",
-    "confirmHandedOver": "I handed over Graatek",
+    "confirmReceived": "I received Gar3tak",
+    "confirmHandedOver": "I handed over Gar3tak",
     "waitingOtherConfirmation": "Waiting for the other person to confirm",
     "requestCompleted": "Completed",
     "form": {
@@ -1299,19 +1299,19 @@
       "error": "Failed to load discussion",
       "maxLength": "Maximum 500 characters",
       "sendError": "Failed to send message",
-      "notificationTitle": "New message about your Graatek item",
+      "notificationTitle": "New message about your Gar3tak item",
       "withOwner": "Discussion with owner",
       "withReceiver": "Discussion with receiver",
-      "completedTitle": "Graatek completed successfully",
+      "completedTitle": "Gar3tak completed successfully",
       "completedSubtitle": "The discussion was closed after both people confirmed.",
       "viewHistory": "View conversation history",
       "hideHistory": "Hide conversation history"
     },
     "requestAcceptedBanner": "Your request was accepted. You can now discuss pickup details.",
     "notifications": {
-      "receiverConfirmed": "The recipient confirmed receiving Graatek",
-      "senderConfirmed": "The Graatek owner confirmed delivery",
-      "bothCompleted": "Graatek was completed successfully"
+      "receiverConfirmed": "The recipient confirmed receiving Gar3tak",
+      "senderConfirmed": "The Gar3tak owner confirmed delivery",
+      "bothCompleted": "Gar3tak was completed successfully"
     }
   },
   "ConfirmDialog": {

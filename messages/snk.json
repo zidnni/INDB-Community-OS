@@ -46,7 +46,7 @@
           "description": "Wattin baawo ngam yahude wuro ngam e dooɓe."
         },
         "fadla": {
-          "title": "Graatek",
+          "title": "Gar3tak",
           "description": "Yel huɗe goɗɗe nde aɗa waɗii e yimɓe nde ɓe haaɓii."
         },
         "profile": {
@@ -93,11 +93,11 @@
       "description": "Suubu e tawtu miiji goy dal Nuwaadibu."
     },
     "fadla": {
-      "title": "Graatek",
+      "title": "Gar3tak",
       "description": "Ntene no ma sugu no ma hampa ga no ma."
     },
     "fadlaArchive": {
-      "title": "Graatek Archive",
+      "title": "Gar3tak Archive",
       "description": "Yillen no banta e no marxi, wirin nafa maa jamasiye."
     },
     "timeline": {
@@ -159,8 +159,8 @@
         "short": "Miiji"
       },
       "fadla": {
-        "label": "Graatek",
-        "short": "Graatek"
+        "label": "Gar3tak",
+        "short": "Gar3tak"
       },
       "polls": {
         "label": "Suuban",
@@ -197,14 +197,14 @@
       "posts": "Keyiŋe",
       "ideas": "Miiji",
       "memories": "Jikku",
-      "fadla": "Graatek",
+      "fadla": "Gar3tak",
       "people": "Nkuntun"
     },
     "types": {
       "post": "Keyiŋe",
       "idea": "Miijo",
       "memory": "Jikku",
-      "fadla": "Ntentine Graatek",
+      "fadla": "Ntentine Gar3tak",
       "profile": "Nkunto"
     }
   },
@@ -226,11 +226,11 @@
     "creditAwarded": "I sera {points} keredi tawtital",
     "communityShareRequested": "Nkunto sera ntene no i ntinxinin.",
     "fadlaRequested": "{actorName} sera ntene no i ntinxinin",
-    "fadlaCompleted": "{actorName} yantini ntene nde Graatek maa",
-    "fadlaMessage": "{actorName} sent you a message about Graatek",
+    "fadlaCompleted": "{actorName} yantini ntene nde Gar3tak maa",
+    "fadlaMessage": "{actorName} sent you a message about Gar3tak",
     "fadlaReceiverConfirmed": "{actorName} confirmed they received the item",
     "fadlaSenderConfirmed": "{actorName} confirmed they handed over the item",
-    "fadlaBothCompleted": "Graatek was completed successfully",
+    "fadlaBothCompleted": "Gar3tak was completed successfully",
     "fadlaRequestAccepted": "Your request was accepted by {actorName}",
     "fadlaRequestDeclined": "Your request was declined by {actorName}",
     "someone": "Nkunto",
@@ -593,7 +593,7 @@
       "posts": "Keyiŋe",
       "memories": "Jikku",
       "ideas": "Miiji",
-      "shares": "Graatek",
+      "shares": "Gar3tak",
       "about": "Ga jari"
     },
     "joined": "Tawtite",
@@ -1058,7 +1058,7 @@
     }
   },
   "Fadla": {
-    "title": "Graatek",
+    "title": "Gar3tak",
     "eyebrow": "Ntentine jamasiye",
     "description": "Ntene no ma sugu no ma hampa ga no ma. Sutoru loota, ɓeydu tiiɗi, Nuwaadibu ɓuri boori.",
     "notMarketplace": "Hay koo coggu. Hay koo njoɓu. Ntentine e detem tun.",
@@ -1077,7 +1077,7 @@
     "markCompleted": "Waɗu banta",
     "archive": "Mar e profil",
     "requests": "Ƴamle",
-    "archiveTitle": "Graatek Archive",
+    "archiveTitle": "Gar3tak Archive",
     "archiveDescription": "Yillen no banta e no marxi, wirin nafa maa jamasiye.",
     "completedOn": "Banta e",
     "archivedOn": "Marxi e",

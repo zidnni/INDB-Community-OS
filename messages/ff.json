@@ -46,7 +46,7 @@
           "description": "Wattin miijooji ngam ɓeyngu saare e suɓo e majji."
         },
         "fadla": {
-          "title": "Graatek",
+          "title": "Gar3tak",
           "description": "Yeɗit huɗe nafooje nde aɗa waɗii e yimɓe nde ɓe haaɗii."
         },
         "profile": {
@@ -93,11 +93,11 @@
       "description": "Suɓo e tawtu e miijooji kuuɓtuɗi ngam Nuwaadibu."
     },
     "fadla": {
-      "title": "Graatek",
+      "title": "Gar3tak",
       "description": "Yeɗ ko njiɗaa koo ko heddii e juuɗe maa, yo heɓo ɗum en ngantooɓe."
     },
     "fadlaArchive": {
-      "title": "Graatek Archive",
+      "title": "Gar3tak Archive",
       "description": "Yiylo huɗe timmaaɗe e marƴaaɗe, rewr nafuuda maa e renndo."
     },
     "timeline": {
@@ -159,8 +159,8 @@
         "short": "Miijooji"
       },
       "fadla": {
-        "label": "Graatek",
-        "short": "Graatek"
+        "label": "Gar3tak",
+        "short": "Gar3tak"
       },
       "polls": {
         "label": "Nootorgal",
@@ -197,14 +197,14 @@
       "posts": "Blaŋtooji",
       "ideas": "Miijooji",
       "memories": "Teskooji",
-      "fadla": "Graatek",
+      "fadla": "Gar3tak",
       "people": "Yimɓe"
     },
     "types": {
       "post": "Blaŋto",
       "idea": "Miijo",
       "memory": "Tesko",
-      "fadla": "Huunde Graatek",
+      "fadla": "Huunde Gar3tak",
       "profile": "Neɗɗo"
     }
   },
@@ -226,11 +226,11 @@
     "creditAwarded": "Heɓii {points} kiredi ballondiral",
     "communityShareRequested": "Goɗɗo ƴami huunde nde yeɗuɗaa",
     "fadlaRequested": "{actorName} ƴami huunde nde yeɗuɗaa",
-    "fadlaCompleted": "{actorName} yaltini huunde nde Graatek maa",
-    "fadlaMessage": "{actorName} nelima ɗum e Graatek",
-    "fadlaReceiverConfirmed": "{actorName} tabitinii heɓgol Graatek",
-    "fadlaSenderConfirmed": "{actorName} tabitinii yeɗgol Graatek",
-    "fadlaBothCompleted": "Graatek timmii no moƴƴi",
+    "fadlaCompleted": "{actorName} yaltini huunde nde Gar3tak maa",
+    "fadlaMessage": "{actorName} nelima ɗum e Gar3tak",
+    "fadlaReceiverConfirmed": "{actorName} tabitinii heɓgol Gar3tak",
+    "fadlaSenderConfirmed": "{actorName} tabitinii yeɗgol Gar3tak",
+    "fadlaBothCompleted": "Gar3tak timmii no moƴƴi",
     "fadlaRequestAccepted": "Ƴamle maa jaɓaama e juuɗe {actorName}",
     "fadlaRequestDeclined": "Ƴamle maa saltaama e juuɗe {actorName}",
     "someone": "Goɗɗo",
@@ -594,7 +594,7 @@
       "posts": "Blaŋtooji",
       "memories": "Teskooji",
       "ideas": "Miijooji",
-      "shares": "Graatek",
+      "shares": "Gar3tak",
       "about": "Fayti"
     },
     "joined": "Tawtike",
@@ -1059,7 +1059,7 @@
     }
   },
   "Fadla": {
-    "title": "Graatek",
+    "title": "Gar3tak",
     "eyebrow": "Yeɗitine renndo",
     "description": "Yeɗit ko njiɗaa koo ko heddii e juuɗe maa ngam heɓooɓe ɗum en. Paɗi lootere, ɓeydu ballal, Nuwadibu ɓurngu tiiɗude.",
     "notMarketplace": "Alaa coggu. Alaa njoɓdi. Ko yeɗitde e ballondirde tan.",
@@ -1078,7 +1078,7 @@
     "markCompleted": "Waɗu timmude",
     "archive": "Marƴu e profil",
     "requests": "Ƴamle",
-    "archiveTitle": "Graatek Archive",
+    "archiveTitle": "Gar3tak Archive",
     "archiveDescription": "Yiylo huɗe timmaaɗe e marƴaaɗe, rewr nafuuda maa e renndo.",
     "completedOn": "Timmi e",
     "archivedOn": "Marƴaa e",
@@ -1168,8 +1168,8 @@
       "declined": "Saltaama",
       "cancelled": "Futtaama"
     },
-    "confirmReceived": "Mi heɓii Graatek",
-    "confirmHandedOver": "Mi yeɗii Graatek"
+    "confirmReceived": "Mi heɓii Gar3tak",
+    "confirmHandedOver": "Mi yeɗii Gar3tak"
   },
   "ConfirmDialog": {
     "title": "Accit taƴtooji?",
