@@ -279,6 +279,18 @@ export interface NotificationRow {
   created_at: string;
 }
 
+export interface RecommendationEventRow {
+  id: string;
+  user_id: string;
+  event_type: "post_view" | "post_like" | "post_comment" | "memory_save" | "memory_reaction" | "idea_support" | "idea_join" | "fadla_request" | "follow";
+  entity_type: "post" | "memory" | "idea" | "community_share" | "profile";
+  entity_id: string;
+  weight: number;
+  source: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
 export interface NotificationWithActor extends NotificationRow {
   actor: Pick<ProfileRow, "id" | "username" | "full_name" | "avatar_url"> | null;
 }

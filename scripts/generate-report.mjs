@@ -1,322 +1,531 @@
 #!/usr/bin/env node
 /**
- * INDB Community OS — Performance Report Generator
- *
- * Analyzes seed data and generates a comprehensive performance report.
+ * I Love NDB performance and readiness report.
  *
  * Usage:
- *   node scripts/generate-report.mjs
+ *   npm run seed:report
  *
- * Requires env vars:
- *   SUPABASE_DB_HOST, SUPABASE_DB_USER, SUPABASE_DB_PASSWORD, SUPABASE_DB_NAME
- *   SUPABASE_SERVICE_ROLE_KEY
+ * Measures the read paths needed after the living-city seed:
+ * feed, search, Graatek, memories, ideas, notifications, profile loading,
+ * database size, slow queries, and realtime notification latency.
  */
 
-import pg from "pg";
-import { createClient } from "@supabase/supabase-js";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
+import { performance } from "perf_hooks";
+import { randomUUID } from "crypto";
+import pg from "pg";
+import { createClient } from "@supabase/supabase-js";
 
-const DB_CONFIG = {
-  host: process.env.SUPABASE_DB_HOST,
-  port: Number(process.env.SUPABASE_DB_PORT ?? 5432),
-  database: process.env.SUPABASE_DB_NAME ?? "postgres",
-  user: process.env.SUPABASE_DB_USER,
-  password: process.env.SUPABASE_DB_PASSWORD,
-  ssl: { rejectUnauthorized: false },
-};
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT = path.resolve(__dirname, "..");
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
-
-async function query(sql, params = []) {
-  const client = new pg.Client(DB_CONFIG);
-  await client.connect();
-  try {
-    const res = await client.query(sql, params);
-    return res;
-  } finally {
-    await client.end();
+function loadEnvFiles() {
+  for (const fileName of [".env.local", ".env.supabase", ".env.production.local"]) {
+    const envPath = path.join(ROOT, fileName);
+    if (!fs.existsSync(envPath)) continue;
+    const body = fs.readFileSync(envPath, "utf8");
+    for (const rawLine of body.split(/\r?\n/)) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith("#")) continue;
+      const idx = line.indexOf("=");
+      if (idx < 0) continue;
+      const key = line.slice(0, idx).trim();
+      let value = line.slice(idx + 1).trim();
+      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+        value = value.slice(1, -1);
+      }
+      if (!process.env[key]) process.env[key] = value;
+    }
   }
 }
 
-function elapsed(col) {
-  return `EXTRACT(EPOCH FROM (NOW() - ${col}))::int`;
+loadEnvFiles();
+
+function requireEnv(name) {
+  const value = process.env[name];
+  if (!value) throw new Error(`Missing required env: ${name}`);
+  return value;
 }
 
-// ─── Collectors ──────────────────────────────────────────────────────────────
+const SUPABASE_URL = requireEnv("NEXT_PUBLIC_SUPABASE_URL");
+const SERVICE_ROLE_KEY = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+
+const pool = new pg.Pool({
+  host: requireEnv("SUPABASE_DB_HOST"),
+  port: Number(process.env.SUPABASE_DB_PORT ?? 5432),
+  database: process.env.SUPABASE_DB_NAME ?? "postgres",
+  user: requireEnv("SUPABASE_DB_USER"),
+  password: requireEnv("SUPABASE_DB_PASSWORD"),
+  ssl: { rejectUnauthorized: false },
+  max: 6,
+});
+
+const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false },
+  realtime: { params: { eventsPerSecond: 10 } },
+});
+
+async function query(sql, params = []) {
+  return pool.query(sql, params);
+}
+
+async function timed(name, fn) {
+  const start = performance.now();
+  const result = await fn();
+  const durationMs = Number((performance.now() - start).toFixed(2));
+  const rowCount = Array.isArray(result?.rows) ? result.rows.length : result?.rowCount ?? null;
+  return { name, durationMs, rowCount };
+}
+
+async function scalar(sql, params = []) {
+  const { rows } = await query(sql, params);
+  return Number(rows[0]?.value ?? 0);
+}
 
 async function collectTableStats() {
   const tables = [
-    "profiles", "posts", "comments", "memories", "ideas", "idea_votes",
-    "idea_supporters", "idea_participants", "idea_messages", "community_shares",
-    "community_share_requests", "fadla_request_messages", "notifications",
-    "post_reactions", "user_follows",
+    "profiles",
+    "profile_interests",
+    "posts",
+    "comments",
+    "post_reactions",
+    "saved_posts",
+    "memories",
+    "memory_comments",
+    "memory_reactions",
+    "saved_memories",
+    "ideas",
+    "idea_votes",
+    "idea_supporters",
+    "idea_participants",
+    "idea_comments",
+    "idea_messages",
+    "community_shares",
+    "community_share_requests",
+    "fadla_request_messages",
+    "notifications",
+    "user_follows",
+    "recommendation_events",
   ];
 
   const stats = {};
   for (const table of tables) {
-    const { rows } = await query(`
-      SELECT
-        COUNT(*)::int AS total,
-        COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '24 hours')::int AS last_24h,
-        COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '7 days')::int AS last_7d
-      FROM "${table}"
-    `);
-    stats[table] = rows[0];
+    try {
+      const { rows } = await query(`
+        select
+          count(*)::int as total,
+          count(*) filter (where created_at > now() - interval '24 hours')::int as last_24h,
+          count(*) filter (where created_at > now() - interval '7 days')::int as last_7d
+        from public.${table}
+      `);
+      stats[table] = rows[0];
+    } catch (error) {
+      stats[table] = { total: null, last_24h: null, last_7d: null, error: error.message };
+    }
   }
   return stats;
 }
 
-async function collectSlowQueries() {
-  if (!DB_CONFIG.host) return [];
+async function collectWorkflowCounts() {
+  const [completedGraatek, activeGraatek, availableGraatek, acceptedIdeas, rejectedIdeas, trendingIdeas, isolatedUsers, recommendationEvents] = await Promise.all([
+    scalar(`select count(*) as value from public.community_shares where status = 'completed'`),
+    scalar(`select count(*) as value from public.community_shares where status = 'requested'`),
+    scalar(`select count(*) as value from public.community_shares where status = 'published'`),
+    scalar(`select count(*) as value from public.ideas where status in ('in_progress', 'completed')`),
+    scalar(`select count(*) as value from public.ideas where status = 'archived'`),
+    scalar(`select count(*) as value from public.ideas where votes_count >= 45 or supporters_count >= 28`),
+    scalar(`
+      select count(*) as value
+      from public.profiles p
+      where not exists (
+        select 1 from public.user_follows uf
+        where uf.follower_id = p.id or uf.following_id = p.id
+      )
+    `),
+    scalar(`select count(*) as value from public.recommendation_events`),
+  ]);
 
+  return {
+    completedGraatek,
+    activeGraatek,
+    availableGraatek,
+    acceptedIdeas,
+    rejectedIdeas,
+    trendingIdeas,
+    isolatedUsers,
+    recommendationEvents,
+  };
+}
+
+async function collectBenchmarks(sampleUserId) {
+  const benchmarks = [];
+
+  benchmarks.push(await timed("feed loading", () => query(`
+    with feed_posts as (
+      select p.id, p.author_id, p.title, p.content, p.created_at, p.likes_count, p.comments_count, p.saves_count,
+             row_to_json(pr) as author
+      from public.posts p
+      join public.profiles pr on pr.id = p.author_id
+      where p.status = 'published'
+      order by p.created_at desc
+      limit 20
+    )
+    select fp.*,
+      coalesce((
+        select jsonb_object_agg(reaction_type, reaction_count)
+        from (
+          select reaction_type, count(*) as reaction_count
+          from public.post_reactions r
+          where r.post_id = fp.id
+          group by reaction_type
+        ) grouped
+      ), '{}'::jsonb) as reaction_counts
+    from feed_posts fp
+  `)));
+
+  benchmarks.push(await timed("search", () => query(`
+    with q as (select '%school%'::text as pattern)
+    select 'posts' as surface, count(*)::int as matches from public.posts, q
+      where status = 'published' and (title ilike q.pattern or content ilike q.pattern)
+    union all
+    select 'ideas', count(*)::int from public.ideas, q
+      where title ilike q.pattern or description ilike q.pattern
+    union all
+    select 'memories', count(*)::int from public.memories, q
+      where verification_status = 'approved' and (title ilike q.pattern or description ilike q.pattern or location ilike q.pattern)
+    union all
+    select 'graatek', count(*)::int from public.community_shares, q
+      where title ilike q.pattern or description ilike q.pattern or category ilike q.pattern or location ilike q.pattern
+    union all
+    select 'profiles', count(*)::int from public.profiles, q
+      where full_name ilike q.pattern or username ilike q.pattern or bio ilike q.pattern or city ilike q.pattern
+  `)));
+
+  benchmarks.push(await timed("Graatek listing", () => query(`
+    select cs.id, cs.title, cs.category, cs.status, cs.urgency_level, cs.created_at,
+           row_to_json(p) as owner,
+           (select count(*)::int from public.community_share_requests r where r.share_id = cs.id) as requests_count
+    from public.community_shares cs
+    join public.profiles p on p.id = cs.owner_id
+    where cs.status in ('published', 'requested', 'reserved', 'collected', 'completed')
+    order by cs.created_at desc
+    limit 20
+  `)));
+
+  benchmarks.push(await timed("memory listing", () => query(`
+    select m.id, m.title, m.year, m.category, m.reactions_count, m.comments_count, m.saves_count,
+           row_to_json(p) as contributor
+    from public.memories m
+    join public.profiles p on p.id = m.contributor_id
+    where m.verification_status = 'approved'
+    order by m.year desc, m.created_at desc
+    limit 20
+  `)));
+
+  benchmarks.push(await timed("ideas listing", () => query(`
+    select i.id, i.title, i.status, i.votes_count, i.supporters_count, i.participants_count,
+           row_to_json(p) as author,
+           row_to_json(c) as category
+    from public.ideas i
+    join public.profiles p on p.id = i.author_id
+    left join public.categories c on c.id = i.category_id
+    order by i.votes_count desc, i.created_at desc
+    limit 20
+  `)));
+
+  benchmarks.push(await timed("notifications", () => query(`
+    select n.id, n.type, n.title, n.read, n.created_at,
+           row_to_json(actor) as actor
+    from public.notifications n
+    left join public.profiles actor on actor.id = n.actor_id
+    where n.user_id = $1
+    order by n.created_at desc
+    limit 20
+  `, [sampleUserId])));
+
+  benchmarks.push(await timed("profile loading", () => query(`
+    select p.*,
+      (select count(*)::int from public.posts where author_id = p.id) as posts_count,
+      (select count(*)::int from public.memories where contributor_id = p.id) as memories_count,
+      (select count(*)::int from public.ideas where author_id = p.id) as ideas_count,
+      (select count(*)::int from public.comments where author_id = p.id) as comments_count,
+      (select count(*)::int from public.community_shares where owner_id = p.id) as shares_count,
+      (select count(*)::int from public.user_follows where following_id = p.id) as followers_count,
+      (select count(*)::int from public.user_follows where follower_id = p.id) as following_count
+    from public.profiles p
+    where p.id = $1
+  `, [sampleUserId])));
+
+  return benchmarks;
+}
+
+async function collectSlowQueries() {
   try {
     const { rows } = await query(`
-      SELECT
+      select
         query,
         calls,
-        mean_exec_time::numeric(10,2),
-        max_exec_time::numeric(10,2),
-        p95_exec_time::numeric(10,2),
+        round(mean_exec_time::numeric, 2) as mean_exec_time,
+        round(max_exec_time::numeric, 2) as max_exec_time,
         rows,
         shared_blks_hit,
         shared_blks_read
-      FROM pg_stat_statements
-      ORDER BY mean_exec_time DESC
-      LIMIT 20
+      from pg_stat_statements
+      order by mean_exec_time desc
+      limit 20
     `);
     return rows;
-  } catch {
-    // pg_stat_statements might not be enabled
-    return [{ note: "pg_stat_statements extension not available. Install with: CREATE EXTENSION IF NOT EXISTS pg_stat_statements;" }];
+  } catch (error) {
+    return [{ note: "pg_stat_statements is not available", detail: error.message }];
   }
 }
 
 async function collectIndexUsage() {
   const { rows } = await query(`
-    SELECT
-      schemaname, tablename, indexname,
-      idx_scan, idx_tup_read, idx_tup_fetch
-    FROM pg_stat_user_indexes
-    WHERE schemaname = 'public'
-    ORDER BY idx_scan ASC
-    LIMIT 30
+    select
+      schemaname,
+      tablename,
+      indexname,
+      idx_scan,
+      idx_tup_read,
+      idx_tup_fetch
+    from pg_stat_user_indexes
+    where schemaname = 'public'
+    order by idx_scan asc, indexname asc
+    limit 40
   `);
   return rows;
 }
 
 async function collectTableSizes() {
   const { rows } = await query(`
-    SELECT
-      relname AS table_name,
-      pg_size_pretty(pg_total_relation_size(relid)) AS total_size,
-      pg_size_pretty(pg_relation_size(relid)) AS table_size,
-      pg_size_pretty(pg_total_relation_size(relid) - pg_relation_size(relid)) AS index_size,
-      n_live_tup AS row_count
-    FROM pg_stat_user_tables
-    WHERE schemaname = 'public'
-    ORDER BY pg_total_relation_size(relid) DESC
+    select
+      relname as table_name,
+      pg_size_pretty(pg_total_relation_size(relid)) as total_size,
+      pg_size_pretty(pg_relation_size(relid)) as table_size,
+      pg_size_pretty(pg_total_relation_size(relid) - pg_relation_size(relid)) as index_size,
+      n_live_tup as row_count
+    from pg_stat_user_tables
+    where schemaname = 'public'
+    order by pg_total_relation_size(relid) desc
   `);
   return rows;
 }
 
-async function collectConnectionStats() {
-  const { rows } = await query(`
-    SELECT
-      COUNT(*)::int AS total_connections,
-      COUNT(*) FILTER (WHERE state = 'active')::int AS active,
-      COUNT(*) FILTER (WHERE state = 'idle')::int AS idle,
-      COUNT(*) FILTER (WHERE state = 'idle in transaction')::int AS idle_in_txn
-    FROM pg_stat_activity
-    WHERE datname = current_database() AND pid <> pg_backend_pid()
-  `);
-  return rows[0];
+async function collectDatabaseHealth() {
+  const [{ rows: connectionRows }, { rows: lockRows }, { rows: cacheRows }, { rows: realtimeRows }, { rows: sizeRows }] = await Promise.all([
+    query(`
+      select
+        count(*)::int as total_connections,
+        count(*) filter (where state = 'active')::int as active,
+        count(*) filter (where state = 'idle')::int as idle,
+        count(*) filter (where state = 'idle in transaction')::int as idle_in_txn
+      from pg_stat_activity
+      where datname = current_database() and pid <> pg_backend_pid()
+    `),
+    query(`
+      select
+        count(*)::int as total_locks,
+        count(*) filter (where granted = false)::int as waiting_locks
+      from pg_locks
+      where database = (select oid from pg_database where datname = current_database())
+    `),
+    query(`
+      select
+        round((sum(heap_blks_hit) * 100.0 / nullif(sum(heap_blks_hit + heap_blks_read), 0))::numeric, 2) as cache_hit_ratio,
+        round((sum(idx_blks_hit) * 100.0 / nullif(sum(idx_blks_hit + idx_blks_read), 0))::numeric, 2) as index_cache_hit_ratio
+      from pg_statio_user_tables
+    `),
+    query(`
+      select count(*)::int as total_publication_tables
+      from pg_publication_tables
+      where pubname = 'supabase_realtime'
+    `),
+    query(`select pg_size_pretty(pg_database_size(current_database())) as pretty, pg_database_size(current_database()) as bytes`),
+  ]);
+
+  return {
+    connections: connectionRows[0],
+    locks: lockRows[0],
+    cache: cacheRows[0],
+    realtime: realtimeRows[0],
+    databaseSize: sizeRows[0],
+  };
 }
 
-async function collectLockStats() {
-  const { rows } = await query(`
-    SELECT
-      COUNT(*)::int AS total_locks,
-      COUNT(*) FILTER (WHERE locktype = 'relation')::int AS relation_locks,
-      COUNT(*) FILTER (WHERE locktype = 'row')::int AS row_locks,
-      COUNT(*) FILTER (WHERE locktype = 'transactionid')::int AS transaction_locks,
-      COUNT(*) FILTER (WHERE granted = false)::int AS waiting_locks
-    FROM pg_locks
-    WHERE database = (SELECT oid FROM pg_database WHERE datname = current_database())
-  `);
-  return rows[0];
+async function measureRealtimeLatency(sampleUserId) {
+  if (process.env.SKIP_REALTIME_PROBE === "1") {
+    return { status: "skipped", latencyMs: null, reason: "SKIP_REALTIME_PROBE=1" };
+  }
+
+  const probeId = randomUUID();
+  const actorId = sampleUserId;
+  let subscribed = false;
+  let resolveEvent;
+  const eventPromise = new Promise((resolve) => {
+    resolveEvent = resolve;
+  });
+
+  const channel = supabase
+    .channel(`seed-report-${probeId}`)
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "notifications", filter: `id=eq.${probeId}` },
+      () => resolveEvent(Number((performance.now() - startTime).toFixed(2))),
+    );
+
+  const subscribePromise = new Promise((resolve, reject) => {
+    channel.subscribe((status) => {
+      if (status === "SUBSCRIBED") {
+        subscribed = true;
+        resolve();
+      }
+      if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+        reject(new Error(`Realtime subscribe status: ${status}`));
+      }
+    });
+  });
+
+  let startTime = performance.now();
+  try {
+    await Promise.race([
+      subscribePromise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error("Realtime subscribe timeout")), 7000)),
+    ]);
+    startTime = performance.now();
+    await query(`
+      insert into public.notifications (id, user_id, actor_id, type, entity_type, entity_id, title, message, read, metadata, created_at)
+      values ($1, $2, $3, 'qa_realtime_probe', 'profile', $2, 'Realtime probe', 'Temporary report probe', true, '{"probe": true}'::jsonb, now())
+    `, [probeId, sampleUserId, actorId]);
+    const latencyMs = await Promise.race([
+      eventPromise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error("Realtime event timeout")), 10000)),
+    ]);
+    return { status: "ok", latencyMs, subscribed };
+  } catch (error) {
+    return { status: "failed", latencyMs: null, subscribed, error: error.message };
+  } finally {
+    await query(`delete from public.notifications where id = $1`, [probeId]).catch(() => {});
+    await supabase.removeChannel(channel).catch(() => {});
+  }
 }
 
-async function collectCacheHitRatio() {
-  const { rows } = await query(`
-    SELECT
-      ROUND((SUM(heap_blks_hit) * 100.0 / NULLIF(SUM(heap_blks_hit + heap_blks_read), 0))::numeric, 2) AS cache_hit_ratio,
-      ROUND((SUM(idx_blks_hit) * 100.0 / NULLIF(SUM(idx_blks_hit + idx_blks_read), 0))::numeric, 2) AS index_cache_hit_ratio
-    FROM pg_statio_user_tables
-  `);
-  return rows[0] || { cache_hit_ratio: 0, index_cache_hit_ratio: 0 };
+function rateReadiness(report) {
+  const maxBenchmarkMs = Math.max(...report.performance.benchmarks.map((benchmark) => benchmark.durationMs));
+  const slowBenchmarks = report.performance.benchmarks.filter((benchmark) => benchmark.durationMs > 750);
+  const hasSeedScale =
+    report.tables.profiles?.total >= 500 &&
+    report.tables.posts?.total >= 500 &&
+    report.tables.memories?.total >= 500 &&
+    report.tables.ideas?.total >= 500 &&
+    report.tables.community_shares?.total >= 500 &&
+    report.tables.notifications?.total >= 5000;
+  const graatekReady =
+    report.workflow.completedGraatek >= 200 &&
+    report.workflow.activeGraatek >= 150 &&
+    report.workflow.availableGraatek >= 150;
+  const noIsolation = report.workflow.isolatedUsers === 0;
+  const recommendationReady = report.workflow.recommendationEvents >= 30000;
+  const realtimeOk = report.performance.realtimeLatency.status === "ok" && report.performance.realtimeLatency.latencyMs < 2000;
+  const lockOk = Number(report.health.locks?.waiting_locks ?? 0) === 0;
+
+  return {
+    users_5000: hasSeedScale && graatekReady && noIsolation && maxBenchmarkMs < 750 && lockOk
+      ? "Ready for 5,000 users in controlled beta."
+      : "Partially ready for 5,000 users; review slow paths, locks, or missing seed targets.",
+    users_50000: hasSeedScale && maxBenchmarkMs < 300 && lockOk && realtimeOk
+      ? "Promising for 50,000 users, but still requires k6 load testing and production pool sizing."
+      : "Not yet proven for 50,000 users; run k6 scenarios, tune indexes, and verify connection pooling.",
+    recommendation_engine: recommendationReady && noIsolation
+      ? "Ready for first recommendation-engine experiments: personalized feeds, trending, and ranking features have event history."
+      : "Needs more event history or social coverage before recommendation-engine experiments.",
+    notes: {
+      maxBenchmarkMs,
+      slowBenchmarks: slowBenchmarks.map((benchmark) => benchmark.name),
+      realtimeOk,
+    },
+  };
 }
 
-async function collectRealtimeStats() {
-  const { rows } = await query(`
-    SELECT
-      COUNT(*)::int AS total_publication_tables
-    FROM pg_publication_tables
-    WHERE pubname = 'supabase_realtime'
-  `);
-  return { total_publication_tables: rows[0]?.total_publication_tables ?? 0 };
-}
+function printReport(report) {
+  console.log("\n=== I Love NDB performance report ===");
+  console.log("COUNTS");
+  console.log(`  users:              ${report.tables.profiles?.total ?? "?"}`);
+  console.log(`  Graatek:            ${report.tables.community_shares?.total ?? "?"} (${report.workflow.completedGraatek} completed, ${report.workflow.activeGraatek} active, ${report.workflow.availableGraatek} available)`);
+  console.log(`  memories:           ${report.tables.memories?.total ?? "?"}`);
+  console.log(`  posts:              ${report.tables.posts?.total ?? "?"}`);
+  console.log(`  ideas:              ${report.tables.ideas?.total ?? "?"}`);
+  console.log(`  notifications:      ${report.tables.notifications?.total ?? "?"}`);
+  console.log(`  interactions/events:${report.workflow.recommendationEvents} recommendation events`);
 
-async function collectAuthUserStats() {
-  const { data, error } = await supabase.auth.admin.listUsers();
-  if (error) return { total: "N/A (no service role key)" };
-  return { total: data.users.length };
-}
+  console.log("\nBENCHMARKS");
+  for (const benchmark of report.performance.benchmarks) {
+    console.log(`  ${benchmark.name.padEnd(18)} ${String(benchmark.durationMs).padStart(8)} ms`);
+  }
+  const realtime = report.performance.realtimeLatency;
+  console.log(`  realtime latency    ${realtime.status === "ok" ? `${realtime.latencyMs} ms` : realtime.status}`);
 
-// ─── Main ────────────────────────────────────────────────────────────────────
+  console.log("\nDATABASE");
+  console.log(`  size:               ${report.health.databaseSize?.pretty ?? "?"}`);
+  console.log(`  cache hit:          ${report.health.cache?.cache_hit_ratio ?? "?"}%`);
+  console.log(`  index cache hit:    ${report.health.cache?.index_cache_hit_ratio ?? "?"}%`);
+  console.log(`  connections:        ${report.health.connections?.total_connections ?? "?"} (${report.health.connections?.active ?? "?"} active)`);
+  console.log(`  waiting locks:      ${report.health.locks?.waiting_locks ?? "?"}`);
+  console.log(`  realtime tables:    ${report.health.realtime?.total_publication_tables ?? "?"}`);
+
+  console.log("\nREADINESS");
+  console.log(`  5,000 users:        ${report.readiness.users_5000}`);
+  console.log(`  50,000 users:       ${report.readiness.users_50000}`);
+  console.log(`  recommendations:    ${report.readiness.recommendation_engine}`);
+}
 
 async function main() {
-  console.log("Generating INDB Community OS Performance Report...\n");
-
-  const report = {
-    generatedAt: new Date().toISOString(),
-    database: {
-      version: null,
-    },
-    auth: {},
-    tables: {},
-    sizes: [],
-    indexes: [],
-    slowQueries: [],
-    connections: {},
-    locks: {},
-    cache: {},
-    realtime: {},
-    recommendations: [],
-    criticalIssues: [],
-  };
-
-  // DB version
   try {
-    const { rows } = await query("SELECT version()");
-    report.database.version = rows[0].version;
-  } catch {}
+    console.log("Generating I Love NDB performance report...");
+    const { rows: sampleRows } = await query(`select id from public.profiles order by created_at desc limit 1`);
+    if (!sampleRows[0]?.id) throw new Error("No profile rows found. Run npm run seed first.");
+    const sampleUserId = sampleRows[0].id;
 
-  // Collect all stats
-  report.tables = await collectTableStats();
-  report.sizes = await collectTableSizes();
-  report.indexes = await collectIndexUsage();
-  report.slowQueries = await collectSlowQueries();
-  report.connections = await collectConnectionStats();
-  report.locks = await collectLockStats();
-  report.cache = await collectCacheHitRatio();
-  report.realtime = await collectRealtimeStats();
-  report.auth = await collectAuthUserStats();
+    const [tables, workflow, benchmarks, slowQueries, indexes, sizes, health] = await Promise.all([
+      collectTableStats(),
+      collectWorkflowCounts(),
+      collectBenchmarks(sampleUserId),
+      collectSlowQueries(),
+      collectIndexUsage(),
+      collectTableSizes(),
+      collectDatabaseHealth(),
+    ]);
+    const realtimeLatency = await measureRealtimeLatency(sampleUserId);
 
-  // ─── Generate Recommendations ───────────────────────────────────────────
+    const report = {
+      generatedAt: new Date().toISOString(),
+      sampleUserId,
+      tables,
+      workflow,
+      performance: {
+        benchmarks,
+        realtimeLatency,
+      },
+      health,
+      tableSizes: sizes,
+      indexUsage: indexes,
+      slowQueries,
+    };
+    report.readiness = rateReadiness(report);
 
-  const recs = [];
-  const critical = [];
-
-  // Cache hit ratio
-  if (report.cache.cache_hit_ratio < 95) {
-    critical.push(`Cache hit ratio is ${report.cache.cache_hit_ratio}% (target: >99%). Increase shared_buffers.`);
+    const outPath = path.join(ROOT, "performance-report.json");
+    fs.writeFileSync(outPath, JSON.stringify(report, null, 2));
+    printReport(report);
+    console.log(`\nReport saved to: ${outPath}`);
+  } finally {
+    await pool.end();
   }
-  if (report.cache.index_cache_hit_ratio < 95) {
-    recs.push(`Index cache hit ratio is ${report.cache.index_cache_hit_ratio}%. Consider increasing effective_cache_size.`);
-  }
-
-  // Waiting locks
-  if (report.locks.waiting_locks > 0) {
-    critical.push(`${report.locks.waiting_locks} queries waiting on locks. Check for long-running transactions.`);
-  }
-
-  // Connection usage
-  if (report.connections.total_connections > 50) {
-    recs.push(`High connection count: ${report.connections.total_connections}. Consider connection pooling (PgBouncer).`);
-  }
-
-  // Table size warnings
-  for (const t of report.sizes) {
-    const totalBytesMatch = (t.total_size || "").match(/([\d.]+)\s*(\w+)/);
-    if (totalBytesMatch) {
-      const val = parseFloat(totalBytesMatch[1]);
-      const unit = totalBytesMatch[2];
-      if ((unit === "GB" && val > 1) || (unit === "MB" && val > 500)) {
-        recs.push(`Table "${t.table_name}" is large: ${t.total_size}. Consider archiving or partitioning.`);
-      }
-    }
-  }
-
-  // Real-time tables
-  if (report.realtime.total_publication_tables < 8) {
-    recs.push(`Only ${report.realtime.total_publication_tables} tables in realtime publication. Apply migration 20260720000000.`);
-  }
-
-  // Slow queries
-  for (const q of report.slowQueries) {
-    if (q.mean_exec_time > 1000) {
-      recs.push(`Slow query (${q.mean_exec_time}ms avg, ${q.calls} calls): ${(q.query || "").slice(0, 100)}...`);
-    }
-  }
-
-  // Unused indexes
-  for (const idx of report.indexes) {
-    if (idx.idx_scan === 0) {
-      recs.push(`Unused index: "${idx.indexname}" on "${idx.tablename}" — consider dropping.`);
-    }
-  }
-
-  // Active connections to locks ratio
-  if (report.connections.active > 10 && report.locks.waiting_locks > 0) {
-    critical.push(`${report.connections.active} active connections with ${report.locks.waiting_locks} waiting on locks. Connection pool may be saturated.`);
-  }
-
-  report.recommendations = recs;
-  report.criticalIssues = critical;
-
-  // ─── Write Report ──────────────────────────────────────────────────────
-
-  const reportPath = path.resolve("./performance-report.json");
-  fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
-
-  // Print summary
-  console.log("╔══════════════════════════════════════════════════════════════╗");
-  console.log("║            INDB Community OS — Performance Report            ║");
-  console.log("╚══════════════════════════════════════════════════════════════╝");
-  console.log("");
-  console.log("TABLE COUNTS:");
-  for (const [name, stats] of Object.entries(report.tables)) {
-    console.log(`  ${name.padEnd(30)} ${String(stats.total).padStart(6)} rows  (+${stats.last_24h} today, +${stats.last_7d} this week)`);
-  }
-  console.log("");
-  console.log("TABLE SIZES:");
-  for (const t of report.sizes) {
-    console.log(`  ${t.table_name.padEnd(30)} ${(t.total_size || "?").padStart(10)}  rows=${t.row_count}`);
-  }
-  console.log("");
-  console.log("DATABASE HEALTH:");
-  console.log(`  Cache hit ratio:     ${report.cache.cache_hit_ratio ?? "N/A"}% (target: >99%)`);
-  console.log(`  Index cache hit:     ${report.cache.index_cache_hit_ratio ?? "N/A"}%`);
-  console.log(`  Connections:         ${report.connections.total_connections ?? "?"} (${report.connections.active ?? "?"} active)`);
-  console.log(`  Locks:               ${report.locks.total_locks ?? "?"} total (${report.locks.waiting_locks ?? "?"} waiting)`);
-  console.log(`  Realtime tables:     ${report.realtime.total_publication_tables ?? "?"}`);
-  console.log(`  Auth users:          ${report.auth.total ?? "?"}`);
-  console.log("");
-  console.log("CRITICAL ISSUES:");
-  if (critical.length === 0) console.log("  (none)");
-  for (const issue of critical) console.log(`  ⚠  ${issue}`);
-  console.log("");
-  console.log("RECOMMENDATIONS:");
-  if (recs.length === 0) console.log("  (none)");
-  for (const rec of recs) console.log(`  • ${rec}`);
-  console.log("");
-  console.log(`Report saved to: ${reportPath}`);
 }
 
-main().catch((err) => {
-  console.error("Report generation failed:", err.message);
+main().catch((error) => {
+  console.error("Report generation failed:", error.message);
+  console.error(error.stack);
   process.exit(1);
 });
