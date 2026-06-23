@@ -1502,7 +1502,14 @@
       "you": "You",
       "backToMessages": "Back to messages",
       "editGroup": "Edit group",
-      "removeMember": "Remove {name}"
+      "removeMember": "Remove {name}",
+      "groupInfo": "Group info",
+      "close": "Close",
+      "options": "Options",
+      "ideaTitleLabel": "Idea",
+      "groupName": "Group name",
+      "closedAfterCompletion": "This conversation was closed after the idea was completed.",
+      "viewImage": "View image"
     }
   }
 }

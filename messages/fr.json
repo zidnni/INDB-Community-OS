@@ -1502,7 +1502,14 @@
       "you": "Vous",
       "backToMessages": "Retour aux messages",
       "editGroup": "Modifier le groupe",
-      "removeMember": "Retirer {name}"
+      "removeMember": "Retirer {name}",
+      "groupInfo": "Infos du groupe",
+      "close": "Fermer",
+      "options": "Options",
+      "ideaTitleLabel": "Idée",
+      "groupName": "Nom du groupe",
+      "closedAfterCompletion": "Cette conversation a été fermée après l’achèvement de l’idée.",
+      "viewImage": "Voir l’image"
     }
   }
 }

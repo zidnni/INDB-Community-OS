@@ -1359,7 +1359,14 @@
       "you": "Aan",
       "backToMessages": "Rutto e ɓatakuuje",
       "editGroup": "Taƴto dental ngal",
-      "removeMember": "Ittu {name}"
+      "removeMember": "Ittu {name}",
+      "groupInfo": "Humpito dental",
+      "close": "Uddu",
+      "options": "Cuɓe",
+      "ideaTitleLabel": "Miijo",
+      "groupName": "Innde dental",
+      "closedAfterCompletion": "Jakku nguu uddiima caggal nde miijo oo timmi.",
+      "viewImage": "Yiy natal"
     }
   }
 }

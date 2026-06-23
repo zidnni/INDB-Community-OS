@@ -1502,7 +1502,14 @@
       "you": "أنت",
       "backToMessages": "العودة إلى الرسائل",
       "editGroup": "تعديل المجموعة",
-      "removeMember": "إزالة {name}"
+      "removeMember": "إزالة {name}",
+      "groupInfo": "معلومات المجموعة",
+      "close": "إغلاق",
+      "options": "الخيارات",
+      "ideaTitleLabel": "الفكرة",
+      "groupName": "اسم المجموعة",
+      "closedAfterCompletion": "تم إغلاق المحادثة بعد إكمال الفكرة",
+      "viewImage": "عرض الصورة"
     }
   }
 }

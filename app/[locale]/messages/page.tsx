@@ -45,13 +45,13 @@ export default async function MessagesPage({
   }
 
   return (
-    <>
-      <div className="flex w-full flex-col md:w-[32%] md:min-w-0 md:shrink-0 md:border-e md:border-border/70">
+    <section className="mx-auto flex h-[calc(100dvh-8.75rem)] min-h-[560px] w-full overflow-hidden rounded-lg border border-border/70 bg-background shadow-sm md:h-[calc(100dvh-7.5rem)]">
+      <div className={`${selectedConversation ? "hidden md:flex" : "flex"} w-full flex-col md:w-[32%] md:min-w-0 md:shrink-0 md:border-e md:border-border/70`}>
         <ConversationList initialConversations={conversations} currentUserId={currentUserId} />
       </div>
 
       {selectedConversation ? (
-        <div className="flex flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col md:w-[68%]">
           <ConversationChat
             conversationId={sp.conversation!}
             initialMessages={selectedMessages}
@@ -69,7 +69,7 @@ export default async function MessagesPage({
           />
         </div>
       ) : (
-        <div className="hidden flex-1 items-center justify-center md:flex">
+        <div className="hidden min-w-0 flex-1 items-center justify-center md:flex md:w-[68%]">
           <div className="mx-auto max-w-sm px-6 text-center">
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10">
               <MessageSquare size={40} className="text-primary/60" />
@@ -101,6 +101,6 @@ export default async function MessagesPage({
           </div>
         </div>
       )}
-    </>
+    </section>
   );
 }

@@ -115,9 +115,9 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
   }, [currentUserId]);
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-border/70 px-3 py-2.5">
-        <h2 className="flex items-center gap-1.5 text-base font-semibold">
+    <div className="flex h-full min-h-0 flex-col bg-background">
+      <div className="flex min-h-[56px] items-center justify-between border-b border-border/70 px-3">
+        <h2 className="flex items-center gap-1.5 text-base font-semibold text-foreground">
           <Inbox size={18} />
           {t("title")}
         </h2>
@@ -133,7 +133,7 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
         </button>
       </div>
 
-      <div className="border-b border-border/70 px-2 py-1.5">
+      <div className="border-b border-border/70 px-3 py-2">
         <div className="relative">
           <Search size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -142,7 +142,7 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("search")}
             style={{ paddingInlineStart: "2rem", paddingInlineEnd: "0.625rem" }}
-            className="w-full rounded-lg border border-border/60 bg-muted/50 py-1.5 text-sm outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30"
+            className="min-h-10 w-full rounded-full border border-border/60 bg-muted/50 py-2 text-sm outline-none transition focus:border-primary/50 focus:ring-1 focus:ring-primary/30"
           />
         </div>
       </div>
@@ -183,29 +183,27 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
                   <Link
                     href={`/messages/${conversation.id}`}
                     className={cn(
-                      "flex items-start gap-2.5 border-s-2 px-3 py-2.5 transition hover:bg-muted/50",
-                      isActive ? "border-primary bg-primary/[0.04]" : "border-transparent",
+                      "flex min-h-[72px] items-center gap-3 border-s-4 px-3 py-2.5 transition hover:bg-muted/45",
+                      isActive ? "border-primary bg-primary/[0.07]" : "border-transparent",
                     )}
                   >
-                    <UserAvatar label={name} avatarUrl={avatarUrl} className="mt-0.5 h-9 w-9 shrink-0" />
+                    <UserAvatar label={name} avatarUrl={avatarUrl} className="h-11 w-11 shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-1.5">
-                        <span className="inline-flex min-w-0 items-center gap-1 rounded-[4px] bg-muted px-1.5 py-[2px] text-[10px] leading-none text-muted-foreground">
-                          <span>{badge}</span>
-                          {isIdeaGroup && conversation.idea_status && (
-                            <span className="truncate">- {statusLabel(conversation.idea_status, t)}</span>
-                          )}
-                        </span>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex min-w-0 items-center gap-1.5">
+                          <p className="truncate text-sm font-semibold leading-tight text-foreground">{name}</p>
+                          <span className="inline-flex shrink-0 rounded-[4px] bg-muted px-1.5 py-[2px] text-[10px] font-medium leading-none text-muted-foreground">
+                            {badge}
+                          </span>
+                        </div>
                         {lastTime && (
-                          <span className="shrink-0 text-[11px] text-muted-foreground">
+                          <span className="shrink-0 pt-0.5 text-[11px] text-muted-foreground">
                             {timeAgo(lastTime, locale, t("groupChat.now"))}
                           </span>
                         )}
                       </div>
-                      <p className="mt-1 truncate text-sm font-medium text-foreground">{name}</p>
-                      <p className="truncate text-[11px] text-muted-foreground/70">{secondary}</p>
-                      <div className="mt-0.5 flex items-center gap-2">
-                        <p className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
+                      <div className="mt-1 flex items-center gap-2">
+                        <p className="min-w-0 flex-1 truncate text-[13px] text-muted-foreground">
                           {lastMessage || t("noMessagesYet")}
                         </p>
                         {conversation.unread_count > 0 && (
@@ -214,6 +212,9 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
                           </span>
                         )}
                       </div>
+                      <p className="mt-0.5 truncate text-[11px] text-muted-foreground/60">
+                        {isIdeaGroup && conversation.idea_status ? statusLabel(conversation.idea_status, t) : secondary}
+                      </p>
                     </div>
                   </Link>
                 </li>

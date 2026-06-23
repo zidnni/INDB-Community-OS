@@ -1356,7 +1356,14 @@
       "you": "Anke",
       "backToMessages": "Karu xibaarun ŋa",
       "editGroup": "Gurupu toxo yaŋqinde",
-      "removeMember": "Na {name} kafu"
+      "removeMember": "Na {name} kafu",
+      "groupInfo": "Gurupu xibaare",
+      "close": "Daabu",
+      "options": "Suubanun",
+      "ideaTitleLabel": "Miijo",
+      "groupName": "Gurupu toxo",
+      "closedAfterCompletion": "Karu xibaare ya daabundi miijo banbanta koota.",
+      "viewImage": "Foto wari"
     }
   }
 }

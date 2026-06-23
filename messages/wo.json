@@ -1356,7 +1356,14 @@
       "you": "Yaw",
       "backToMessages": "Delluwaat ci bataaxal yi",
       "editGroup": "Soppi gurup bi",
-      "removeMember": "Dindi {name}"
+      "removeMember": "Dindi {name}",
+      "groupInfo": "Xibaaru gurup",
+      "close": "Tëj",
+      "options": "Tànneef yi",
+      "ideaTitleLabel": "Xalaat",
+      "groupName": "Turug gurup",
+      "closedAfterCompletion": "Waxtaan wi dañu ko tëj bi xalaat bi paree.",
+      "viewImage": "Xool nataal bi"
     }
   }
 }
