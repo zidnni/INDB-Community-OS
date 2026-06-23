@@ -245,7 +245,12 @@
     "ideaParticipantDeclined": "{actorName} declined your participation",
     "ideaMessage": "{actorName} sent a message about your idea",
     "ideaStatusChange": "{actorName} updated the idea status",
-    "conversationMessage": "{actorName} bindu la ndotooje"
+    "conversationMessage": "{actorName} bindu la ndotooje",
+    "ideaGroupMessage": "{actorName} yónnee bataaxal ci groupe xalaat bi",
+    "ideaGroupUpdated": "{actorName} yeesal groupe xalaat bi",
+    "ideaGroupRemoved": "{actorName} dindi la ci groupe xalaat",
+    "ideaGroupLeft": "{actorName} génn ci groupe xalaat bi",
+    "ideaCompleted": "{actorName} jeexal xalaat bi"
   },
   "RightSidebar": {
     "trendingTopics": "Topiku ñu taw",
@@ -1299,6 +1304,59 @@
     "emptyDescription": "Mbooloo ak mbootaay bi ci xalaat yi ak Gar3tak.",
     "activeConversations": "{count} waxtaan yu ngi dox",
     "unreadMessages": "{count} messages xaatu xeetul",
-    "typing": "bing bind..."
+    "typing": "bing bind...",
+    "groupChat": {
+      "memberFallback": "Membre",
+      "active": "Dafa dox",
+      "now": "léegi",
+      "admin": "Admin",
+      "readOnly": "Jàng rekk",
+      "readOnlyNotice": "Groupe bii jàng rekk la.",
+      "members": "membres",
+      "memberCount": "{count} membres",
+      "openProfile": "Ubbi profil bu {name}",
+      "changeImage": "Soppi nataal",
+      "save": "Aar",
+      "imageReady": "Nataal bi pare na",
+      "addCaptionOrSend": "Yokk leeral walla yónnee ko léegi.",
+      "addCaption": "Yokk leeral",
+      "removeImage": "Dindi nataal",
+      "sendImage": "Yónnee nataal",
+      "sendMessage": "Yónnee bataaxal",
+      "ideaStatus": "Nekkinu xalaat",
+      "leaveGroup": "Génn ci groupe",
+      "gar3tak": "Gar3tak",
+      "image": "Nataal",
+      "imageWithCaption": "Nataal: {caption}",
+      "statuses": {
+        "published": "Siiw na",
+        "interested": "Dañuy dajale bëgg-bëgg",
+        "discussion": "Waxtaan",
+        "in_progress": "Dox na",
+        "completed": "Jeex na",
+        "archived": "Arsive na"
+      },
+      "roles": {
+        "admin": "Admin",
+        "member": "Membre"
+      },
+      "errors": {
+        "archived": "Groupe bii jàng rekk la.",
+        "unauthorized": "Amuloo sañ-sañ ci groupe bii.",
+        "rate_limited": "Ndaxal tuuti bala ngay yónneeaat.",
+        "invalid": "Seetal bataaxal bi te jéemaat.",
+        "insert_failed": "Bataaxal bi manuñu ko yónnee.",
+        "update_failed": "Profil groupe bi manuñu ko yeesal.",
+        "remove_failed": "Membre bi manuñu ko dindi.",
+        "leave_failed": "Manuloo génn ci groupe bi.",
+        "admin_cannot_leave": "Boroom xalaat bi manu génn ci groupe bi.",
+        "image_upload_failed": "Nataal bi manuñu ko yeb.",
+        "group_image_upload_failed": "Nataalu groupe bi manuñu ko yeb."
+      },
+      "you": "Yaw",
+      "backToMessages": "Delluwaat ci bataaxal yi",
+      "editGroup": "Soppi gurup bi",
+      "removeMember": "Dindi {name}"
+    }
   }
 }

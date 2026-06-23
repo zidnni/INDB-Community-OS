@@ -350,7 +350,12 @@
     "ideaParticipantDeclined": "{actorName} رفض مشاركتك",
     "ideaMessage": "{actorName} أرسل رسالة عن فكرتك",
     "ideaStatusChange": "{actorName} قام بتحديث حالة الفكرة",
-    "conversationMessage": "{actorName} أرسل لك رسالة"
+    "conversationMessage": "{actorName} أرسل لك رسالة",
+    "ideaGroupMessage": "أرسل {actorName} رسالة في مجموعة الفكرة",
+    "ideaGroupUpdated": "حدّث {actorName} مجموعة الفكرة",
+    "ideaGroupRemoved": "أزالك {actorName} من مجموعة فكرة",
+    "ideaGroupLeft": "غادر {actorName} مجموعة الفكرة",
+    "ideaCompleted": "أكمل {actorName} الفكرة"
   },
   "RightSidebar": {
     "trendingTopics": "المواضيع الرائجة",
@@ -1445,6 +1450,59 @@
     "emptyDescription": "تواصل مع أعضاء المجتمع حول الأفكار وگرعتك.",
     "activeConversations": "{count} محادثة نشطة",
     "unreadMessages": "{count} رسالة غير مقروءة",
-    "typing": "يكتب..."
+    "typing": "يكتب...",
+    "groupChat": {
+      "memberFallback": "عضو",
+      "active": "نشط",
+      "now": "الآن",
+      "admin": "مشرف",
+      "readOnly": "للقراءة فقط",
+      "readOnlyNotice": "هذه المجموعة للقراءة فقط.",
+      "members": "أعضاء",
+      "memberCount": "{count} أعضاء",
+      "openProfile": "فتح ملف {name}",
+      "changeImage": "تغيير الصورة",
+      "save": "حفظ",
+      "imageReady": "الصورة جاهزة",
+      "addCaptionOrSend": "أضف وصفاً أو أرسلها الآن.",
+      "addCaption": "أضف وصفاً",
+      "removeImage": "إزالة الصورة",
+      "sendImage": "إرسال صورة",
+      "sendMessage": "إرسال الرسالة",
+      "ideaStatus": "حالة الفكرة",
+      "leaveGroup": "مغادرة المجموعة",
+      "gar3tak": "كراتك",
+      "image": "صورة",
+      "imageWithCaption": "صورة: {caption}",
+      "statuses": {
+        "published": "منشورة",
+        "interested": "جمع الاهتمام",
+        "discussion": "نقاش",
+        "in_progress": "قيد التنفيذ",
+        "completed": "مكتملة",
+        "archived": "مؤرشفة"
+      },
+      "roles": {
+        "admin": "مشرف",
+        "member": "عضو"
+      },
+      "errors": {
+        "archived": "هذه المجموعة للقراءة فقط.",
+        "unauthorized": "ليس لديك صلاحية الوصول إلى هذه المجموعة.",
+        "rate_limited": "يرجى الإبطاء قبل الإرسال مرة أخرى.",
+        "invalid": "تحقق من الرسالة وحاول مرة أخرى.",
+        "insert_failed": "تعذر إرسال الرسالة.",
+        "update_failed": "تعذر تحديث ملف المجموعة.",
+        "remove_failed": "تعذر إزالة العضو.",
+        "leave_failed": "تعذر مغادرة المجموعة.",
+        "admin_cannot_leave": "مالك الفكرة لا يمكنه مغادرة المجموعة.",
+        "image_upload_failed": "تعذر رفع الصورة.",
+        "group_image_upload_failed": "تعذر رفع صورة المجموعة."
+      },
+      "you": "أنت",
+      "backToMessages": "العودة إلى الرسائل",
+      "editGroup": "تعديل المجموعة",
+      "removeMember": "إزالة {name}"
+    }
   }
 }

@@ -245,7 +245,12 @@
     "ideaParticipantDeclined": "{actorName} declined your participation",
     "ideaMessage": "{actorName} sent a message about your idea",
     "ideaStatusChange": "{actorName} updated the idea status",
-    "conversationMessage": "{actorName} nunka ndotooje"
+    "conversationMessage": "{actorName} nunka ndotooje",
+    "ideaGroupMessage": "{actorName} xibaare mulla miijo gure ra",
+    "ideaGroupUpdated": "{actorName} miijo gure toxo",
+    "ideaGroupRemoved": "{actorName} i dinga miijo gure ra",
+    "ideaGroupLeft": "{actorName} miijo gure katta",
+    "ideaCompleted": "{actorName} miijo ban"
   },
   "RightSidebar": {
     "trendingTopics": "Jeli No Mberlin",
@@ -1299,6 +1304,59 @@
     "emptyDescription": "Jokkondir renge renndo ba ideyaaji e Gar3tak.",
     "activeConversations": "{count} ndotooje golleje",
     "unreadMessages": "{count} mesaase xaatu xeete",
-    "typing": "a winndu..."
+    "typing": "a winndu...",
+    "groupChat": {
+      "memberFallback": "Komme",
+      "active": "Ga na",
+      "now": "saasa",
+      "admin": "Admin",
+      "readOnly": "Xaran falle",
+      "readOnlyNotice": "Ke gure ya ni xaran falle.",
+      "members": "komme",
+      "memberCount": "{count} komme",
+      "openProfile": "Na {name} profil da",
+      "changeImage": "Foto toxo",
+      "save": "Mara",
+      "imageReady": "Foto segin na",
+      "addCaptionOrSend": "Sebe foñi walla a mulla.",
+      "addCaption": "Sebe foñi",
+      "removeImage": "Foto dinga",
+      "sendImage": "Foto mulla",
+      "sendMessage": "Xibaare mulla",
+      "ideaStatus": "Miijo xaalisi",
+      "leaveGroup": "Gure katta",
+      "gar3tak": "Gar3tak",
+      "image": "Foto",
+      "imageWithCaption": "Foto: {caption}",
+      "statuses": {
+        "published": "Yaxun na",
+        "interested": "Faamu ga na",
+        "discussion": "Waxtaan",
+        "in_progress": "Gollu ga na",
+        "completed": "Ban na",
+        "archived": "Mara na"
+      },
+      "roles": {
+        "admin": "Admin",
+        "member": "Komme"
+      },
+      "errors": {
+        "archived": "Ke gure ya ni xaran falle.",
+        "unauthorized": "A nta ke gure ra.",
+        "rate_limited": "Na kuuñi dangi xa mulla katta.",
+        "invalid": "Xibaare xooxu, a yilli.",
+        "insert_failed": "Xibaare mulla nta a ra.",
+        "update_failed": "Gure profil toxo nta a ra.",
+        "remove_failed": "Komme dinga nta a ra.",
+        "leave_failed": "Gure katta nta a ra.",
+        "admin_cannot_leave": "Miijo jom nta gure katta ra.",
+        "image_upload_failed": "Foto jooli nta a ra.",
+        "group_image_upload_failed": "Gure foto jooli nta a ra."
+      },
+      "you": "Anke",
+      "backToMessages": "Karu xibaarun ŋa",
+      "editGroup": "Gurupu toxo yaŋqinde",
+      "removeMember": "Na {name} kafu"
+    }
   }
 }

@@ -10,12 +10,14 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils/cn";
 import type { ConversationListItem } from "@/lib/data/conversations";
 
-function timeAgo(dateStr: string, locale: string): string {
+type TranslationFn = (key: string, values?: Record<string, string | number>) => string;
+
+function timeAgo(dateStr: string, locale: string, nowLabel: string): string {
   const now = Date.now();
   const d = new Date(dateStr).getTime();
   const diff = now - d;
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "now";
+  if (mins < 1) return nowLabel;
   if (mins < 60) return `${mins}m`;
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `${hours}h`;
@@ -27,8 +29,15 @@ function timeAgo(dateStr: string, locale: string): string {
   });
 }
 
-function typeBadge(type: string, t: (key: string) => string): string {
-  return type === "graatek" ? "Gar3tak" : t("idea");
+function typeBadge(type: string, t: TranslationFn): string {
+  return type === "graatek" ? t("groupChat.gar3tak") : t("idea");
+}
+
+function statusLabel(status: string | null | undefined, t: TranslationFn): string {
+  const key = status && ["published", "interested", "discussion", "in_progress", "completed", "archived"].includes(status)
+    ? `groupChat.statuses.${status}`
+    : "groupChat.active";
+  return t(key);
 }
 
 interface ConversationListProps {
@@ -160,13 +169,13 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
                 : conversation.other_participant?.avatar_url ?? null;
               const lastMessage = conversation.last_message?.message_type === "image"
                 ? conversation.last_message.message
-                  ? `Image: ${conversation.last_message.message}`
-                  : "Image"
+                  ? t("groupChat.imageWithCaption", { caption: conversation.last_message.message })
+                  : t("groupChat.image")
                 : conversation.last_message?.message ?? "";
               const lastTime = conversation.last_message?.created_at ?? conversation.created_at;
               const badge = typeBadge(conversation.type, t);
               const secondary = isIdeaGroup
-                ? `${conversation.member_count || 1} members`
+                ? t("groupChat.memberCount", { count: conversation.member_count || 1 })
                 : conversation.title;
 
               return (
@@ -184,12 +193,12 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
                         <span className="inline-flex min-w-0 items-center gap-1 rounded-[4px] bg-muted px-1.5 py-[2px] text-[10px] leading-none text-muted-foreground">
                           <span>{badge}</span>
                           {isIdeaGroup && conversation.idea_status && (
-                            <span className="truncate">- {conversation.idea_status.replace(/_/g, " ")}</span>
+                            <span className="truncate">- {statusLabel(conversation.idea_status, t)}</span>
                           )}
                         </span>
                         {lastTime && (
                           <span className="shrink-0 text-[11px] text-muted-foreground">
-                            {timeAgo(lastTime, locale)}
+                            {timeAgo(lastTime, locale, t("groupChat.now"))}
                           </span>
                         )}
                       </div>

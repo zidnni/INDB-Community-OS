@@ -245,7 +245,12 @@
     "ideaParticipantDeclined": "{actorName} salti tawtital maa",
     "ideaMessage": "{actorName} nelima ɗum ko fayti miijo maa",
     "ideaStatusChange": "{actorName} waylitii darnde miijo ngo",
-    "conversationMessage": "{actorName} nuldu ndotooje"
+    "conversationMessage": "{actorName} nuldu ndotooje",
+    "ideaGroupMessage": "{actorName} neldi ɓatakuru e dental miijo",
+    "ideaGroupUpdated": "{actorName} hesɗitini dental miijo",
+    "ideaGroupRemoved": "{actorName} itti maa e dental miijo",
+    "ideaGroupLeft": "{actorName} yaltii e dental miijo",
+    "ideaCompleted": "{actorName} timmini miijo oo"
   },
   "RightSidebar": {
     "trendingTopics": "Toɓɓe No Mberlaa",
@@ -1302,6 +1307,59 @@
     "emptyDescription": "Jokkondir e terɗe renndo ngam ideji e Gar3tak.",
     "activeConversations": "{count} ndotooje golleeje",
     "unreadMessages": "{count} mesaje njaɓaaka",
-    "typing": "no winndude..."
+    "typing": "no winndude...",
+    "groupChat": {
+      "memberFallback": "Gollotooɗo",
+      "active": "E doggol",
+      "now": "jonta",
+      "admin": "Admin",
+      "readOnly": "Janngol tan",
+      "readOnlyNotice": "Ndee dental ko janngol tan.",
+      "members": "limooɓe",
+      "memberCount": "{count} limooɓe",
+      "openProfile": "Uddit heftinirde {name}",
+      "changeImage": "Waylu natal",
+      "save": "Danndu",
+      "imageReady": "Natal hebiima",
+      "addCaptionOrSend": "Ɓeydu binndol walla neldu jooni.",
+      "addCaption": "Ɓeydu binndol",
+      "removeImage": "Momtu natal",
+      "sendImage": "Neldu natal",
+      "sendMessage": "Neldu ɓatakuru",
+      "ideaStatus": "Ngonka miijo",
+      "leaveGroup": "Yaltu dental",
+      "gar3tak": "Gar3tak",
+      "image": "Natal",
+      "imageWithCaption": "Natal: {caption}",
+      "statuses": {
+        "published": "Bayyinaa",
+        "interested": "Nana ƴeewta faale",
+        "discussion": "Jeewte",
+        "in_progress": "Nana waɗee",
+        "completed": "Gasii",
+        "archived": "Resaa"
+      },
+      "roles": {
+        "admin": "Admin",
+        "member": "Gollotooɗo"
+      },
+      "errors": {
+        "archived": "Ndee dental ko janngol tan.",
+        "unauthorized": "A alaa yamiroore e ndee dental.",
+        "rate_limited": "Tiiɗno leeltin hade maa neltude kadi.",
+        "invalid": "Ƴeewto ɓatakuru ndu, eto kadi.",
+        "insert_failed": "Ɓatakuru ndu waawaa neltude.",
+        "update_failed": "Profil dental ngal waawaa hesɗitinde.",
+        "remove_failed": "Gollotooɗo oo waawaa itteede.",
+        "leave_failed": "Waawaa yaltude e dental ngal.",
+        "admin_cannot_leave": "Jom miijo oo waawaa yaltude e dental ngal.",
+        "image_upload_failed": "Natal waawaa joleede.",
+        "group_image_upload_failed": "Natal dental ngal waawaa joleede."
+      },
+      "you": "Aan",
+      "backToMessages": "Rutto e ɓatakuuje",
+      "editGroup": "Taƴto dental ngal",
+      "removeMember": "Ittu {name}"
+    }
   }
 }

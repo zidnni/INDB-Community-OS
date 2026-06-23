@@ -350,7 +350,12 @@
     "ideaParticipantDeclined": "{actorName} a refusé votre participation",
     "ideaMessage": "{actorName} a envoyé un message à propos de votre idée",
     "ideaStatusChange": "{actorName} a mis à jour le statut de l'idée",
-    "conversationMessage": "{actorName} vous a envoyé un message"
+    "conversationMessage": "{actorName} vous a envoyé un message",
+    "ideaGroupMessage": "{actorName} a envoyé un message dans le groupe de l’idée",
+    "ideaGroupUpdated": "{actorName} a mis à jour le groupe de l’idée",
+    "ideaGroupRemoved": "{actorName} vous a retiré d’un groupe d’idée",
+    "ideaGroupLeft": "{actorName} a quitté le groupe de l’idée",
+    "ideaCompleted": "{actorName} a terminé l’idée"
   },
   "RightSidebar": {
     "trendingTopics": "Sujets tendance",
@@ -1445,6 +1450,59 @@
     "emptyDescription": "Échangez avec les membres de la communauté à propos des idées et Gar3tak.",
     "activeConversations": "{count} conversations actives",
     "unreadMessages": "{count} messages non lus",
-    "typing": "écrit..."
+    "typing": "écrit...",
+    "groupChat": {
+      "memberFallback": "Membre",
+      "active": "Actif",
+      "now": "maintenant",
+      "admin": "Admin",
+      "readOnly": "Lecture seule",
+      "readOnlyNotice": "Ce groupe est en lecture seule.",
+      "members": "membres",
+      "memberCount": "{count} membres",
+      "openProfile": "Ouvrir le profil de {name}",
+      "changeImage": "Changer l’image",
+      "save": "Enregistrer",
+      "imageReady": "Image prête",
+      "addCaptionOrSend": "Ajoutez une légende ou envoyez maintenant.",
+      "addCaption": "Ajouter une légende",
+      "removeImage": "Retirer l’image",
+      "sendImage": "Envoyer une image",
+      "sendMessage": "Envoyer le message",
+      "ideaStatus": "Statut de l’idée",
+      "leaveGroup": "Quitter le groupe",
+      "gar3tak": "Gar3tak",
+      "image": "Image",
+      "imageWithCaption": "Image : {caption}",
+      "statuses": {
+        "published": "Publiée",
+        "interested": "Intérêt en cours",
+        "discussion": "Discussion",
+        "in_progress": "En cours",
+        "completed": "Terminée",
+        "archived": "Archivée"
+      },
+      "roles": {
+        "admin": "Admin",
+        "member": "Membre"
+      },
+      "errors": {
+        "archived": "Ce groupe est en lecture seule.",
+        "unauthorized": "Vous n’avez pas accès à ce groupe.",
+        "rate_limited": "Veuillez ralentir avant de renvoyer.",
+        "invalid": "Vérifiez le message puis réessayez.",
+        "insert_failed": "Le message n’a pas pu être envoyé.",
+        "update_failed": "Le profil du groupe n’a pas pu être mis à jour.",
+        "remove_failed": "Le membre n’a pas pu être retiré.",
+        "leave_failed": "Impossible de quitter le groupe.",
+        "admin_cannot_leave": "Le propriétaire de l’idée ne peut pas quitter le groupe.",
+        "image_upload_failed": "L’image n’a pas pu être téléversée.",
+        "group_image_upload_failed": "L’image du groupe n’a pas pu être téléversée."
+      },
+      "you": "Vous",
+      "backToMessages": "Retour aux messages",
+      "editGroup": "Modifier le groupe",
+      "removeMember": "Retirer {name}"
+    }
   }
 }

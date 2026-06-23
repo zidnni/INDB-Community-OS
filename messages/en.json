@@ -350,7 +350,12 @@
     "ideaParticipantDeclined": "{actorName} declined your participation",
     "ideaMessage": "{actorName} sent a message about your idea",
     "ideaStatusChange": "{actorName} updated the idea status",
-    "conversationMessage": "{actorName} sent you a message"
+    "conversationMessage": "{actorName} sent you a message",
+    "ideaGroupMessage": "{actorName} sent a message in the idea group",
+    "ideaGroupUpdated": "{actorName} updated the idea group",
+    "ideaGroupRemoved": "{actorName} removed you from an idea group",
+    "ideaGroupLeft": "{actorName} left the idea group",
+    "ideaCompleted": "{actorName} completed the idea"
   },
   "RightSidebar": {
     "trendingTopics": "Trending Topics",
@@ -1445,6 +1450,59 @@
     "emptyDescription": "Connect with community members about ideas and Gar3tak.",
     "activeConversations": "{count} active conversations",
     "unreadMessages": "{count} unread messages",
-    "typing": "is typing..."
+    "typing": "is typing...",
+    "groupChat": {
+      "memberFallback": "Member",
+      "active": "Active",
+      "now": "now",
+      "admin": "Admin",
+      "readOnly": "Read-only",
+      "readOnlyNotice": "This group is read-only.",
+      "members": "members",
+      "memberCount": "{count} members",
+      "openProfile": "Open {name} profile",
+      "changeImage": "Change image",
+      "save": "Save",
+      "imageReady": "Image ready",
+      "addCaptionOrSend": "Add a caption or send it now.",
+      "addCaption": "Add a caption",
+      "removeImage": "Remove image",
+      "sendImage": "Send image",
+      "sendMessage": "Send message",
+      "ideaStatus": "Idea status",
+      "leaveGroup": "Leave group",
+      "gar3tak": "Gar3tak",
+      "image": "Image",
+      "imageWithCaption": "Image: {caption}",
+      "statuses": {
+        "published": "Published",
+        "interested": "Gathering interest",
+        "discussion": "Discussion",
+        "in_progress": "In progress",
+        "completed": "Completed",
+        "archived": "Archived"
+      },
+      "roles": {
+        "admin": "Admin",
+        "member": "Member"
+      },
+      "errors": {
+        "archived": "This group is read-only.",
+        "unauthorized": "You do not have access to this group.",
+        "rate_limited": "Please slow down before sending again.",
+        "invalid": "Check the message and try again.",
+        "insert_failed": "Message could not be sent.",
+        "update_failed": "Group profile could not be updated.",
+        "remove_failed": "Member could not be removed.",
+        "leave_failed": "Could not leave the group.",
+        "admin_cannot_leave": "The idea owner cannot leave the group.",
+        "image_upload_failed": "Image could not be uploaded.",
+        "group_image_upload_failed": "Group image could not be uploaded."
+      },
+      "you": "You",
+      "backToMessages": "Back to messages",
+      "editGroup": "Edit group",
+      "removeMember": "Remove {name}"
+    }
   }
 }

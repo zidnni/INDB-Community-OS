@@ -468,17 +468,17 @@ export function NotificationDropdown({
         case "idea_message":
           return t("ideaMessage", {actorName});
         case "idea_group_message":
-          return `${actorName} sent a message in the idea group`;
+          return t("ideaGroupMessage", {actorName});
         case "idea_group_updated":
-          return `${actorName} updated the idea group`;
+          return t("ideaGroupUpdated", {actorName});
         case "idea_group_removed":
-          return `${actorName} removed you from an idea group`;
+          return t("ideaGroupRemoved", {actorName});
         case "idea_group_left":
-          return `${actorName} left the idea group`;
+          return t("ideaGroupLeft", {actorName});
         case "idea_status_change":
           return t("ideaStatusChange", {actorName});
         case "idea_completed":
-          return `${actorName} completed the idea`;
+          return t("ideaCompleted", {actorName});
         case "share":
           return n.entity_type === "memory"
             ? t("sharedYourMemory", {actorName})

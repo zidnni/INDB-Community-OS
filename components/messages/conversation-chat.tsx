@@ -40,7 +40,7 @@ function formatTime(dateStr: string): string {
   }
 }
 
-function displayName(profile: ConversationUserProfile | null | undefined, fallback = "Member") {
+function displayName(profile: ConversationUserProfile | null | undefined, fallback: string) {
   return profile?.full_name ?? profile?.username ?? fallback;
 }
 
@@ -49,32 +49,31 @@ function profileHref(profile: ConversationUserProfile | null | undefined, userId
   return handle ? `/profile/${encodeURIComponent(handle)}` : null;
 }
 
-function statusLabel(status: string | null | undefined) {
-  const labels: Record<string, string> = {
-    published: "Published",
-    interested: "Gathering interest",
-    discussion: "Discussion",
-    in_progress: "In progress",
-    completed: "Completed",
-    archived: "Archived",
-  };
-  return status ? labels[status] ?? status : "Active";
+type TranslationFn = (key: string, values?: Record<string, string | number>) => string;
+
+function statusLabel(status: string | null | undefined, t: TranslationFn) {
+  const key = status && ["published", "interested", "discussion", "in_progress", "completed", "archived"].includes(status)
+    ? `groupChat.statuses.${status}`
+    : "groupChat.active";
+  return t(key);
 }
 
-function friendlyError(error: string | null) {
+function friendlyError(error: string | null, t: TranslationFn) {
   if (!error) return null;
-  const labels: Record<string, string> = {
-    archived: "This group is read-only.",
-    unauthorized: "You do not have access to this group.",
-    rate_limited: "Please slow down before sending again.",
-    invalid: "Check the message and try again.",
-    insert_failed: "Message could not be sent.",
-    update_failed: "Group profile could not be updated.",
-    remove_failed: "Member could not be removed.",
-    leave_failed: "Could not leave the group.",
-    admin_cannot_leave: "The idea owner cannot leave the group.",
-  };
-  return labels[error] ?? error;
+  const errorKeys = [
+    "archived",
+    "unauthorized",
+    "rate_limited",
+    "invalid",
+    "insert_failed",
+    "update_failed",
+    "remove_failed",
+    "leave_failed",
+    "admin_cannot_leave",
+    "image_upload_failed",
+    "group_image_upload_failed",
+  ];
+  return errorKeys.includes(error) ? t(`groupChat.errors.${error}`) : error;
 }
 
 interface ConversationAvatarProps {
@@ -82,10 +81,11 @@ interface ConversationAvatarProps {
   imageUrl: string | null;
   participants: ConversationParticipantInfo[];
   isGroup: boolean;
+  memberFallback: string;
   className?: string;
 }
 
-function ConversationAvatar({ title, imageUrl, participants, isGroup, className }: ConversationAvatarProps) {
+function ConversationAvatar({ title, imageUrl, participants, isGroup, memberFallback, className }: ConversationAvatarProps) {
   if (imageUrl) {
     return (
       <img
@@ -103,7 +103,7 @@ function ConversationAvatar({ title, imageUrl, participants, isGroup, className 
         {shown.map((participant, index) => (
           <UserAvatar
             key={participant.user_id}
-            label={displayName(participant.user, "Member")}
+            label={displayName(participant.user, memberFallback)}
             avatarUrl={participant.user?.avatar_url ?? null}
             className={cn(
               "absolute h-5 w-5 border border-background",
@@ -152,6 +152,7 @@ export function ConversationChat({
   participants: initialParticipants,
 }: ConversationChatProps) {
   const t = useTranslations("Messages");
+  const memberFallback = t("groupChat.memberFallback");
   const router = useRouter();
 
   const [messages, setMessages] = useState(initialMessages);
@@ -186,7 +187,7 @@ export function ConversationChat({
   const effectiveMemberCount = participants.length || memberCount || 0;
   const isCompleted = localIdeaStatus === "completed" || localIdeaStatus === "archived";
   const isReadOnly = localArchived || isCompleted;
-  const selfLabel = "You";
+  const selfLabel = t("groupChat.you");
   const participantById = useMemo(() => {
     return new Map(participants.map((participant) => [participant.user_id, participant]));
   }, [participants]);
@@ -259,7 +260,7 @@ export function ConversationChat({
       )
       .on("broadcast", { event: "typing" }, (payload) => {
         if (payload.payload.sender_id !== currentUserId) {
-          setTypingName(payload.payload.sender_name ?? "Someone");
+          setTypingName(payload.payload.sender_name ?? memberFallback);
           if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
           typingTimeoutRef.current = setTimeout(() => setTypingName(null), 2500);
         }
@@ -270,7 +271,7 @@ export function ConversationChat({
       supabase.removeChannel(channel);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
-  }, [conversationId, currentUserId, participantById]);
+  }, [conversationId, currentUserId, memberFallback, participantById]);
 
   useEffect(() => {
     async function markRead() {
@@ -292,13 +293,13 @@ export function ConversationChat({
       event: "typing",
       payload: {
         sender_id: currentUserId,
-        sender_name: displayName(currentParticipant?.user, "Someone"),
+        sender_name: displayName(currentParticipant?.user, memberFallback),
       },
     });
     typingBroadcastRef.current = setTimeout(() => {
       typingBroadcastRef.current = null;
     }, 2000);
-  }, [conversationId, currentParticipant?.user, currentUserId]);
+  }, [conversationId, currentParticipant?.user, currentUserId, memberFallback]);
 
   function handleInputChange(value: string) {
     setInput(value);
@@ -315,7 +316,7 @@ export function ConversationChat({
       setPendingImage({ url: uploaded.url, storagePath: uploaded.storagePath });
     } catch (e) {
       console.error("image upload error:", e);
-      setError("Image could not be uploaded.");
+      setError("image_upload_failed");
     } finally {
       setImageUploading(false);
       if (imageInputRef.current) imageInputRef.current.value = "";
@@ -333,7 +334,7 @@ export function ConversationChat({
       setDraftImageStoragePath(uploaded.storagePath);
     } catch (e) {
       console.error("group image upload error:", e);
-      setError("Group image could not be uploaded.");
+      setError("group_image_upload_failed");
     } finally {
       setGroupImageUploading(false);
       if (groupImageInputRef.current) groupImageInputRef.current.value = "";
@@ -491,8 +492,8 @@ export function ConversationChat({
   }
 
   const headerSubtitle = isIdeaGroup
-    ? `${effectiveMemberCount} members - ${statusLabel(localIdeaStatus)}`
-    : `${effectiveMemberCount} members`;
+    ? `${t("groupChat.memberCount", { count: effectiveMemberCount })} - ${statusLabel(localIdeaStatus, t)}`
+    : t("groupChat.memberCount", { count: effectiveMemberCount });
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
@@ -501,7 +502,7 @@ export function ConversationChat({
           <Link
             href="/messages"
             className="flex items-center justify-center rounded-full p-1 text-muted-foreground transition hover:bg-muted md:hidden"
-            aria-label="Back to messages"
+            aria-label={t("groupChat.backToMessages")}
           >
             <ArrowLeft size={20} />
           </Link>
@@ -510,6 +511,7 @@ export function ConversationChat({
             imageUrl={groupImageUrl}
             participants={participants}
             isGroup={isIdeaGroup}
+            memberFallback={memberFallback}
             className="h-11 w-11"
           />
           <div className="min-w-0 flex-1">
@@ -518,25 +520,25 @@ export function ConversationChat({
               {isAdmin && (
                 <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
                   <Shield size={11} />
-                  Admin
+                  {t("groupChat.admin")}
                 </span>
               )}
             </div>
             <p className="truncate text-xs text-muted-foreground">
-              {isIdeaGroup ? ideaTitle ?? groupTitle : "Gar3tak"} - {headerSubtitle}
+              {isIdeaGroup ? ideaTitle ?? groupTitle : t("groupChat.gar3tak")} - {headerSubtitle}
             </p>
           </div>
           {isReadOnly && (
             <span className="hidden items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground sm:flex">
               <Archive size={12} />
-              Read-only
+              {t("groupChat.readOnly")}
             </span>
           )}
           <button
             type="button"
             onClick={() => setShowMembers((value) => !value)}
             className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
-            aria-label="View members"
+            aria-label={t("groupChat.members")}
           >
             <Users size={18} />
           </button>
@@ -545,7 +547,7 @@ export function ConversationChat({
               type="button"
               onClick={() => setEditingProfile((value) => !value)}
               className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
-              aria-label="Edit group"
+              aria-label={t("groupChat.editGroup")}
             >
               <Pencil size={17} />
             </button>
@@ -556,7 +558,7 @@ export function ConversationChat({
           {participants.slice(0, 8).map((participant) => (
             <UserAvatar
               key={participant.user_id}
-              label={displayName(participant.user, "Member")}
+              label={displayName(participant.user, memberFallback)}
               avatarUrl={participant.user?.avatar_url ?? null}
               className="h-6 w-6 shrink-0 border border-background"
             />
@@ -576,6 +578,7 @@ export function ConversationChat({
                 imageUrl={draftImageUrl}
                 participants={participants}
                 isGroup
+                memberFallback={memberFallback}
                 className="h-14 w-14"
               />
               <div className="min-w-0 flex-1">
@@ -593,7 +596,7 @@ export function ConversationChat({
                     className="inline-flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs text-muted-foreground transition hover:bg-muted disabled:opacity-50"
                   >
                     {groupImageUploading ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} />}
-                    Change image
+                    {t("groupChat.changeImage")}
                   </button>
                   <button
                     type="button"
@@ -602,7 +605,7 @@ export function ConversationChat({
                     className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-2.5 py-1.5 text-xs font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-50"
                   >
                     {profileSaving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-                    Save
+                    {t("groupChat.save")}
                   </button>
                 </div>
               </div>
@@ -621,23 +624,23 @@ export function ConversationChat({
           <div className="mt-3 max-h-56 overflow-y-auto rounded-lg border border-border/70 bg-background">
             {isIdeaGroup && isAdmin && ideaId && (
               <div className="flex items-center gap-2 border-b border-border/70 px-3 py-2">
-                <span className="text-xs font-medium text-muted-foreground">Idea status</span>
+                <span className="text-xs font-medium text-muted-foreground">{t("groupChat.ideaStatus")}</span>
                 <select
                   value={localIdeaStatus ?? "published"}
                   onChange={(event) => handleStatusChange(event.target.value)}
                   className="ms-auto rounded-lg border border-border bg-card px-2 py-1 text-xs outline-none"
                 >
-                  <option value="published">Published</option>
-                  <option value="interested">Gathering interest</option>
-                  <option value="discussion">Discussion</option>
-                  <option value="in_progress">In progress</option>
-                  <option value="completed">Completed</option>
-                  <option value="archived">Archived</option>
+                  <option value="published">{t("groupChat.statuses.published")}</option>
+                  <option value="interested">{t("groupChat.statuses.interested")}</option>
+                  <option value="discussion">{t("groupChat.statuses.discussion")}</option>
+                  <option value="in_progress">{t("groupChat.statuses.in_progress")}</option>
+                  <option value="completed">{t("groupChat.statuses.completed")}</option>
+                  <option value="archived">{t("groupChat.statuses.archived")}</option>
                 </select>
               </div>
             )}
             {participants.map((participant) => {
-              const name = displayName(participant.user, "Member");
+              const name = displayName(participant.user, memberFallback);
               const isSelf = participant.user_id === currentUserId;
               const memberProfileHref = profileHref(participant.user, participant.user_id);
               return (
@@ -646,7 +649,7 @@ export function ConversationChat({
                     <Link
                       href={memberProfileHref}
                       className="shrink-0 rounded-full outline-none ring-primary/40 focus-visible:ring-2"
-                      aria-label={`Open ${name} profile`}
+                      aria-label={t("groupChat.openProfile", { name })}
                     >
                       <UserAvatar label={name} avatarUrl={participant.user?.avatar_url ?? null} className="h-8 w-8" />
                     </Link>
@@ -656,10 +659,10 @@ export function ConversationChat({
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-foreground">
                       {name}
-                      {isSelf ? " (You)" : ""}
+                      {isSelf ? ` (${t("groupChat.you")})` : ""}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {participant.role === "admin" ? "Admin" : "Member"}
+                      {participant.role === "admin" ? t("groupChat.roles.admin") : t("groupChat.roles.member")}
                     </p>
                   </div>
                   {isIdeaGroup && isAdmin && participant.role !== "admin" && !isSelf && (
@@ -667,7 +670,7 @@ export function ConversationChat({
                       type="button"
                       onClick={() => handleRemoveMember(participant.user_id)}
                       className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive"
-                      aria-label={`Remove ${name}`}
+                      aria-label={t("groupChat.removeMember", { name })}
                     >
                       <UserMinus size={16} />
                     </button>
@@ -682,7 +685,7 @@ export function ConversationChat({
                 className="flex w-full items-center gap-2 border-t border-border/70 px-3 py-2 text-sm text-destructive transition hover:bg-destructive/10"
               >
                 <LogOut size={16} />
-                Leave group
+                {t("groupChat.leaveGroup")}
               </button>
             )}
           </div>
@@ -691,7 +694,7 @@ export function ConversationChat({
         {isReadOnly && (
           <div className="mt-2 flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground sm:hidden">
             <Archive size={14} />
-            This group is read-only.
+            {t("groupChat.readOnlyNotice")}
           </div>
         )}
       </div>
@@ -706,7 +709,7 @@ export function ConversationChat({
             const isMine = msg.sender_id === currentUserId;
             const participant = participantById.get(msg.sender_id);
             const sender = msg.sender ?? participant?.user ?? null;
-            const senderName = displayName(sender, "Member");
+            const senderName = displayName(sender, memberFallback);
             const senderProfileHref = profileHref(sender, msg.sender_id);
             const prevMsg = index > 0 ? messages[index - 1] : null;
             const isSameSenderAsPrev = prevMsg?.sender_id === msg.sender_id;
@@ -729,7 +732,7 @@ export function ConversationChat({
                         <Link
                           href={senderProfileHref}
                           className="block rounded-full outline-none ring-primary/40 focus-visible:ring-2"
-                          aria-label={`Open ${senderName} profile`}
+                          aria-label={t("groupChat.openProfile", { name: senderName })}
                         >
                           <UserAvatar
                             label={senderName}
@@ -818,14 +821,14 @@ export function ConversationChat({
           <div className="mb-2 flex items-start gap-2 rounded-lg border border-border/70 bg-background p-2">
             <img src={pendingImage.url} alt="" className="h-16 w-16 rounded-md object-cover" />
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium text-foreground">Image ready</p>
-              <p className="mt-1 text-xs text-muted-foreground">Add a caption or send it now.</p>
+              <p className="text-xs font-medium text-foreground">{t("groupChat.imageReady")}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{t("groupChat.addCaptionOrSend")}</p>
             </div>
             <button
               type="button"
               onClick={() => setPendingImage(null)}
               className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted"
-              aria-label="Remove image"
+              aria-label={t("groupChat.removeImage")}
             >
               <X size={15} />
             </button>
@@ -833,7 +836,7 @@ export function ConversationChat({
         )}
 
         {error && (
-          <p className="mb-1.5 text-xs text-destructive">{friendlyError(error)}</p>
+          <p className="mb-1.5 text-xs text-destructive">{friendlyError(error, t)}</p>
         )}
 
         <form onSubmit={handleSend} className="flex items-end gap-2">
@@ -849,7 +852,7 @@ export function ConversationChat({
             onClick={() => imageInputRef.current?.click()}
             disabled={isReadOnly || imageUploading || sending}
             className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition hover:bg-muted disabled:opacity-40"
-            aria-label="Send image"
+            aria-label={t("groupChat.sendImage")}
           >
             {imageUploading ? <Loader2 size={18} className="animate-spin" /> : <ImagePlus size={18} />}
           </button>
@@ -859,7 +862,7 @@ export function ConversationChat({
             onChange={(e) => handleInputChange(e.target.value)}
             maxLength={pendingImage ? 500 : 1000}
             disabled={isReadOnly}
-            placeholder={isReadOnly ? "This group is read-only" : pendingImage ? "Add a caption" : t("placeholder")}
+            placeholder={isReadOnly ? t("groupChat.readOnlyNotice") : pendingImage ? t("groupChat.addCaption") : t("placeholder")}
             className={cn(
               "min-h-[44px] flex-1 rounded-2xl border border-border/60 bg-muted/50 px-4 py-2.5 text-sm outline-none transition",
               "focus:border-primary/50 focus:ring-1 focus:ring-primary/30",
@@ -870,7 +873,7 @@ export function ConversationChat({
             type="submit"
             disabled={(!input.trim() && !pendingImage) || sending || isReadOnly}
             className="flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-40"
-            aria-label="Send message"
+            aria-label={t("groupChat.sendMessage")}
           >
             {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
           </button>
