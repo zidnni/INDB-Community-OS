@@ -97,10 +97,32 @@ export async function getConversationById(conversationId: string, userId?: strin
     const row = (rows as Record<string, unknown>[]).find((r) => r.id as string === conversationId);
     if (!row) return null;
 
-    const { data: participants } = await supabase
-      .from('conversation_participants')
-      .select('*, user:user_id(id, username, full_name, avatar_url)')
-      .eq('conversation_id', conversationId);
+    const participants: ConversationParticipantInfo[] = [];
+    // Add current user as participant
+    participants.push({
+      id: '',
+      user_id: userId,
+      last_read_at: null,
+      unread_count: (row.unread_count as number) ?? 0,
+      user: null,
+    });
+    // Add other participant from RPC result
+    if (row.other_user_id) {
+      participants.push({
+        id: '',
+        user_id: row.other_user_id as string,
+        last_read_at: null,
+        unread_count: 0,
+        user: row.other_user_id
+          ? {
+              id: row.other_user_id as string,
+              username: row.other_username as string | null,
+              full_name: row.other_full_name as string | null,
+              avatar_url: row.other_avatar_url as string | null,
+            }
+          : null,
+      });
+    }
 
     return {
       id: row.id as string,
@@ -109,7 +131,7 @@ export async function getConversationById(conversationId: string, userId?: strin
       idea_id: row.idea_id as string | null,
       title: row.title as string,
       archived_at: row.archived_at as string | null,
-      participants: (participants ?? []) as unknown as ConversationParticipantInfo[],
+      participants,
     };
   }
 
