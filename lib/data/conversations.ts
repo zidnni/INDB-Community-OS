@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export type ConversationMessageType = 'text' | 'image';
 export type ConversationParticipantRole = 'admin' | 'member';
@@ -489,11 +490,107 @@ export async function updateIdeaGroupProfile(
     p_image_storage_path: input.imageStoragePath ?? null,
   });
 
-  if (error) {
-    console.error('updateIdeaGroupProfile error:', error);
+  if (!error) return true;
+
+  console.error('updateIdeaGroupProfile rpc error:', error);
+  return updateIdeaGroupProfileDirect(conversationId, actorId, input);
+}
+
+async function updateIdeaGroupProfileDirect(
+  conversationId: string,
+  actorId: string,
+  input: { title?: string | null; imageUrl?: string | null; imageStoragePath?: string | null },
+): Promise<boolean> {
+  const userClient = await createClient();
+  const writeClient = createAdminClient() ?? userClient;
+  const isAdmin = await canAdminUpdateIdeaGroupDirect(writeClient, conversationId, actorId);
+
+  if (!isAdmin) {
+    console.error('updateIdeaGroupProfile direct error: actor is not an idea group admin');
     return false;
   }
-  return true;
+
+  const basePayload: Record<string, string> = {};
+
+  if (input.title) basePayload.title = input.title;
+  if (input.imageUrl) basePayload.image_url = input.imageUrl;
+  if (input.imageStoragePath) basePayload.image_storage_path = input.imageStoragePath;
+
+  const payloads: Record<string, string>[] = [
+    {...basePayload, updated_at: new Date().toISOString()},
+    basePayload,
+    withoutKey(basePayload, 'image_storage_path'),
+    withoutKey(withoutKey(basePayload, 'image_storage_path'), 'image_url'),
+  ].filter((payload, index, list) => Object.keys(payload).length > 0 && list.findIndex((item) => shallowEqual(item, payload)) === index);
+
+  for (const payload of payloads) {
+    const { error } = await writeClient
+      .from('conversations')
+      .update(payload)
+      .eq('id', conversationId)
+      .eq('type', 'idea');
+
+    if (!error) return true;
+
+    const message = error.message?.toLowerCase() ?? '';
+    const canRetry =
+      error.code === 'PGRST204' ||
+      message.includes('schema cache') ||
+      message.includes('image_storage_path') ||
+      message.includes('image_url') ||
+      message.includes('updated_at');
+
+    if (!canRetry) {
+      console.error('updateIdeaGroupProfile direct error:', error);
+      return false;
+    }
+  }
+
+  console.error('updateIdeaGroupProfile direct error: no compatible conversation profile columns');
+  return false;
+}
+
+async function canAdminUpdateIdeaGroupDirect(
+  client: Awaited<ReturnType<typeof createClient>>,
+  conversationId: string,
+  actorId: string,
+) {
+  const { data: conversation, error: conversationError } = await client
+    .from('conversations')
+    .select('id, type, idea_id')
+    .eq('id', conversationId)
+    .maybeSingle();
+
+  if (conversationError || !conversation || conversation.type !== 'idea') return false;
+
+  if (conversation.idea_id) {
+    const { data: idea } = await client
+      .from('ideas')
+      .select('author_id')
+      .eq('id', conversation.idea_id)
+      .maybeSingle();
+
+    if (idea?.author_id === actorId) return true;
+  }
+
+  const { data: participant } = await client
+    .from('conversation_participants')
+    .select('role, left_at, removed_at')
+    .eq('conversation_id', conversationId)
+    .eq('user_id', actorId)
+    .maybeSingle();
+
+  return participant?.role === 'admin' && !participant.left_at && !participant.removed_at;
+}
+
+function withoutKey(source: Record<string, string>, key: string) {
+  return Object.fromEntries(Object.entries(source).filter(([sourceKey]) => sourceKey !== key));
+}
+
+function shallowEqual(a: Record<string, string>, b: Record<string, string>) {
+  const aKeys = Object.keys(a);
+  const bKeys = Object.keys(b);
+  return aKeys.length === bKeys.length && aKeys.every((key) => a[key] === b[key]);
 }
 
 export async function removeIdeaGroupMember(
