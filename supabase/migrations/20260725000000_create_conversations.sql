@@ -122,7 +122,10 @@ DECLARE
   v_title TEXT;
 BEGIN
   SELECT id INTO v_conv_id FROM conversations WHERE graatek_id = p_share_id LIMIT 1;
-  IF v_conv_id IS NOT NULL THEN RETURN v_conv_id; END IF;
+  IF v_conv_id IS NOT NULL THEN
+    UPDATE conversations SET archived_at = NULL WHERE id = v_conv_id AND archived_at IS NOT NULL;
+    RETURN v_conv_id;
+  END IF;
 
   SELECT cs.owner_id, csr.requester_id, COALESCE(cs.title, '')
   INTO v_owner_id, v_requester_id, v_title
@@ -155,7 +158,10 @@ DECLARE
   v_title TEXT;
 BEGIN
   SELECT id INTO v_conv_id FROM conversations WHERE idea_id = p_idea_id LIMIT 1;
-  IF v_conv_id IS NOT NULL THEN RETURN v_conv_id; END IF;
+  IF v_conv_id IS NOT NULL THEN
+    UPDATE conversations SET archived_at = NULL WHERE id = v_conv_id AND archived_at IS NOT NULL;
+    RETURN v_conv_id;
+  END IF;
 
   SELECT author_id, COALESCE(title, '') INTO v_author_id, v_title
   FROM ideas WHERE id = p_idea_id;

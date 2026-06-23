@@ -4214,7 +4214,7 @@ export async function getConversationMessagesAction(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: 'unauthorized' };
   const { getConversationById, getConversationMessages } = await import('@/lib/data/conversations');
-  const conversation = await getConversationById(conversationId);
+  const conversation = await getConversationById(conversationId, user.id);
   if (!conversation) return { success: false, error: 'not_found' };
   const isParticipant = conversation.participants.some(p => p.user_id === user.id);
   if (!isParticipant) return { success: false, error: 'unauthorized' };
@@ -4242,7 +4242,7 @@ export async function sendConversationMessageAction(
   const { allowed } = await checkRateLimit('comment' as RateLimitKind, user.id);
   if (!allowed) return { success: false, error: 'rate_limited' };
   const { sendConversationMessage, getConversationById } = await import('@/lib/data/conversations');
-  const conv = await getConversationById(conversationId);
+  const conv = await getConversationById(conversationId, user.id);
   if (!conv || conv.archived_at) return { success: false, error: 'archived' };
   const isParticipant = conv.participants.some(p => p.user_id === user.id);
   if (!isParticipant) return { success: false, error: 'unauthorized' };
