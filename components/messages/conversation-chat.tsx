@@ -153,7 +153,7 @@ export function ConversationChat({
   return (
     <div className="flex h-full flex-col">
       {/* header */}
-      <div className="flex items-center gap-3 border-b border-border/70 px-4 py-2.5">
+      <div className="flex items-center gap-2 border-b border-border/70 px-3 py-2">
         <Link
           href="/messages"
           className="flex md:hidden items-center justify-center rounded-full p-1 text-muted-foreground hover:bg-muted transition"
@@ -177,7 +177,7 @@ export function ConversationChat({
       </div>
 
       {/* messages */}
-      <div className="flex-1 overflow-y-auto bg-[var(--background)] px-4 py-4">
+      <div className="flex-1 overflow-y-auto px-3">
         {messages.length === 0 ? (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground/60">
             {t("noMessagesYet")}
@@ -195,28 +195,32 @@ export function ConversationChat({
                 className={cn(
                   "flex w-full",
                   isMine ? "justify-end" : "justify-start",
-                  index > 0 && (isFirstInGroup ? "mt-4" : "mt-0.5"),
+                  index === 0 ? "mt-0" : isFirstInGroup ? "mt-3" : "mt-0.5",
                 )}
               >
-                <div className={cn("flex max-w-[85%] gap-2", isMine && "flex-row-reverse")}>
-                  {!isMine && isFirstInGroup && (
-                    <UserAvatar label={otherUserName} avatarUrl={otherUserAvatarUrl} className="mt-1 h-7 w-7 shrink-0" />
+                <div className={cn("flex max-w-[85%]", isMine ? "flex-row-reverse" : "gap-2")}>
+                  {/* Avatar column (other user only) */}
+                  {!isMine && (
+                    <div className="w-6 shrink-0">
+                      {isFirstInGroup && (
+                        <UserAvatar label={otherUserName} avatarUrl={otherUserAvatarUrl} className="h-6 w-6" />
+                      )}
+                    </div>
                   )}
-                  {!isMine && !isFirstInGroup && (
-                    <div className="w-7 shrink-0" />
-                  )}
-                  <div>
+
+                  {/* Bubble column */}
+                  <div className="min-w-0">
                     {!isMine && isFirstInGroup && (
-                      <p className="mb-0.5 px-1 text-[11px] font-medium text-muted-foreground">
+                      <p className="mb-0.5 text-[11px] font-semibold text-muted-foreground">
                         {otherUserName}
                       </p>
                     )}
                     <div
                       className={cn(
-                        "rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm",
+                        "rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
                         isMine
                           ? "bg-primary text-primary-foreground rounded-br-[6px]"
-                          : "bg-card text-foreground rounded-bl-[6px]",
+                          : "bg-card text-foreground shadow-sm rounded-bl-[6px]",
                       )}
                       dir="auto"
                     >
@@ -242,7 +246,7 @@ export function ConversationChat({
       </div>
 
       {/* input */}
-      <div className="border-t border-border/70 px-3 py-2.5 safe-area-bottom md:px-4">
+      <div className="border-t border-border/70 bg-card px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2.5 md:px-4">
         {error && (
           <p className="mb-1.5 text-xs text-destructive">{t(error as string, { defaultValue: error })}</p>
         )}
