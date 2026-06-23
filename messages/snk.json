@@ -1294,6 +1294,10 @@
     "archivedTitle": "Ndotooje moofteje",
     "noMessagesYet": "Xaatu mesaase",
     "selectConversation": "Tonton ndotoo",
-    "selectConversationHint": "Tonton ndotoo yiini ga yelle mesaase"
+    "selectConversationHint": "Tonton ndotoo yiini ga yelle mesaase",
+    "emptyTitle": "Mesaase & Jokkondire",
+    "emptyDescription": "Jokkondir renge renndo ba ideyaaji e Gar3tak.",
+    "activeConversations": "{count} ndotooje golleje",
+    "unreadMessages": "{count} mesaase xaatu xeete"
   }
 }

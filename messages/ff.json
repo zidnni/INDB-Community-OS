@@ -1297,6 +1297,10 @@
     "archivedTitle": "Ndotooje mooftaaɗe",
     "noMessagesYet": "Alaa mesaje haa jooni",
     "selectConversation": "Suɓo ndotoo",
-    "selectConversationHint": "Suɓo ndotoo e limngal ngam yi'de mesaje"
+    "selectConversationHint": "Suɓo ndotoo e limngal ngam yi'de mesaje",
+    "emptyTitle": "Mesaje & Jokkondiral",
+    "emptyDescription": "Jokkondir e terɗe renndo ngam ideji e Gar3tak.",
+    "activeConversations": "{count} ndotooje golleeje",
+    "unreadMessages": "{count} mesaje njaɓaaka"
   }
 }

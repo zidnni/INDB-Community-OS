@@ -23,6 +23,11 @@ function timeAgo(dateStr: string, locale: string): string {
   return new Date(dateStr).toLocaleDateString(locale === "ar" ? "ar" : "en", { day: "numeric", month: "short" });
 }
 
+function typeBadge(type: string, t: (key: string) => string): { emoji: string; label: string } {
+  if (type === "graatek") return { emoji: "🎁", label: "Gar3tak" };
+  return { emoji: "💡", label: t("idea") };
+}
+
 interface ConversationListProps {
   initialConversations: ConversationListItem[];
   currentUserId: string;
@@ -153,6 +158,7 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
               const avatarUrl = conv.other_participant?.avatar_url ?? null;
               const lastMsg = conv.last_message?.message ?? "";
               const lastTime = conv.last_message?.created_at ?? conv.created_at;
+              const badge = typeBadge(conv.type, t);
 
               return (
                 <li key={conv.id}>
@@ -165,17 +171,21 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
                   >
                     <UserAvatar label={name} avatarUrl={avatarUrl} className="mt-0.5 h-9 w-9 shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-baseline justify-between gap-1.5">
-                        <span className="truncate text-sm font-medium">{name}</span>
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className="inline-flex items-center gap-1 rounded-[4px] bg-muted px-1.5 py-[2px] text-[10px] leading-none text-muted-foreground">
+                          <span>{badge.emoji}</span>
+                          <span>{badge.label}</span>
+                        </span>
                         {lastTime && (
                           <span className="shrink-0 text-[11px] text-muted-foreground">
                             {timeAgo(lastTime, locale)}
                           </span>
                         )}
                       </div>
+                      <p className="mt-1 truncate text-sm font-medium text-foreground">{name}</p>
                       <div className="mt-0.5 flex items-center gap-2">
                         <p className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
-                          {lastMsg}
+                          {lastMsg || t("noMessagesYet")}
                         </p>
                         {conv.unread_count > 0 && (
                           <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground">

@@ -36,7 +36,7 @@ export default async function ConversationPage({
 
   return (
     <>
-      <div className="hidden w-full flex-col md:flex md:w-[30%] md:min-w-0 md:shrink-0 md:border-e md:border-border/70">
+      <div className="hidden w-full flex-col md:flex md:w-[32%] md:min-w-0 md:shrink-0 md:border-e md:border-border/70">
         <ConversationList initialConversations={conversations} currentUserId={user.id} />
       </div>
 

@@ -1440,6 +1440,10 @@
     "archivedTitle": "Conversations archivées",
     "noMessagesYet": "Pas encore de messages",
     "selectConversation": "Sélectionner une conversation",
-    "selectConversationHint": "Choisissez une conversation dans la liste pour voir les messages"
+    "selectConversationHint": "Choisissez une conversation dans la liste pour voir les messages",
+    "emptyTitle": "Messages & Coordination",
+    "emptyDescription": "Échangez avec les membres de la communauté à propos des idées et Gar3tak.",
+    "activeConversations": "{count} conversations actives",
+    "unreadMessages": "{count} messages non lus"
   }
 }

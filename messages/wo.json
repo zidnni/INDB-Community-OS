@@ -1294,6 +1294,10 @@
     "archivedTitle": "Ndotooje yu mofn",
     "noMessagesYet": "Amul message ba leegi",
     "selectConversation": "Tonton benn waxtaan",
-    "selectConversationHint": "Tonton benn waxtaan ci limngal bi ngay gis messages"
+    "selectConversationHint": "Tonton benn waxtaan ci limngal bi ngay gis messages",
+    "emptyTitle": "Messages & Coordination",
+    "emptyDescription": "Mbooloo ak mbootaay bi ci xalaat yi ak Gar3tak.",
+    "activeConversations": "{count} waxtaan yu ngi dox",
+    "unreadMessages": "{count} messages xaatu xeetul"
   }
 }

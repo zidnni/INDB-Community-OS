@@ -16,6 +16,11 @@ function formatTime(dateStr: string): string {
   } catch { return ""; }
 }
 
+function typeBadge(type: string, t: (key: string) => string): { emoji: string; label: string } {
+  if (type === "graatek") return { emoji: "🎁", label: "Gar3tak" };
+  return { emoji: "💡", label: t("idea") };
+}
+
 interface ConversationChatProps {
   conversationId: string;
   initialMessages: ConversationMessageWithSender[];
@@ -48,6 +53,7 @@ export function ConversationChat({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const selfLabel = rtl ? "أنت" : "You";
+  const badge = typeBadge(conversationType, t);
 
   useEffect(() => {
     setMessages(initialMessages);
@@ -156,9 +162,10 @@ export function ConversationChat({
         </Link>
         <UserAvatar label={otherUserName} avatarUrl={otherUserAvatarUrl} className="h-9 w-9 shrink-0" />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{otherUserName}</p>
+          <p className="truncate text-sm font-medium text-foreground">{otherUserName}</p>
           <p className="truncate text-xs text-muted-foreground">
-            {conversationType === "graatek" ? "Gar3tak" : t("idea")}: {conversationTitle}
+            <span className="me-0.5">{badge.emoji}</span>
+            {badge.label}: {conversationTitle}
           </p>
         </div>
         {isArchived && (
@@ -170,7 +177,7 @@ export function ConversationChat({
       </div>
 
       {/* messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-3">
+      <div className="flex-1 overflow-y-auto bg-[var(--background)] px-4 py-4">
         {messages.length === 0 ? (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground/60">
             {t("noMessagesYet")}
@@ -188,10 +195,10 @@ export function ConversationChat({
                 className={cn(
                   "flex w-full",
                   isMine ? "justify-end" : "justify-start",
-                  index > 0 && (isFirstInGroup ? "mt-3" : "mt-1"),
+                  index > 0 && (isFirstInGroup ? "mt-4" : "mt-0.5"),
                 )}
               >
-                <div className={cn("flex max-w-[80%] gap-2", isMine && "flex-row-reverse")}>
+                <div className={cn("flex max-w-[85%] gap-2", isMine && "flex-row-reverse")}>
                   {!isMine && isFirstInGroup && (
                     <UserAvatar label={otherUserName} avatarUrl={otherUserAvatarUrl} className="mt-1 h-7 w-7 shrink-0" />
                   )}
@@ -206,21 +213,21 @@ export function ConversationChat({
                     )}
                     <div
                       className={cn(
-                        "rounded-2xl px-4 py-2 text-sm leading-relaxed",
+                        "rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm",
                         isMine
                           ? "bg-primary text-primary-foreground rounded-br-[6px]"
-                          : "bg-muted text-foreground rounded-bl-[6px]",
+                          : "bg-card text-foreground rounded-bl-[6px]",
                       )}
                       dir="auto"
                     >
                       {msg.message}
                     </div>
-                    <div className={cn("mt-0.5 flex items-center gap-1 px-1", isMine && "justify-end")}>
-                      <span className="text-[10px] text-muted-foreground/60">
+                    <div className={cn("mt-0.5 flex items-center gap-1.5 px-1", isMine && "justify-end")}>
+                      <span className="text-[10px] text-muted-foreground/50">
                         {formatTime(msg.created_at)}
                       </span>
                       {isMine && (
-                        <span className="text-[10px] text-muted-foreground/40">
+                        <span className="text-[10px] font-medium text-muted-foreground/40">
                           {selfLabel}
                         </span>
                       )}
@@ -235,7 +242,7 @@ export function ConversationChat({
       </div>
 
       {/* input */}
-      <div className="border-t border-border/70 px-3 py-2.5 md:px-4">
+      <div className="border-t border-border/70 px-3 py-2.5 safe-area-bottom md:px-4">
         {error && (
           <p className="mb-1.5 text-xs text-destructive">{t(error as string, { defaultValue: error })}</p>
         )}

@@ -1440,6 +1440,10 @@
     "archivedTitle": "المحادثات المؤرشفة",
     "noMessagesYet": "لا توجد رسائل بعد",
     "selectConversation": "اختر محادثة",
-    "selectConversationHint": "اختر محادثة من القائمة لعرض الرسائل"
+    "selectConversationHint": "اختر محادثة من القائمة لعرض الرسائل",
+    "emptyTitle": "الرسائل والتنسيق",
+    "emptyDescription": "تواصل مع أعضاء المجتمع حول الأفكار وگرعتك.",
+    "activeConversations": "{count} محادثة نشطة",
+    "unreadMessages": "{count} رسالة غير مقروءة"
   }
 }
