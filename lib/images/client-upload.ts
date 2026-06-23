@@ -50,12 +50,12 @@ export async function uploadMediaItem(
   file: File,
   uploadKind: ImageUploadKind,
 ): Promise<UploadedMediaResult> {
-  const bucketMap: Record<string, string> = {
+  const bucketMap: Record<string, string | string[]> = {
     post: "post-media",
     memory: "memory-archive",
     idea: "idea-media",
     fadla: "fadla-media",
-    conversation: "conversation-images",
+    conversation: ["conversation-images", "idea-media"],
   };
 
   const prefixMap: Record<string, string> = {
@@ -66,7 +66,8 @@ export async function uploadMediaItem(
     conversation: "conversations",
   };
 
-  const bucket = bucketMap[uploadKind] ?? "post-media";
+  const bucketCandidates = bucketMap[uploadKind] ?? "post-media";
+  const buckets = Array.isArray(bucketCandidates) ? bucketCandidates : [bucketCandidates];
   const prefix = prefixMap[uploadKind] ?? "posts";
   const supabase = createClient();
   const {
@@ -80,9 +81,43 @@ export async function uploadMediaItem(
   const pathPrefix = `${user.id}/${prefix}/${mediaFolder}`;
 
   if (isVideoFile(file)) {
-    return uploadFileToStorage(file, bucket, pathPrefix);
+    return uploadWithBucketFallback(file, buckets, pathPrefix, uploadKind);
   }
 
   const compressed = await prepareImageForUpload(file, uploadKind);
-  return uploadFileToStorage(compressed, bucket, pathPrefix);
+  return uploadWithBucketFallback(compressed, buckets, pathPrefix, uploadKind);
+}
+
+async function uploadWithBucketFallback(
+  file: File,
+  buckets: string[],
+  pathPrefix: string,
+  uploadKind: ImageUploadKind,
+): Promise<UploadedMediaResult> {
+  let lastError: unknown;
+
+  for (const bucket of buckets) {
+    try {
+      return await uploadFileToStorage(file, bucket, pathPrefix);
+    } catch (error) {
+      lastError = error;
+      if (uploadKind !== "conversation" || !canFallbackConversationUpload(error)) {
+        throw error;
+      }
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("Upload failed");
+}
+
+function canFallbackConversationUpload(error: unknown) {
+  const message = error instanceof Error ? error.message.toLowerCase() : "";
+  return (
+    message.includes("bucket") ||
+    message.includes("not found") ||
+    message.includes("row-level security") ||
+    message.includes("policy") ||
+    message.includes("permission") ||
+    message.includes("authorized")
+  );
 }
