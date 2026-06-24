@@ -850,6 +850,30 @@
       "settings": "Réglages",
       "support": "Soutien"
     },
+    "kpi": {
+      "totalUsers": "Utilisateurs totaux",
+      "activeIdeas": "Id?es actives",
+      "activeGraatek": "Graatek actif",
+      "totalDonations": "Dons",
+      "totalMemories": "M?moires",
+      "messagesToday": "Messages aujourd'hui",
+      "activeCampaigns": "Campagnes actives",
+      "totalVolunteers": "B?n?voles actifs",
+      "notificationsSent": "Notifications aujourd'hui"
+    },
+    "charts": {
+      "userGrowthTitle": "Croissance des utilisateurs",
+      "communityActivityTitle": "Activit? communautaire",
+      "donationsByCampaignTitle": "Dons par campagne",
+      "volunteerActivityTitle": "Inscriptions b?n?voles",
+      "postsLabel": "Publications",
+      "ideasLabel": "Id?es",
+      "memoriesLabel": "M?moires",
+      "usersLabel": "Utilisateurs",
+      "donationsLabel": "Dons",
+      "amountLabel": "Montant",
+      "volunteersLabel": "B?n?voles"
+    },
     "sections": {
       "overview": "Vue d?ensemble",
       "users": "Utilisateurs",

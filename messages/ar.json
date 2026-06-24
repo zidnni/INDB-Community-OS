@@ -858,6 +858,30 @@
       "credits": "النقاط",
       "settings": "الإعدادات"
     },
+    "kpi": {
+      "totalUsers": "إجمالي المستخدمين",
+      "activeIdeas": "الأفكار النشطة",
+      "activeGraatek": "گرعتك النشط",
+      "totalDonations": "التبرعات",
+      "totalMemories": "الذكريات",
+      "messagesToday": "الرسائل اليوم",
+      "activeCampaigns": "الحملات النشطة",
+      "totalVolunteers": "المتطوعون النشطون",
+      "notificationsSent": "الإشعارات اليوم"
+    },
+    "charts": {
+      "userGrowthTitle": "نمو المستخدمين",
+      "communityActivityTitle": "نشاط المجتمع",
+      "donationsByCampaignTitle": "التبرعات حسب الحملة",
+      "volunteerActivityTitle": "التسجيلات التطوعية",
+      "postsLabel": "المنشورات",
+      "ideasLabel": "الأفكار",
+      "memoriesLabel": "الذكريات",
+      "usersLabel": "المستخدمون",
+      "donationsLabel": "التبرعات",
+      "amountLabel": "المبلغ",
+      "volunteersLabel": "المتطوعون"
+    },
     "sections": {
       "overview": "نظرة عامة",
       "users": "المستخدمون",

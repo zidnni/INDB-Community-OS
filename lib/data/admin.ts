@@ -359,6 +359,127 @@ export async function getAdminReportedContent() {
   }));
 }
 
+export interface AdminUserGrowthPoint {
+  month: string;
+  value: number;
+}
+
+export interface AdminActivityPoint {
+  date: string;
+  posts: number;
+  ideas: number;
+  memories: number;
+}
+
+export interface AdminDonationByCampaign {
+  campaignId: string;
+  campaignTitle: string;
+  totalAmount: number;
+  count: number;
+}
+
+export interface AdminVolunteerMonth {
+  month: string;
+  value: number;
+}
+
+export async function getAdminUserGrowth(): Promise<AdminUserGrowthPoint[]> {
+  const supabase = await createClient();
+  const now = new Date();
+  const points: AdminUserGrowthPoint[] = [];
+
+  for (let i = 11; i >= 0; i--) {
+    const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const start = m.toISOString();
+    const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 1).toISOString();
+    const {count} = await supabase
+      .from("profiles")
+      .select("*", {count: "exact", head: true})
+      .gte("created_at", start)
+      .lt("created_at", end);
+    points.push({
+      month: m.toLocaleDateString("en-US", {month: "short", year: "2-digit"}),
+      value: count ?? 0,
+    });
+  }
+
+  return points;
+}
+
+export async function getAdminCommunityActivity(): Promise<AdminActivityPoint[]> {
+  const supabase = await createClient();
+  const now = new Date();
+  const points: AdminActivityPoint[] = [];
+
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const start = d.toISOString().slice(0, 10);
+    const end = new Date(d.getTime() + 86400000).toISOString().slice(0, 10);
+
+    const [{count: posts}, {count: ideas}, {count: memories}] = await Promise.all([
+      supabase.from("posts").select("*", {count: "exact", head: true}).gte("created_at", start).lt("created_at", end),
+      supabase.from("ideas").select("*", {count: "exact", head: true}).gte("created_at", start).lt("created_at", end),
+      supabase.from("memories").select("*", {count: "exact", head: true}).gte("created_at", start).lt("created_at", end),
+    ]);
+
+    points.push({
+      date: d.toLocaleDateString("en-US", {month: "short", day: "numeric"}),
+      posts: posts ?? 0,
+      ideas: ideas ?? 0,
+      memories: memories ?? 0,
+    });
+  }
+
+  return points;
+}
+
+export async function getAdminDonationsByCampaign(): Promise<AdminDonationByCampaign[]> {
+  const supabase = await createClient();
+  const {data} = await supabase
+    .from("support_contributions")
+    .select("campaign_id, amount, campaign:campaign_id(id, title)")
+    .eq("contribution_type", "money")
+    .not("amount", "is", null);
+
+  const grouped = new Map<string, {title: string; total: number; count: number}>();
+  for (const row of data ?? []) {
+    const cId = row.campaign_id;
+    const cTitle = (row.campaign as unknown as {title: string})?.title ?? "Unknown";
+    if (!grouped.has(cId)) grouped.set(cId, {title: cTitle, total: 0, count: 0});
+    const entry = grouped.get(cId)!;
+    entry.total += Number(row.amount ?? 0);
+    entry.count += 1;
+  }
+
+  return Array.from(grouped.entries())
+    .map(([campaignId, {title, total, count}]) => ({campaignId, campaignTitle: title, totalAmount: total, count}))
+    .sort((a, b) => b.totalAmount - a.totalAmount);
+}
+
+export async function getAdminVolunteerActivity(): Promise<AdminVolunteerMonth[]> {
+  const supabase = await createClient();
+  const now = new Date();
+  const points: AdminVolunteerMonth[] = [];
+
+  for (let i = 11; i >= 0; i--) {
+    const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const start = m.toISOString();
+    const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 1).toISOString();
+    const {count} = await supabase
+      .from("support_contributions")
+      .select("*", {count: "exact", head: true})
+      .eq("contribution_type", "volunteer")
+      .gte("created_at", start)
+      .lt("created_at", end);
+    points.push({
+      month: m.toLocaleDateString("en-US", {month: "short", year: "2-digit"}),
+      value: count ?? 0,
+    });
+  }
+
+  return points;
+}
+
 export async function getAdminRecentActivity(): Promise<AdminActivityItem[]> {
   const supabase = await createClient();
   const recent: AdminActivityItem[] = [];

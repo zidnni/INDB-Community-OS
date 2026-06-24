@@ -1,65 +1,84 @@
 import {getTranslations} from "next-intl/server";
-import {getAdminDashboardKPIs, getAdminRecentActivity} from "@/lib/data/admin";
-import {getAdminOverview} from "@/lib/data/admin";
-import {AdminDashboardClient} from "./admin-dashboard-client";
-import {HealthSection} from "./health-section";
-import {ActivityTimeline} from "./activity-timeline";
-import DashboardKpiWrapper from "./dashboard-kpi-wrapper";
+import {
+  getAdminDashboardKPIs,
+  getAdminRecentActivity,
+  getAdminUserGrowth,
+  getAdminCommunityActivity,
+  getAdminDonationsByCampaign,
+  getAdminVolunteerActivity,
+  type AdminDashboardKPI,
+} from "@/lib/data/admin";
+import {createClient} from "@/lib/supabase/server";
+import ChartsWrapper from "./charts-wrapper";
 
 export default async function AdminDashboardPage({params}: {params: Promise<{locale: string}>}) {
   const {locale} = await params;
   const t = await getTranslations({locale, namespace: "Admin"});
 
-  const [kpis, overview, activity] = await Promise.all([
-    getAdminDashboardKPIs(),
-    getAdminOverview(),
-    getAdminRecentActivity(),
-  ]);
+  const [kpis, userGrowth, communityActivity, donationsByCampaign, volunteerActivity, recentActivity, donationCount] =
+    await Promise.all([
+      getAdminDashboardKPIs(),
+      getAdminUserGrowth(),
+      getAdminCommunityActivity(),
+      getAdminDonationsByCampaign(),
+      getAdminVolunteerActivity(),
+      getAdminRecentActivity(),
+      (async () => {
+        const supabase = await createClient();
+        const {count} = await supabase.from("support_contributions").select("*", {count: "exact", head: true}).eq("contribution_type", "money");
+        return count ?? 0;
+      })(),
+    ]);
+
+  const topKpis: AdminDashboardKPI[] = [
+    kpis.find((k) => k.label === "totalUsers") ?? {label: "totalUsers", value: 0, icon: "Users", href: "/admin/users"},
+    kpis.find((k) => k.label === "activeIdeas") ?? {label: "activeIdeas", value: 0, icon: "Lightbulb", href: "/admin/ideas"},
+    kpis.find((k) => k.label === "activeGraatek") ?? {label: "activeGraatek", value: 0, icon: "Gift", href: "/admin/graatek"},
+    {label: "totalDonations", value: donationCount, icon: "Landmark", href: "/admin/donations"},
+  ];
 
   const kpiLabels: Record<string, string> = {
     totalUsers: t("kpi.totalUsers"),
     activeIdeas: t("kpi.activeIdeas"),
     activeGraatek: t("kpi.activeGraatek"),
-    totalMemories: t("kpi.totalMemories"),
-    messagesToday: t("kpi.messagesToday"),
-    activeCampaigns: t("kpi.activeCampaigns"),
-    totalVolunteers: t("kpi.totalVolunteers"),
-    notificationsSent: t("kpi.notificationsSent"),
+    totalDonations: t("kpi.totalDonations"),
+  };
+
+  const tLabels = {
+    kpi: kpiLabels,
+    chartTitleUsers: t("charts.userGrowthTitle"),
+    chartTitleActivity: t("charts.communityActivityTitle"),
+    chartTitleDonations: t("charts.donationsByCampaignTitle"),
+    chartTitleVolunteers: t("charts.volunteerActivityTitle"),
+    activityTitle: t("activity.title"),
+    postsLabel: t("charts.postsLabel"),
+    ideasLabel: t("charts.ideasLabel"),
+    memoriesLabel: t("charts.memoriesLabel"),
+    usersLabel: t("charts.usersLabel"),
+    donationsLabel: t("charts.donationsLabel"),
+    amountLabel: t("charts.amountLabel"),
+    volunteersLabel: t("charts.volunteersLabel"),
+    noData: t("noData"),
+    totalDonations: t("kpi.totalDonations"),
+    activeToday: t("health.activeToday"),
+    activeSignal: t("health.activeSignal"),
+    eyebrow: t("eyebrow"),
+    commandCenter: t("commandCenter"),
+    heroDescription: t("hero.description"),
   };
 
   return (
     <div className="space-y-6 p-4 md:p-6 xl:p-8">
-      {/* Header */}
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-primary">{t("eyebrow")}</p>
-          <h1 className="mt-0.5 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-            {t("commandCenter")}
-          </h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{t("hero.description")}</p>
-        </div>
-        <div className="hidden items-center gap-2 sm:flex">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-          </span>
-          <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
-            {t("health.activeSignal")}
-          </span>
-        </div>
-      </div>
-
-      {/* KPI Grid with Sparklines */}
-      <DashboardKpiWrapper kpis={kpis} labels={kpiLabels} locale={locale} />
-
-      {/* Community Health + Recent Activity */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <HealthSection overview={overview} t={t} />
-        <ActivityTimeline activity={activity} t={t} />
-      </div>
-
-      {/* Realtime Activity Feed */}
-      <AdminDashboardClient />
+      <ChartsWrapper
+        kpis={topKpis}
+        userGrowth={userGrowth}
+        communityActivity={communityActivity}
+        donationsByCampaign={donationsByCampaign}
+        volunteerActivity={volunteerActivity}
+        recentActivity={recentActivity}
+        labels={tLabels}
+        locale={locale}
+      />
     </div>
   );
 }
