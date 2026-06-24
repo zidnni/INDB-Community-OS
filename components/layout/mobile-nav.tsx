@@ -46,7 +46,7 @@ const bottomItems = [
 const moreItems = [
   {href: "/memory", key: "memory", icon: Images, badge: null},
   {href: "/support", key: "support", icon: HandHeart, badge: "support"},
-  {href: "/support", key: "volunteer", icon: UsersRound, badge: "volunteer"},
+  {href: "/volunteer", key: "volunteer", icon: UsersRound, badge: "volunteer"},
   {href: "/feed", key: "feed", icon: Newspaper, badge: null},
   {href: "/profile", key: "profile", icon: UserRound, badge: null},
   {href: "/profile/edit", key: "settings", icon: Settings, badge: null},
@@ -300,7 +300,7 @@ export function MobileNav({
                 <div className="grid grid-cols-2 gap-2">
                   {moreItems.map((item) => {
                     const Icon = item.icon;
-                    const active = item.key === "volunteer" ? false : isActivePath(pathname, item.href);
+                    const active = isActivePath(pathname, item.href);
                     const badge = moreBadge(item.badge);
                     const label =
                       item.key === "volunteer"

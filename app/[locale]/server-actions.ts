@@ -4504,6 +4504,7 @@ export async function recordSupportContributionAction(formData: FormData) {
   const campaignId = formData.get('campaignId');
   const campaignSlug = formData.get('campaignSlug');
   const contributionType = formData.get('contributionType');
+  const returnPath = formData.get('returnPath');
   const amount = formData.get('amount');
   const customAmount = formData.get('customAmount');
   const paymentMethod = formData.get('paymentMethod');
@@ -4596,6 +4597,10 @@ export async function recordSupportContributionAction(formData: FormData) {
 
   revalidatePath('/support');
   revalidatePath(`/support/${campaignSlug}`);
+  if (typeof returnPath === 'string' && returnPath.startsWith('/') && !returnPath.startsWith('//')) {
+    revalidatePath(returnPath);
+    redirect(withLocale(`${returnPath}?status=contribution-sent`, locale));
+  }
   redirect(withLocale(`/support/${campaignSlug}?status=contribution-sent`, locale));
 }
 
