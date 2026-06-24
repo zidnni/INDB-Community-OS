@@ -1,8 +1,8 @@
 "use client";
 
 import { MessageCircleMore } from "lucide-react";
-import Link from "next/link";
 import { useUnreadConversationsCount } from "@/lib/hooks/use-conversation-unread";
+import { Link } from "@/lib/i18n/routing";
 
 export function MessagesIcon() {
   const unreadCount = useUnreadConversationsCount();
@@ -10,6 +10,8 @@ export function MessagesIcon() {
   return (
     <Link
       href="/messages"
+      prefetch={true}
+      aria-label="Messages"
       className="relative flex min-h-11 min-w-11 items-center justify-center rounded-full text-muted-foreground transition hover:bg-primary/10 hover:text-primary active:scale-95"
       style={{ touchAction: "manipulation" }}
     >
