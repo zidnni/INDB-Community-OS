@@ -1147,10 +1147,23 @@
       "selfDeleteBlocked": "Vous ne pouvez pas supprimer votre propre compte admin depuis cette page.",
       "userDeleteConfigError": "La cl? service role Supabase est manquante. Ajoutez SUPABASE_SERVICE_ROLE_KEY dans Vercel d?abord."
     },
+    "health": {
+      "eyebrow": "Sant\u00e9 de la communaut\u00e9",
+      "title": "Que se passe-t-il maintenant",
+      "members": "Membres",
+      "posts": "Publications",
+      "ideas": "Id\u00e9es",
+      "memories": "Souvenirs",
+      "activeToday": "Actif aujourd'hui",
+      "newToday": "+{count} aujourd'hui",
+      "today": "+{count} aujourd'hui",
+      "activeSignal": "Signal en direct",
+      "totalComments": "{count} commentaires"
+    },
     "sidebar": {
       "backToSite": "Retour au site",
       "close": "Fermer le menu",
-      "collapse": "R?duire le menu",
+      "collapse": "R\u00e9duire le menu",
       "expand": "Ouvrir le menu"
     }
   },

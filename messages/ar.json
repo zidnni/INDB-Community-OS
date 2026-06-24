@@ -1146,6 +1146,19 @@
       "selfDeleteBlocked": "لا يمكنك حذف حسابك كمدير من هذه الصفحة.",
       "userDeleteConfigError": "مفتاح Supabase service role غير موجود. أضف SUPABASE_SERVICE_ROLE_KEY في Vercel أولًا."
     },
+    "health": {
+      "eyebrow": "صحة المجتمع",
+      "title": "ماذا يحدث الآن",
+      "members": "الأعضاء",
+      "posts": "المنشورات",
+      "ideas": "الأفكار",
+      "memories": "الذكريات",
+      "activeToday": "نشط اليوم",
+      "newToday": "+{count} اليوم",
+      "today": "+{count} اليوم",
+      "activeSignal": "إشارة حية",
+      "totalComments": "{count} تعليق"
+    },
     "sidebar": {
       "backToSite": "العودة إلى الموقع",
       "close": "إغلاق القائمة",
