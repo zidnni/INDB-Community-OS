@@ -5,6 +5,7 @@ import {useEffect, useState} from "react";
 import {
   Award,
   BarChart3,
+  HandHeart,
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
@@ -28,7 +29,7 @@ export interface AdminSidebarItem {
   label: string;
 }
 
-type AdminSidebarIconKey = "dashboard" | "users" | "content" | "credits" | "analytics" | "settings";
+type AdminSidebarIconKey = "dashboard" | "users" | "content" | "credits" | "analytics" | "support" | "settings";
 
 const iconMap: Record<AdminSidebarIconKey, LucideIcon> = {
   dashboard: LayoutDashboard,
@@ -36,6 +37,7 @@ const iconMap: Record<AdminSidebarIconKey, LucideIcon> = {
   content: Newspaper,
   credits: Award,
   analytics: BarChart3,
+  support: HandHeart,
   settings: Settings,
 };
 

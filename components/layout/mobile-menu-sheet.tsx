@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Menu, X, UserRound, Settings, LogOut, MoonStar, SunMedium } from "lucide-react";
+import { HandHeart, Menu, X, UserRound, Settings, LogOut, MoonStar, SunMedium } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -87,6 +87,14 @@ export function MobileMenuSheet() {
               </div>
 
               <div className="overflow-y-auto p-2" style={{ height: "calc(100% - 53px)" }}>
+                <Link
+                  href="/support"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-foreground transition hover:bg-muted"
+                >
+                  <HandHeart size={20} className="text-muted-foreground" />
+                  {t("Navigation.items.support.label")}
+                </Link>
                 <Link
                   href="/profile"
                   onClick={() => setOpen(false)}

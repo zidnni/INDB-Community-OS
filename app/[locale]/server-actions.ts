@@ -4498,3 +4498,150 @@ export async function searchConversationsAction(
   const conversations = await searchUserConversations(user.id, query);
   return { success: true, conversations };
 }
+
+export async function recordSupportContributionAction(formData: FormData) {
+  const locale = normalizeLocale(formData.get('locale'));
+  const campaignId = formData.get('campaignId');
+  const campaignSlug = formData.get('campaignSlug');
+  const contributionType = formData.get('contributionType');
+  const amount = formData.get('amount');
+  const customAmount = formData.get('customAmount');
+  const message = formData.get('message');
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(withLocale('/login', locale));
+  }
+
+  if (
+    typeof campaignId !== 'string' ||
+    typeof campaignSlug !== 'string' ||
+    !['money', 'volunteer', 'materials'].includes(String(contributionType))
+  ) {
+    redirect(withLocale('/support', locale));
+  }
+
+  const parsedCustomAmount = typeof customAmount === 'string' && customAmount.trim()
+    ? Number(customAmount)
+    : null;
+  const parsedAmount = parsedCustomAmount && parsedCustomAmount > 0
+    ? parsedCustomAmount
+    : typeof amount === 'string'
+      ? Number(amount)
+      : null;
+
+  const { recordSupportContribution } = await import('@/lib/data/support');
+  await recordSupportContribution({
+    campaignId,
+    userId: user.id,
+    contributionType: contributionType as 'money' | 'volunteer' | 'materials',
+    amount: contributionType === 'money' && parsedAmount && parsedAmount > 0 ? parsedAmount : null,
+    materialDescription: contributionType === 'materials' && typeof message === 'string' ? message.trim().slice(0, 500) : null,
+    volunteerMessage: contributionType === 'volunteer' && typeof message === 'string' ? message.trim().slice(0, 500) : null,
+  });
+
+  revalidatePath('/support');
+  revalidatePath(`/support/${campaignSlug}`);
+  redirect(withLocale(`/support/${campaignSlug}?status=contribution-sent`, locale));
+}
+
+export async function adminUpdateSupportCampaignAction(formData: FormData) {
+  const locale = normalizeLocale(formData.get('locale'));
+  const campaignId = formData.get('campaignId');
+  const raisedAmount = Number(formData.get('raisedAmount') ?? 0);
+  const contributorsCount = Number(formData.get('contributorsCount') ?? 0);
+  const volunteersCount = Number(formData.get('volunteersCount') ?? 0);
+  const campaignStatus = formData.get('campaignStatus');
+  const finalReport = formData.get('finalReport');
+
+  const { getCurrentAdminProfile } = await import('@/lib/data/admin');
+  const adminProfile = await getCurrentAdminProfile();
+  if (!adminProfile || typeof campaignId !== 'string') {
+    redirect(withLocale('/', locale));
+  }
+
+  const status = campaignStatus === 'completed' || campaignStatus === 'paused' ? campaignStatus : 'active';
+  const { adminUpdateSupportCampaign } = await import('@/lib/data/support');
+  await adminUpdateSupportCampaign({
+    campaignId,
+    raisedAmount: Number.isFinite(raisedAmount) ? Math.max(0, raisedAmount) : 0,
+    contributorsCount: Number.isFinite(contributorsCount) ? Math.max(0, contributorsCount) : 0,
+    volunteersCount: Number.isFinite(volunteersCount) ? Math.max(0, volunteersCount) : 0,
+    status,
+    finalReport: typeof finalReport === 'string' && finalReport.trim() ? finalReport.trim().slice(0, 2000) : null,
+  });
+
+  revalidatePath('/support');
+  revalidatePath('/admin/support');
+  redirect(withLocale('/admin/support?status=saved', locale));
+}
+
+export async function adminCreateSupportCampaignAction(formData: FormData) {
+  const locale = normalizeLocale(formData.get('locale'));
+  const slug = formData.get('slug');
+  const emoji = formData.get('emoji');
+  const title = formData.get('title');
+  const description = formData.get('description');
+  const longDescription = formData.get('longDescription');
+  const goalAmount = Number(formData.get('goalAmount') ?? 0);
+  const endsAt = formData.get('endsAt');
+
+  const { getCurrentAdminProfile } = await import('@/lib/data/admin');
+  const adminProfile = await getCurrentAdminProfile();
+  if (
+    !adminProfile ||
+    typeof slug !== 'string' ||
+    typeof emoji !== 'string' ||
+    typeof title !== 'string' ||
+    typeof description !== 'string' ||
+    typeof longDescription !== 'string' ||
+    typeof endsAt !== 'string'
+  ) {
+    redirect(withLocale('/', locale));
+  }
+
+  const safeSlug = slug.trim().toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+  if (!safeSlug || !title.trim() || !description.trim() || !Number.isFinite(goalAmount) || goalAmount <= 0) {
+    redirect(withLocale('/admin/support?status=invalid', locale));
+  }
+
+  const { adminCreateSupportCampaign } = await import('@/lib/data/support');
+  await adminCreateSupportCampaign({
+    slug: safeSlug,
+    emoji: emoji.trim().slice(0, 8) || '🤝',
+    title: title.trim().slice(0, 120),
+    description: description.trim().slice(0, 220),
+    longDescription: longDescription.trim().slice(0, 1000),
+    goalAmount,
+    endsAt,
+  });
+
+  revalidatePath('/support');
+  revalidatePath('/admin/support');
+  redirect(withLocale('/admin/support?status=created', locale));
+}
+
+export async function adminCreateSupportUpdateAction(formData: FormData) {
+  const locale = normalizeLocale(formData.get('locale'));
+  const campaignId = formData.get('campaignId');
+  const title = formData.get('title');
+  const body = formData.get('body');
+
+  const { getCurrentAdminProfile } = await import('@/lib/data/admin');
+  const adminProfile = await getCurrentAdminProfile();
+  if (!adminProfile || typeof campaignId !== 'string' || typeof title !== 'string' || typeof body !== 'string') {
+    redirect(withLocale('/', locale));
+  }
+
+  const { adminCreateSupportUpdate } = await import('@/lib/data/support');
+  await adminCreateSupportUpdate({
+    campaignId,
+    title: title.trim().slice(0, 120),
+    body: body.trim().slice(0, 1000),
+  });
+
+  revalidatePath('/support');
+  revalidatePath('/admin/support');
+  redirect(withLocale('/admin/support?status=update-published', locale));
+}

@@ -28,6 +28,7 @@ export default async function AdminLayout({
     {label: t("nav.content"), href: `${basePath}/content`, iconKey: "content" as const},
     {label: t("nav.credits"), href: `${basePath}/credits`, iconKey: "credits" as const},
     {label: t("nav.analytics"), href: `${basePath}/analytics`, iconKey: "analytics" as const},
+    {label: t("nav.support"), href: `${basePath}/support`, iconKey: "support" as const},
     {label: t("nav.settings"), href: `${basePath}/settings`, iconKey: "settings" as const},
   ];
 

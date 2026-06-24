@@ -139,6 +139,10 @@
     "dataDeletion": {
       "title": "حذف البيانات | I ❤️ NDB",
       "description": "طلب حذف بياناتك من منصة I ❤️ NDB المجتمعية."
+    },
+    "support": {
+      "title": "الدعم المجتمعي | I ❤️ NDB",
+      "description": "ساهم في دعم المبادرات التي تحدث أثراً حقيقياً في نواذيبو."
     }
   },
   "Privacy": {
@@ -286,6 +290,10 @@
       "messages": {
         "label": "الرسائل",
         "short": "الرسائل"
+      },
+      "support": {
+        "label": "🤝 الدعم",
+        "short": "الدعم"
       }
     }
   },
@@ -835,7 +843,8 @@
       "content": "المحتوى",
       "credits": "النقاط",
       "analytics": "التحليلات",
-      "settings": "الإعدادات"
+      "settings": "الإعدادات",
+      "support": "الدعم"
     },
     "sections": {
       "overview": "نظرة عامة",
@@ -1518,6 +1527,121 @@
       "editName": "تعديل الاسم",
       "nameTooShort": "استخدم حرفين على الأقل.",
       "uploadingPhoto": "جارٍ رفع الصورة"
+    }
+  },
+  "Support": {
+    "title": "🤝 الدعم المجتمعي",
+    "description": "ساهم في دعم المبادرات التي تحدث أثراً حقيقياً في نواذيبو.",
+    "verifiedHub": "حملات رسمية موثقة",
+    "phaseOne": "المرحلة الأولى: 5 حملات",
+    "campaignsTitle": "اختر حملة موثقة للمساهمة",
+    "contributeNow": "ساهم الآن",
+    "goal": "الهدف",
+    "raised": "تم جمع",
+    "remaining": "المتبقي",
+    "contributors": "المساهمون",
+    "contributorsCount": "{count} مساهم",
+    "daysRemaining": "{count} يوم متبقٍ",
+    "verified": "موثقة",
+    "verifiedWithCheck": "موثقة ✅",
+    "backToSupport": "العودة إلى الدعم",
+    "updates": "التحديثات",
+    "updatesTitle": "أحدث التحديثات",
+    "updatesTimeline": "خط زمني للتحديثات",
+    "noUpdates": "لم تُنشر تحديثات بعد.",
+    "photos": "الصور",
+    "photosTitle": "صور النشاط",
+    "photosComingSoon": "سيتم رفع صور النشاط عند توفرها.",
+    "materialNeeds": "احتياجات المواد",
+    "achievedImpact": "الأثر المحقق",
+    "impactTitle": "الأثر المحقق",
+    "updatesTitleHome": "أحدث التحديثات",
+    "waysTitle": "طرق المساهمة",
+    "graatekIntegration": "المساهمة بالمواد عبر گرعتك",
+    "sections": {
+      "activeCampaigns": "الحملات النشطة",
+      "latestUpdates": "أحدث التحديثات",
+      "impact": "الأثر المحقق",
+      "waysToContribute": "طرق المساهمة"
+    },
+    "impact": {
+      "totalDonations": "إجمالي التبرعات",
+      "contributors": "عدد المساهمين",
+      "volunteers": "عدد المتطوعين",
+      "completed": "عدد الحملات المكتملة"
+    },
+    "ways": {
+      "money": "💰 مساهمة مالية",
+      "volunteer": "🙋 التطوع",
+      "materials": "🎁 التبرع بالمواد"
+    },
+    "transparency": {
+      "title": "الشفافية",
+      "heading": "كل حملة واضحة وموثقة",
+      "organizer": "الجهة المنظمة",
+      "status": "الحالة",
+      "lastUpdate": "آخر تحديث"
+    },
+    "campaignStatus": {
+      "active": "نشطة",
+      "completed": "مكتملة",
+      "paused": "متوقفة"
+    },
+    "contribution": {
+      "title": "طرق المساهمة",
+      "money": "مساهمة مالية",
+      "volunteer": "التطوع",
+      "materials": "التبرع بالمواد",
+      "suggested": "مبالغ مقترحة",
+      "otherAmount": "مبلغ آخر",
+      "note": "اكتب كيف يمكن أن تساعد",
+      "send": "إرسال المساهمة",
+      "helpButton": "أريد المساعدة",
+      "materialPlaceholder": "مثال: دفاتر، حقائب، ملابس، مواد غذائية",
+      "graatekButton": "فتح گرعتك",
+      "loginHint": "سجّل الدخول لتسجيل مساهمتك بشفافية."
+    },
+    "completion": {
+      "title": "اكتملت الحملة",
+      "heading": "التقرير النهائي",
+      "defaultReport": "سيتم نشر التقرير النهائي والصور بعد إغلاق الحملة."
+    },
+    "status": {
+      "contributionSent": "تم تسجيل مساهمتك. شكراً لك.",
+      "saved": "تم الحفظ."
+    },
+    "admin": {
+      "title": "إدارة حملات الدعم",
+      "description": "إدارة الحملات الرسمية، تحديث الأرقام، نشر التحديثات، وإغلاق الحملات عند اكتمالها.",
+      "verifiedOnly": "حملات I ❤️ NDB الرسمية فقط",
+      "raisedAmount": "المبلغ المجموع",
+      "contributors": "المساهمون",
+      "volunteers": "المتطوعون",
+      "statusLabel": "حالة الحملة",
+      "finalReport": "التقرير النهائي",
+      "save": "حفظ الحملة",
+      "publishUpdate": "نشر تحديث",
+      "updateTitle": "عنوان التحديث",
+      "updateBody": "تفاصيل التحديث",
+      "publish": "نشر",
+      "statuses": {
+        "active": "نشطة",
+        "paused": "متوقفة",
+        "completed": "مكتملة"
+      },
+      "status": {
+        "saved": "تم حفظ الحملة",
+        "update-published": "تم نشر التحديث",
+        "created": "تم إنشاء الحملة",
+        "invalid": "تحقق من بيانات الحملة"
+      },
+      "createEyebrow": "إضافة حملة",
+      "createTitle": "إنشاء حملة رسمية جديدة",
+      "createName": "اسم الحملة",
+      "createDescription": "وصف قصير",
+      "createLongDescription": "الوصف التفصيلي",
+      "goalAmount": "الهدف",
+      "create": "إنشاء حملة"
     }
   }
 }

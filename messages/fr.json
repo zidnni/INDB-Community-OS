@@ -139,6 +139,10 @@
     "dataDeletion": {
       "title": "Suppression des Données | I ❤️ NDB",
       "description": "Demander la suppression de vos données de la plateforme communautaire I ❤️ NDB."
+    },
+    "support": {
+      "title": "Soutien communautaire | I ❤️ NDB",
+      "description": "Soutenez les initiatives qui créent un impact réel à Nouadhibou."
     }
   },
   "Privacy": {
@@ -286,6 +290,10 @@
       "messages": {
         "label": "Messages",
         "short": "Messages"
+      },
+      "support": {
+        "label": "🤝 Soutien",
+        "short": "Soutien"
       }
     }
   },
@@ -835,7 +843,8 @@
       "content": "Contenu",
       "credits": "Cr?dits",
       "analytics": "Analytique",
-      "settings": "Réglages"
+      "settings": "Réglages",
+      "support": "Soutien"
     },
     "sections": {
       "overview": "Vue d?ensemble",
@@ -1518,6 +1527,120 @@
       "editName": "Modifier le nom",
       "nameTooShort": "Utilisez au moins 2 caractères.",
       "uploadingPhoto": "Photo en cours d’envoi"
+    }
+  },
+  "Support": {
+    "title": "🤝 Community Support",
+    "description": "Support initiatives creating real impact in Nouadhibou.",
+    "verifiedHub": "Official verified campaigns",
+    "phaseOne": "Phase 1: 5 campaigns",
+    "campaignsTitle": "Choose a verified campaign to support",
+    "contributeNow": "Contribute now",
+    "goal": "Goal",
+    "raised": "Raised",
+    "remaining": "Remaining",
+    "contributors": "Contributors",
+    "contributorsCount": "{count} contributors",
+    "daysRemaining": "{count} days left",
+    "verified": "Verified",
+    "verifiedWithCheck": "Verified ✅",
+    "backToSupport": "Back to support",
+    "updates": "Updates",
+    "updatesTitle": "Latest updates",
+    "updatesTimeline": "Updates timeline",
+    "noUpdates": "No updates published yet.",
+    "photos": "Photos",
+    "photosTitle": "Activity photos",
+    "photosComingSoon": "Activity photos will be uploaded when available.",
+    "materialNeeds": "Material needs",
+    "achievedImpact": "Achieved impact",
+    "impactTitle": "Achieved impact",
+    "waysTitle": "Ways to contribute",
+    "graatekIntegration": "Contribute materials through Graatek",
+    "sections": {
+      "activeCampaigns": "Active campaigns",
+      "latestUpdates": "Latest updates",
+      "impact": "Achieved impact",
+      "waysToContribute": "Ways to contribute"
+    },
+    "impact": {
+      "totalDonations": "Total donations",
+      "contributors": "Contributors",
+      "volunteers": "Volunteers",
+      "completed": "Completed campaigns"
+    },
+    "ways": {
+      "money": "💰 Financial contribution",
+      "volunteer": "🙋 Volunteer",
+      "materials": "🎁 Donate materials"
+    },
+    "transparency": {
+      "title": "Transparency",
+      "heading": "Every campaign is clear and verified",
+      "organizer": "Organizer",
+      "status": "Status",
+      "lastUpdate": "Last update"
+    },
+    "campaignStatus": {
+      "active": "Active",
+      "completed": "Completed",
+      "paused": "Paused"
+    },
+    "contribution": {
+      "title": "Ways to contribute",
+      "money": "Financial contribution",
+      "volunteer": "Volunteer",
+      "materials": "Donate materials",
+      "suggested": "Suggested amounts",
+      "otherAmount": "Other amount",
+      "note": "Write how you can help",
+      "send": "Send contribution",
+      "helpButton": "I want to help",
+      "materialPlaceholder": "Example: notebooks, bags, clothes, food items",
+      "graatekButton": "Open Graatek",
+      "loginHint": "Sign in to record your contribution transparently."
+    },
+    "completion": {
+      "title": "Campaign completed",
+      "heading": "Final report",
+      "defaultReport": "The final report and photos will be published after closing the campaign."
+    },
+    "status": {
+      "contributionSent": "Your contribution was recorded. Thank you.",
+      "saved": "Saved."
+    },
+    "admin": {
+      "title": "Support campaign management",
+      "description": "Manage official campaigns, update numbers, publish updates, and close completed campaigns.",
+      "verifiedOnly": "Official I ❤️ NDB campaigns only",
+      "raisedAmount": "Raised amount",
+      "contributors": "Contributors",
+      "volunteers": "Volunteers",
+      "statusLabel": "Campaign status",
+      "finalReport": "Final report",
+      "save": "Save campaign",
+      "publishUpdate": "Publish update",
+      "updateTitle": "Update title",
+      "updateBody": "Update details",
+      "publish": "Publish",
+      "statuses": {
+        "active": "Active",
+        "paused": "Paused",
+        "completed": "Completed"
+      },
+      "status": {
+        "saved": "Campaign saved",
+        "update-published": "Update published",
+        "created": "Campaign created",
+        "invalid": "Check the campaign details"
+      },
+      "createEyebrow": "Add campaign",
+      "createTitle": "Create a new official campaign",
+      "createName": "Campaign name",
+      "createDescription": "Short description",
+      "createLongDescription": "Detailed description",
+      "goalAmount": "Goal",
+      "create": "Create campaign"
     }
   }
 }
