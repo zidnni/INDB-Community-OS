@@ -287,7 +287,7 @@ export function AdminSidebar({
   return (
     <>
       {/* Desktop sidebar */}
-      <div className="sticky top-4 hidden h-[calc(100vh-2rem)] shrink-0 lg:block">{sidebar}</div>
+      <div className="sticky top-0 hidden h-screen shrink-0 lg:block">{sidebar}</div>
 
       {/* Mobile toggle */}
       <div className="sticky top-0 z-30 flex items-center justify-between border-b border-border/40 bg-background/80 px-4 py-3 backdrop-blur-lg lg:hidden">
