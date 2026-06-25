@@ -953,6 +953,156 @@ export async function getAdminPayments(search?: string): Promise<AdminPayment[]>
   })) as AdminPayment[];
 }
 
+export interface AdminPaymentDetail extends AdminPayment {
+  transaction_id: string | null;
+  receipt_url: string | null;
+  notes: string | null;
+  verified_by: string | null;
+  verified_at: string | null;
+  contributor_id: string | null;
+  campaign_id: string | null;
+}
+
+export interface AdminPaymentsKPISummary {
+  totalCollected: number;
+  totalCount: number;
+  pendingCount: number;
+  verifiedCount: number;
+  rejectedCount: number;
+  refundedCount: number;
+  thisMonthCollected: number;
+  thisMonthCount: number;
+  averageDonation: number;
+  pendingAmount: number;
+  verifiedAmount: number;
+  conversionRate: number;
+}
+
+export interface AdminPaymentMethodDist {
+  method: string;
+  count: number;
+  total: number;
+  percentage: number;
+}
+
+export interface AdminPaymentAuditEntry {
+  id: string;
+  action: string;
+  payment_id: string;
+  actor_name: string | null;
+  details: string | null;
+  created_at: string;
+}
+
+export async function getAdminPaymentsKPISummary(): Promise<AdminPaymentsKPISummary> {
+  const supabase = await createClient();
+
+  async function safeCount(query: any): Promise<number> {
+    try { const {count} = await query; return count ?? 0; } catch { return 0; }
+  }
+  async function safeSum(table: string, column: string, filter?: string): Promise<number> {
+    try {
+      const q = supabase.from(table).select(column).eq("contribution_type", "money").not(column, "is", null);
+      if (filter) q.gte("created_at", filter);
+      const {data} = await q;
+      return (data ?? []).reduce((s: number, r: any) => s + Number(r[column] ?? 0), 0);
+    } catch { return 0; }
+  }
+
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+  const [totalCollected, pendingAmount, verifiedAmount, thisMonthCollected,
+    totalCount, pendingCount, verifiedCount, rejectedCount, refundedCount,
+    thisMonthCount, verifiedThisMonth] = await Promise.all([
+    safeSum("support_contributions", "amount"),
+    safeSum("support_contributions", "amount").then(async () => {
+      try {
+        const {data} = await supabase.from("support_contributions").select("amount").eq("contribution_type", "money").eq("payment_status", "pending").not("amount", "is", null);
+        return (data ?? []).reduce((s: number, r: any) => s + Number(r.amount ?? 0), 0);
+      } catch { return 0; }
+    }),
+    safeSum("support_contributions", "amount").then(async () => {
+      try {
+        const {data} = await supabase.from("support_contributions").select("amount").eq("contribution_type", "money").eq("payment_status", "verified").not("amount", "is", null);
+        return (data ?? []).reduce((s: number, r: any) => s + Number(r.amount ?? 0), 0);
+      } catch { return 0; }
+    }),
+    safeSum("support_contributions", "amount", monthStart),
+    safeCount(supabase.from("support_contributions").select("*", {count: "exact", head: true}).eq("contribution_type", "money")),
+    safeCount(supabase.from("support_contributions").select("*", {count: "exact", head: true}).eq("contribution_type", "money").eq("payment_status", "pending")),
+    safeCount(supabase.from("support_contributions").select("*", {count: "exact", head: true}).eq("contribution_type", "money").eq("payment_status", "verified")),
+    safeCount(supabase.from("support_contributions").select("*", {count: "exact", head: true}).eq("contribution_type", "money").eq("payment_status", "rejected")),
+    safeCount(supabase.from("support_contributions").select("*", {count: "exact", head: true}).eq("contribution_type", "money").eq("payment_status", "refunded")),
+    safeCount(supabase.from("support_contributions").select("*", {count: "exact", head: true}).eq("contribution_type", "money").gte("created_at", monthStart)),
+    safeCount(supabase.from("support_contributions").select("*", {count: "exact", head: true}).eq("contribution_type", "money").eq("payment_status", "verified").gte("created_at", monthStart)),
+  ]);
+
+  return {
+    totalCollected, totalCount, pendingCount, verifiedCount, rejectedCount, refundedCount,
+    thisMonthCollected, thisMonthCount,
+    averageDonation: verifiedCount > 0 ? Math.round(verifiedAmount / verifiedCount) : 0,
+    pendingAmount, verifiedAmount,
+    conversionRate: totalCount > 0 ? Math.round((verifiedCount / totalCount) * 100) : 0,
+  };
+}
+
+export async function getAdminPaymentDetail(id: string): Promise<AdminPaymentDetail | null> {
+  const supabase = await createClient();
+  const {data} = await supabase
+    .from("support_contributions")
+    .select("*, contributor:profiles(id, full_name, username, avatar_url), campaign:campaign_id(id, title)")
+    .eq("id", id)
+    .maybeSingle();
+  if (!data) return null;
+  return {
+    ...data,
+    contributor: singleProfile(data.contributor),
+    campaign: (data.campaign as unknown as {id: string; title: string} | null) ?? null,
+  } as unknown as AdminPaymentDetail;
+}
+
+export async function getAdminPaymentMethodDistribution(): Promise<AdminPaymentMethodDist[]> {
+  const supabase = await createClient();
+  try {
+    const {data} = await supabase
+      .from("support_contributions")
+      .select("payment_method, amount")
+      .eq("contribution_type", "money")
+      .not("amount", "is", null);
+    const grouped = new Map<string, {count: number; total: number}>();
+    for (const row of data ?? []) {
+      const method = row.payment_method || "other";
+      const prev = grouped.get(method) ?? {count: 0, total: 0};
+      grouped.set(method, {count: prev.count + 1, total: prev.total + Number(row.amount ?? 0)});
+    }
+    const grandTotal = Array.from(grouped.values()).reduce((s, g) => s + g.total, 0);
+    return Array.from(grouped.entries())
+      .map(([method, {count, total}]) => ({method, count, total, percentage: grandTotal > 0 ? Math.round((total / grandTotal) * 100) : 0}))
+      .sort((a, b) => b.total - a.total);
+  } catch { return []; }
+}
+
+export async function getAdminPaymentAuditLog(): Promise<AdminPaymentAuditEntry[]> {
+  const supabase = await createClient();
+  try {
+    const {data} = await supabase
+      .from("notifications")
+      .select("id, type, entity_id, title, message, metadata, created_at")
+      .in("type", ["payment_verify", "payment_reject", "payment_refund", "payment_flag"])
+      .order("created_at", {ascending: false})
+      .limit(50);
+    return (data ?? []).map((n) => ({
+      id: n.id,
+      action: n.type.replace("payment_", ""),
+      payment_id: n.entity_id,
+      actor_name: (n.metadata as Record<string, unknown> | null)?.actorName as string | null ?? null,
+      details: n.title ?? null,
+      created_at: n.created_at,
+    }));
+  } catch { return []; }
+}
+
 export interface AdminRealtimeActivity {
   id: string;
   type: string;
