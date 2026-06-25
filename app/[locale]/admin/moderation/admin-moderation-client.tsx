@@ -211,7 +211,7 @@ interface ModerationClientProps {
   initialReports: AdminReportWithDetails[];
   initialAuditLog: AdminModerationLogItem[];
   initialSignals: AdminSafetySignal[];
-  labels: Record<string, any>;
+  labels: Record<string, string>;
   locale: string;
 }
 
@@ -219,7 +219,7 @@ export function AdminModerationClient({
   initialKpi, initialReports, initialAuditLog, initialSignals,
   labels, locale,
 }: ModerationClientProps) {
-  const t = labels.moderationPage ?? {};
+  const t = labels as Record<string, string>;
 
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
   const [search, setSearch] = useState("");
