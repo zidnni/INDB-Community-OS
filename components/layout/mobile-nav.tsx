@@ -45,7 +45,7 @@ const bottomItems = [
 
 const moreItems = [
   {href: "/memory", key: "memory", icon: Images, badge: null},
-  {href: "/campaigns", key: "support", icon: Megaphone, badge: "support"},
+  {href: "/campaigns", key: "campaigns", icon: Megaphone, badge: "campaigns"},
   {href: "/volunteer", key: "volunteer", icon: UsersRound, badge: "volunteer"},
   {href: "/feed", key: "feed", icon: Newspaper, badge: null},
   {href: "/profile", key: "profile", icon: UserRound, badge: null},
@@ -197,8 +197,8 @@ export function MobileNav({
     document.cookie = `theme=${nextTheme};path=/;max-age=31536000;samesite=lax`;
   }
 
-  function moreBadge(kind: "support" | "volunteer" | null) {
-    if (kind === "support") return activeCampaignsCount;
+  function moreBadge(kind: "campaigns" | "volunteer" | null) {
+    if (kind === "campaigns") return activeCampaignsCount;
     if (kind === "volunteer") return openVolunteerOpportunitiesCount;
     return 0;
   }

@@ -608,3 +608,80 @@ export interface ProjectWithCreator extends ProjectRow {
 export interface PollWithOptions extends PollRow {
   options: PollOptionRow[];
 }
+
+// ========================
+// Volunteer Opportunity
+// ========================
+export type VolunteerOpportunityStatus = "open" | "in_progress" | "full" | "completed" | "cancelled";
+
+export interface VolunteerOpportunityRow {
+  id: string;
+  slug: string;
+  emoji: string;
+  title: string;
+  description: string;
+  long_description: string;
+  organizer: string;
+  organizer_id: string | null;
+  location: string;
+  date: string;
+  duration: string;
+  category: string;
+  volunteers_needed: number;
+  volunteers_joined: number;
+  skills: string[];
+  status: VolunteerOpportunityStatus;
+  starts_at: string;
+  ends_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type VolunteerApplicationStatus = "pending" | "accepted" | "rejected" | "cancelled";
+
+export interface VolunteerApplicationRow {
+  id: string;
+  opportunity_id: string;
+  user_id: string;
+  message: string | null;
+  skills: string[];
+  status: VolunteerApplicationStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export type VolunteerAttendanceStatus = "confirmed" | "absent" | "unmarked";
+
+export interface VolunteerAttendanceRow {
+  id: string;
+  application_id: string;
+  opportunity_id: string;
+  user_id: string;
+  hours: number;
+  status: VolunteerAttendanceStatus;
+  confirmed_by: string | null;
+  confirmed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ========================
+// Impact Events
+// ========================
+export type ImpactEventType =
+  | "donation_verified"
+  | "volunteer_activity_completed"
+  | "graatek_exchange_completed"
+  | "idea_completed"
+  | "memory_published";
+
+export interface ImpactEventRow {
+  id: string;
+  user_id: string;
+  event_type: ImpactEventType;
+  reference_id: string;
+  reference_type: string;
+  value: number;
+  description: string | null;
+  created_at: string;
+}

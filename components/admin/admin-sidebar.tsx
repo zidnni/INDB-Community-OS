@@ -45,7 +45,7 @@ export interface AdminSidebarItem {
 
 type AdminSidebarIconKey =
   | "dashboard" | "users" | "content" | "credits" | "analytics"
-  | "support" | "settings" | "ideas" | "graatek" | "memories"
+  | "campaigns" | "settings" | "ideas" | "graatek" | "memories"
   | "messages" | "notifications" | "moderation" | "volunteer"
   | "donations" | "payments" | "impact";
 
@@ -55,7 +55,7 @@ const iconMap: Record<AdminSidebarIconKey, LucideIcon> = {
   content: Newspaper,
   credits: Award,
   analytics: BarChart3,
-  support: Megaphone,
+  campaigns: Megaphone,
   settings: Settings,
   ideas: Lightbulb,
   graatek: Gift,

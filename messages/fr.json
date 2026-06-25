@@ -140,10 +140,6 @@
       "title": "Suppression des Données | I ❤️ NDB",
       "description": "Demander la suppression de vos données de la plateforme communautaire I ❤️ NDB."
     },
-    "support": {
-      "title": "Campagnes | I Love NDB",
-      "description": "Contribuez aux campagnes verifiees qui creent un impact reel a Nouadhibou."
-    },
     "campaigns": {
       "title": "Campagnes | I Love NDB",
       "description": "Contribuez aux campagnes verifiees qui creent un impact reel a Nouadhibou."
@@ -295,7 +291,7 @@
         "label": "Messages",
         "short": "Messages"
       },
-      "support": {
+      "campaigns": {
         "label": "Campagnes",
         "short": "Campagnes"
       },
@@ -852,7 +848,7 @@
       "graatek": "Graatek",
       "memories": "Souvenirs",
       "messages": "Messages",
-      "support": "Campagnes",
+      "campaigns": "Campagnes",
       "volunteering": "Bénévolat",
       "notifications": "Notifications",
       "moderation": "Modération",
@@ -1802,7 +1798,7 @@
       "ideas": "Idées",
       "graatek": "Graatek",
       "messages": "Messages",
-      "support": "Support",
+      "campaigns": "Campagnes",
       "volunteer": "Bénévolat",
       "usage": "Utilisation",
       "growth": "Croissance",
@@ -1881,7 +1877,7 @@
       "totalGraatek": "Total Graatek",
       "totalDonationValue": "Valeur Totale des Dons",
       "totalMessages": "Total Messages",
-      "totalSupport": "Total Campagnes de Support",
+      "totalCampaigns": "Total Campagnes",
       "postsToday": "Publications Aujourd'hui",
       "ideasToday": "Idées Aujourd'hui",
       "memoriesToday": "Souvenirs Aujourd'hui",
@@ -2054,7 +2050,7 @@
       "graatek": "Graatek",
       "memories": "Souvenirs",
       "messages": "Messages",
-      "support": "Support",
+      "campaigns": "Campagnes",
       "volunteering": "Bénévolat",
       "donations": "Dons",
       "publicRegistration": "Inscription publique",
@@ -2124,14 +2120,14 @@
       "navAudit": "Journal d'audit",
       "ideasCategories": "Catégories d'idées",
       "graatekCategories": "Catégories Graatek",
-      "supportCategories": "Catégories de support",
+      "campaignsCategories": "Catégories de campagnes",
       "volunteeringCategories": "Catégories de bénévolat",
       "enableModule": "Activer {name}",
       "modules": {
         "ideas": "Idées",
         "graatek": "Graatek",
         "memories": "Souvenirs",
-        "support": "Support",
+        "campaigns": "Campagnes",
         "volunteering": "Bénévolat"
       }
     },
@@ -2797,7 +2793,7 @@
     "verifiedHub": "Campagnes officielles verifiees",
     "phaseOne": "Phase 1: 5 campaigns",
     "campaignsTitle": "Choisissez une campagne verifiee pour faire un don",
-    "contributeNow": "Faire un don",
+    "donateNow": "Faire un don",
     "goal": "Goal",
     "raised": "Raised",
     "remaining": "Remaining",
@@ -2806,7 +2802,7 @@
     "daysRemaining": "{count} days left",
     "verified": "Verified",
     "verifiedWithCheck": "Verified ✅",
-    "backToSupport": "Retour aux campagnes",
+    "backToCampaigns": "Retour aux campagnes",
     "updates": "Updates",
     "updatesTitle": "Latest updates",
     "updatesTimeline": "Updates timeline",
@@ -2826,12 +2822,16 @@
       "waysToContribute": "Ways to contribute",
       "featuredCampaign": "Campagne en vedette",
       "campaignCategories": "Categories de campagnes",
-      "completedCampaigns": "Campagnes terminees recemment"
+      "completedCampaigns": "Campagnes terminees recemment",
+      "volunteer": {
+        "title": "Bénévolat",
+        "description": "Participez aux activités bénévoles et faites partie du changement positif."
+      }
     },
     "impact": {
       "totalDonations": "Total donations",
       "contributors": "Contributors",
-      "volunteers": "Volunteers",
+      "volunteers": "Bénévoles",
       "completed": "Completed campaigns",
       "familiesHelped": "Familles aidees",
       "studentsSupported": "Eleves soutenus",
@@ -2841,7 +2841,7 @@
     },
     "ways": {
       "money": "💰 Financial contribution",
-      "volunteer": "🙋 Volunteer",
+      "volunteer": "🙋 Bénévolat",
       "materials": "🎁 Donate materials"
     },
     "transparency": {
@@ -2863,7 +2863,7 @@
     "contribution": {
       "title": "Faire un don",
       "money": "Faire un don",
-      "volunteer": "Volunteer",
+      "volunteer": "Bénévolat",
       "materials": "Donate materials",
       "suggested": "Suggested amounts",
       "otherAmount": "Other amount",
@@ -2889,7 +2889,7 @@
       "verifiedOnly": "Campagnes officielles I love NDB uniquement",
       "raisedAmount": "Montant collecte",
       "contributors": "Contributeurs",
-      "volunteers": "Volunteers",
+      "volunteers": "Bénévoles",
       "statusLabel": "Statut",
       "finalReport": "Rapport final",
       "save": "Enregistrer",

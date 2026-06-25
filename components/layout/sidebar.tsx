@@ -26,7 +26,7 @@ const navItems = [
   {href: "/fadla", key: "fadla", icon: Gift},
   {href: "/messages", key: "messages", icon: MessageCircleMore},
   {href: "/volunteer", key: "volunteer", icon: UsersRound},
-  {href: "/campaigns", key: "support", icon: Megaphone},
+  {href: "/campaigns", key: "campaigns", icon: Megaphone},
   {href: "/profile", key: "profile", icon: UserRound},
 ] as const;
 

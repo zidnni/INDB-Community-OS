@@ -140,10 +140,6 @@
       "title": "حذف البيانات | I ❤️ NDB",
       "description": "طلب حذف بياناتك من منصة I ❤️ NDB المجتمعية."
     },
-    "support": {
-      "title": "الدعم | I Love NDB",
-      "description": "ساهم في حملاتنا الرسمية لدعم مجتمع نواذيبو."
-    },
     "campaigns": {
       "title": "الحملات | I Love NDB",
       "description": "تصفح حملاتنا الرسمية وشارك في دعم مجتمع نواذيبو."
@@ -295,9 +291,9 @@
         "label": "الرسائل",
         "short": "الرسائل"
       },
-      "support": {
-        "label": "الحملات",
-        "short": "الحملات"
+      "campaigns": {
+        "label": "حملات",
+        "short": "حملات"
       },
       "volunteer": {
         "label": "🙋 التطوع",
@@ -852,7 +848,7 @@
       "graatek": "گرعتك",
       "memories": "الذكريات",
       "messages": "الرسائل",
-      "support": "الحملات",
+      "campaigns": "حملات",
       "volunteering": "التطوع",
       "notifications": "الإشعارات",
       "moderation": "الرقابة",
@@ -1802,7 +1798,7 @@
       "ideas": "الأفكار",
       "graatek": "گرعتك",
       "messages": "الرسائل",
-      "support": "الدعم",
+      "campaigns": "حملات",
       "volunteer": "التطوع",
       "usage": "الاستخدام",
       "growth": "النمو",
@@ -1881,7 +1877,7 @@
       "totalGraatek": "إجمالي گرعتك",
       "totalDonationValue": "إجمالي قيمة التبرعات",
       "totalMessages": "إجمالي الرسائل",
-      "totalSupport": "إجمالي حملات الدعم",
+      "totalCampaigns": "إجمالي الحملات",
       "postsToday": "منشورات اليوم",
       "ideasToday": "أفكار اليوم",
       "memoriesToday": "ذكريات اليوم",
@@ -2054,7 +2050,7 @@
       "graatek": "گرعتك",
       "memories": "الذكريات",
       "messages": "الرسائل",
-      "support": "الدعم",
+      "campaigns": "حملات",
       "volunteering": "التطوع",
       "donations": "التبرعات",
       "publicRegistration": "التسجيل العام",
@@ -2124,14 +2120,14 @@
       "navAudit": "سجل التدقيق",
       "ideasCategories": "فئات الأفكار",
       "graatekCategories": "فئات گرعتك",
-      "supportCategories": "فئات الدعم",
+      "campaignsCategories": "فئات الحملات",
       "volunteeringCategories": "فئات التطوع",
       "enableModule": "تفعيل {name}",
       "modules": {
         "ideas": "الأفكار",
         "graatek": "گرعتك",
         "memories": "الذكريات",
-        "support": "الدعم",
+        "campaigns": "حملات",
         "volunteering": "التطوع"
       }
     },
@@ -2796,7 +2792,7 @@
     "description": "ساهم في حملاتنا الرسمية لدعم مجتمع نواذيبو.",
     "verifiedHub": "حملات I ❤️ NDB الرسمية",
     "campaignsTitle": "جميع الحملات النشطة المتاحة",
-    "contributeNow": "ساهم الآن",
+    "donateNow": "تبرع الآن",
     "goal": "الهدف",
     "raised": "تم جمع",
     "remaining": "المتبقي",
@@ -2805,7 +2801,7 @@
     "daysRemaining": "{count} يوم متبقٍ",
     "verified": "موثقة",
     "verifiedWithCheck": "موثقة ✅",
-    "backToSupport": "العودة إلى الحملات",
+    "backToCampaigns": "العودة إلى الحملات",
     "updates": "التحديثات",
     "updatesTitle": "أحدث التحديثات",
     "updatesTimeline": "خط زمني للتحديثات",
@@ -2826,7 +2822,11 @@
       "waysToContribute": "طرق المساهمة",
       "featuredCampaign": "حملة مميزة",
       "campaignCategories": "تصنيفات الحملات",
-      "completedCampaigns": "حملات منتهية"
+      "completedCampaigns": "حملات منتهية",
+      "volunteer": {
+        "title": "التطوع",
+        "description": "شارك في الأنشطة التطوعية وكن جزءاً من التغيير الإيجابي."
+      }
     },
     "impact": {
       "totalDonations": "إجمالي التبرعات",

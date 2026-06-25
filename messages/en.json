@@ -140,10 +140,6 @@
       "title": "Data Deletion | I ❤️ NDB",
       "description": "Request deletion of your data from the I ❤️ NDB community platform."
     },
-    "support": {
-      "title": "Campaigns | I Love NDB",
-      "description": "Contribute to verified campaigns creating real impact in Nouadhibou."
-    },
     "campaigns": {
       "title": "Campaigns | I Love NDB",
       "description": "Contribute to verified campaigns creating real impact in Nouadhibou."
@@ -295,7 +291,7 @@
         "label": "Profile",
         "short": "Profile"
       },
-      "support": {
+      "campaigns": {
         "label": "Campaigns",
         "short": "Campaigns"
       },
@@ -852,7 +848,7 @@
       "graatek": "Graatek",
       "memories": "Memories",
       "messages": "Messages",
-      "support": "Campaigns",
+      "campaigns": "Campaigns",
       "volunteering": "Volunteering",
       "notifications": "Notifications",
       "moderation": "Moderation",
@@ -1802,7 +1798,7 @@
       "ideas": "Ideas",
       "graatek": "Graatek",
       "messages": "Messages",
-      "support": "Support",
+      "campaigns": "Campaigns",
       "volunteer": "Volunteer",
       "usage": "Usage",
       "growth": "Growth",
@@ -1881,7 +1877,7 @@
       "totalGraatek": "Total Graatek",
       "totalDonationValue": "Total Donation Value",
       "totalMessages": "Total Messages",
-      "totalSupport": "Total Support Campaigns",
+      "totalCampaigns": "Total Campaigns",
       "postsToday": "Posts Today",
       "ideasToday": "Ideas Today",
       "memoriesToday": "Memories Today",
@@ -2054,7 +2050,7 @@
       "graatek": "Graatek",
       "memories": "Memories",
       "messages": "Messages",
-      "support": "Support",
+      "campaigns": "Campaigns",
       "volunteering": "Volunteering",
       "donations": "Donations",
       "publicRegistration": "Public Registration",
@@ -2124,14 +2120,14 @@
       "navAudit": "Audit Log",
       "ideasCategories": "Ideas Categories",
       "graatekCategories": "Graatek Categories",
-      "supportCategories": "Support Categories",
+      "campaignsCategories": "Campaigns Categories",
       "volunteeringCategories": "Volunteering Categories",
       "enableModule": "Enable {name}",
       "modules": {
         "ideas": "Ideas",
         "graatek": "Graatek",
         "memories": "Memories",
-        "support": "Support",
+        "campaigns": "Campaigns",
         "volunteering": "Volunteering"
       }
     },
@@ -2881,7 +2877,7 @@
     "verifiedHub": "Official verified campaigns",
     "phaseOne": "Phase 1: 5 campaigns",
     "campaignsTitle": "Choose a verified campaign to donate to",
-    "contributeNow": "Donate now",
+    "donateNow": "Donate now",
     "goal": "Goal",
     "raised": "Raised",
     "remaining": "Remaining",
@@ -2890,7 +2886,7 @@
     "daysRemaining": "{count} days left",
     "verified": "Verified",
     "verifiedWithCheck": "Verified ✅",
-    "backToSupport": "Back to campaigns",
+    "backToCampaigns": "Back to campaigns",
     "updates": "Updates",
     "updatesTitle": "Latest updates",
     "updatesTimeline": "Updates timeline",
@@ -2910,7 +2906,11 @@
       "waysToContribute": "Ways to contribute",
       "featuredCampaign": "Featured Campaign",
       "campaignCategories": "Campaign Categories",
-      "completedCampaigns": "Recently Completed Campaigns"
+      "completedCampaigns": "Recently Completed Campaigns",
+      "volunteer": {
+        "title": "Volunteer",
+        "description": "Join volunteer activities and be part of positive change."
+      }
     },
     "impact": {
       "totalDonations": "Total donations",
