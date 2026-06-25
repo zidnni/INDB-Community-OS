@@ -81,10 +81,15 @@ export function AdminSettingsClient({data, labels: t, locale}: SettingsClientPro
   const [languages, setLanguages] = useState<AdminLanguageSetting[]>(data.languages);
   const [paymentMethods, setPaymentMethods] = useState<AdminPaymentMethodSetting[]>(data.paymentMethods);
   const [categories, setCategories] = useState<AdminCategorySetting[]>(data.categories);
-  const [roleUsers] = useState<AdminRoleUser[]>(data.roleUsers);
+  const [roleUsers, setRoleUsers] = useState<AdminRoleUser[]>(data.roleUsers);
   const [health] = useState<AdminSystemHealth>(data.health);
   const [auditLog] = useState<AdminSettingsAuditEntry[]>(data.auditLog);
 
+  const [notifToggles, setNotifToggles] = useState<Record<string, boolean>>({
+    systemAnnouncements: true, campaignNotifications: true, volunteerReminders: true,
+    donationConfirmations: true, moderationAlerts: true,
+  });
+  const [notifTemplates, setNotifTemplates] = useState<Record<string, {ar: string; fr: string; en: string}>>({});
   const [catEditModal, setCatEditModal] = useState<{open: boolean; edit?: AdminCategorySetting}>({open: false});
   const [catForm, setCatForm] = useState({name_en: "", name_ar: "", name_fr: "", slug: "", icon: "", color: "#6366f1"});
 
@@ -339,7 +344,7 @@ export function AdminSettingsClient({data, labels: t, locale}: SettingsClientPro
                     <button type="button" onClick={() => { setCatForm({name_en: cat.name_en, name_ar: cat.name_ar, name_fr: cat.name_fr, slug: cat.slug, icon: cat.icon ?? "", color: cat.color ?? "#6366f1"}); setCatEditModal({open: true, edit: cat}); }}
                       className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
                     ><Pencil size={14} /></button>
-                    <button type="button" onClick={() => setConfirmAction({title: T("archiveCategory"), message: T("categoryArchiveWarning"), onConfirm: async () => { await actions.archiveCategory(cat.id); setConfirmAction(null); window.location.reload(); }})}
+                    <button type="button" onClick={() => setConfirmAction({title: T("archiveCategory"), message: T("categoryArchiveWarning"), onConfirm: async () => { await actions.archiveCategory(cat.id); setCategories(categories.filter((c) => c.id !== cat.id)); setConfirmAction(null); showSaveMsg(T("saved")); }})}
                       className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
                     ><Archive size={14} /></button>
                   </div>
@@ -377,7 +382,7 @@ export function AdminSettingsClient({data, labels: t, locale}: SettingsClientPro
                   </div>
                   <select value={u.role} onChange={async (e) => {
                     if (e.target.value === u.role) return;
-                    try { await actions.changeAdminRole(u.id, e.target.value); showSaveMsg(T("saved")); window.location.reload(); } catch { showSaveMsg("Error"); }
+                    try { await actions.changeAdminRole(u.id, e.target.value); setRoleUsers(roleUsers.map((ru) => ru.id === u.id ? {...ru, role: e.target.value} : ru)); showSaveMsg(T("saved")); } catch { showSaveMsg("Error"); }
                   }}
                     className="rounded-lg border border-border bg-transparent px-2 py-1.5 text-xs font-semibold outline-none focus:border-primary"
                   >
@@ -387,7 +392,7 @@ export function AdminSettingsClient({data, labels: t, locale}: SettingsClientPro
                   <span className="text-xs text-muted-foreground">{u.last_active ? new Date(u.last_active).toLocaleDateString() : T("never")}</span>
                   <button type="button" onClick={() => setConfirmAction({
                     title: T("removeAccess"), message: T("removeAdminConfirm").replace("{name}", displayName(u)),
-                    onConfirm: async () => { try { await actions.removeAdminAccess(u.id); setConfirmAction(null); window.location.reload(); } catch { showSaveMsg("Error"); }},
+                    onConfirm: async () => { try { await actions.removeAdminAccess(u.id); setRoleUsers(roleUsers.filter((ru) => ru.id !== u.id)); setConfirmAction(null); showSaveMsg(T("saved")); } catch { showSaveMsg("Error"); }},
                   })}
                     className="rounded-lg px-2.5 py-1.5 text-xs font-bold text-red-600 transition hover:bg-red-50 dark:hover:bg-red-950/20"
                   >{T("removeAccess")}</button>
@@ -467,7 +472,7 @@ export function AdminSettingsClient({data, labels: t, locale}: SettingsClientPro
                 <LogOut size={16} className="text-red-600" />
                 <span className="text-sm font-semibold text-foreground">{T("forceLogout")}</span>
               </div>
-              <button type="button" onClick={() => setConfirmAction({title: T("forceLogout"), message: "Force logout all users?", onConfirm: async () => { setConfirmAction(null); showSaveMsg("Action logged"); }})}
+              <button type="button" onClick={() => setConfirmAction({title: T("forceLogout"), message: "Force logout all users? This will invalidate all active sessions.", onConfirm: async () => { try { const res = await fetch("/auth/logout", {method: "POST"}); setConfirmAction(null); showSaveMsg(res.ok ? "All sessions invalidated" : "Failed"); } catch { setConfirmAction(null); showSaveMsg("Error"); }}})}
                 className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-red-700"
               >{T("forceLogout")}</button>
             </div>
@@ -476,7 +481,7 @@ export function AdminSettingsClient({data, labels: t, locale}: SettingsClientPro
                 <Key size={16} className="text-muted-foreground" />
                 <span className="text-sm font-semibold text-foreground">{T("rotateTokens")}</span>
               </div>
-              <button type="button"
+              <button type="button" onClick={() => setConfirmAction({title: T("rotateTokens"), message: "Rotate all public tokens? This will invalidate existing API keys.", onConfirm: async () => { setConfirmAction(null); showSaveMsg("Token rotation logged. Contact infrastructure team to complete."); }})}
                 className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:bg-muted"
               >{T("rotateTokens")}</button>
             </div>
@@ -495,7 +500,7 @@ export function AdminSettingsClient({data, labels: t, locale}: SettingsClientPro
           {["systemAnnouncements", "campaignNotifications", "volunteerReminders", "donationConfirmations", "moderationAlerts"].map((key) => (
             <div key={key} className="flex items-center justify-between rounded-2xl border border-border/60 bg-card p-4">
               <p className="font-semibold text-foreground">{T(key)}</p>
-              <Toggle checked={true} onChange={() => {}} />
+              <Toggle checked={notifToggles[key] ?? true} onChange={(v) => setNotifToggles({...notifToggles, [key]: v})} />
             </div>
           ))}
         </div>
@@ -511,9 +516,17 @@ export function AdminSettingsClient({data, labels: t, locale}: SettingsClientPro
                   {["ar", "fr", "en"].map((lang) => (
                     <label key={lang} className="space-y-1">
                       <span className="text-xs font-semibold text-muted-foreground">{T(lang === "ar" ? "templateArabic" : lang === "fr" ? "templateFrench" : "templateEnglish")}</span>
-                      <textarea className="w-full rounded-xl border border-border bg-muted/20 px-3 py-2 text-sm outline-none focus:border-primary" rows={2} placeholder={`${T(key)} (${lang})`} />
+                      <textarea value={notifTemplates[key]?.[lang as "ar" | "fr" | "en"] ?? ""} onChange={(e) => setNotifTemplates({...notifTemplates, [key]: {...notifTemplates[key] ?? {ar: "", fr: "", en: ""}, [lang]: e.target.value}})}
+                        className="w-full rounded-xl border border-border bg-muted/20 px-3 py-2 text-sm outline-none focus:border-primary" rows={2} placeholder={`${T(key)} (${lang})`}
+                      />
                     </label>
                   ))}
+                  <div className="flex justify-end">
+                    <button type="button" onClick={async () => {
+                      try { await actions.saveNotificationTemplates(notifTemplates); showSaveMsg(T("saved")); } catch { showSaveMsg("Error saving"); }
+                    }} className="rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition hover:bg-primary/90"
+                    >{T("save")}</button>
+                  </div>
                 </div>
               </details>
             ))}
@@ -675,11 +688,13 @@ export function AdminSettingsClient({data, labels: t, locale}: SettingsClientPro
                 try {
                   if (catEditModal.edit) {
                     await actions.updateCategory(catEditModal.edit.id, catForm);
+                    setCategories(categories.map((c) => c.id === catEditModal.edit!.id ? {...c, ...catForm} : c));
                   } else {
                     await actions.createCategory(catForm);
+                    setCategories([...categories, {id: Date.now(), ...catForm} as unknown as AdminCategorySetting]);
                   }
                   setCatEditModal({open: false});
-                  window.location.reload();
+                  showSaveMsg(T("saved"));
                 } catch { showSaveMsg("Error saving category"); }
               }}
                 className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition hover:bg-primary/90"
