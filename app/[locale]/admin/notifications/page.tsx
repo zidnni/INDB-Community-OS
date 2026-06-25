@@ -2,6 +2,27 @@ import {getTranslations} from "next-intl/server";
 
 import {AdminCommunicationsClient} from "./admin-communications-client";
 
+const dhKeys = [
+  "dhSmtpServer","dhOperational","dhSmtpDetail","dhBounceRate","dhBounceValue","dhBounceDetail",
+  "dhSpamComplaints","dhSpamValue","dhSpamDetail","dhQueueDepth","dhQueueValue","dhQueueDetail",
+  "dhDkimSpf","dhDkimValue","dhDkimDetail","dhDeliveryLatency","dhLatencyValue","dhLatencyDetail",
+  "dhBlacklist","dhBlacklistValue","dhBlacklistDetail","dhRateLimiting","dhRateValue","dhRateDetail",
+] as const;
+const typeKeys = [
+  "typewelcome","typeverification","typenewsletter","typecampaign_update","typedonation_receipt",
+  "typevolunteer_confirmation","typeevent_invitation","typegraatek_notification","typeidea_update",
+  "typepassword_reset","typemagazine_digest","typemaintenance","typeannouncement","typefundraising",
+  "typereengagement",
+] as const;
+const audKeys = [
+  "audall","audarabic","audfrench","audenglish","auddonors","audvolunteers",
+  "audgraatek","audideas","audinactive","audnew_users","audpremium",
+] as const;
+const segNameKeys = [
+  "segNameall","segNamearabic","segNamefrench","segNameenglish","segNamedonors","segNamevolunteers",
+  "segNamegraatek","segNameideas","segNameinactive","segNamenew_users","segNamepremium",
+] as const;
+
 const communicationLabelKeys = [
   "communicationsOverview", "campaignsTab", "audienceTab", "builderTab", "analyticsTab",
   "eyebrow", "title", "description", "newCampaign",
@@ -29,6 +50,7 @@ const communicationLabelKeys = [
   "notificationLog", "templatesDescription",
   "titleField", "messageField", "targetAudience", "language", "optionalLink", "scheduleTime",
   "safeConfirmation", "exportTitle",
+  ...dhKeys, ...typeKeys, ...audKeys, ...segNameKeys,
 ] as const;
 
 export default async function AdminNotificationsPage({

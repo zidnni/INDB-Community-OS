@@ -26,7 +26,7 @@ import {
   type EmailCampaign, type EmailTemplateItem,
   audienceSegments, campaignTypes, deliveryHealthMetrics,
   emailTemplates, formatNumber, mockAnalytics, mockCampaigns,
-  recentActivity, typeLabels, audienceLabels,
+  recentActivity, audienceSegmentNames,
 } from "@/lib/data/communications";
 
 /* ─── helpers ─── */
@@ -163,7 +163,8 @@ export function AdminCommunicationsClient({locale, labels}: {locale: string; lab
 
   const TypeBadge = ({type}: {type: CampaignType}) => {
     const Icon = campaignTypeIcon[type] ?? Mail;
-    return <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 px-2.5 py-1 text-xs font-semibold"><Icon size={12} />{typeLabels[type]}</span>;
+    const typeLabel = labels[`type${type}`] ?? campaignTypes.find((ct) => ct.value === type)?.label ?? type;
+    return <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 px-2.5 py-1 text-xs font-semibold"><Icon size={12} />{typeLabel}</span>;
   };
 
   const tabs = [
@@ -272,7 +273,7 @@ export function AdminCommunicationsClient({locale, labels}: {locale: string; lab
                       <tr key={c.id} className="hover:bg-muted/20 transition-colors">
                         <td className="px-4 py-3 font-bold">{c.name}</td>
                         <td className="px-4 py-3"><TypeBadge type={c.type} /></td>
-                        <td className="px-4 py-3 text-muted-foreground">{audienceLabels[c.audience]}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{labels[`aud${c.audience}`] ?? audienceSegmentNames[c.audience]}</td>
                         <td className="px-4 py-3">{formatNumber(c.sent, locale)}</td>
                         <td className="px-4 py-3">{formatNumber(c.opened, locale)}</td>
                         <td className="px-4 py-3">{formatNumber(c.clicked, locale)}</td>
@@ -291,17 +292,17 @@ export function AdminCommunicationsClient({locale, labels}: {locale: string; lab
                 <h2 className="text-xl font-black">{labels.deliveryHealth ?? "Delivery Health"}</h2>
                 <div className="mt-4 space-y-2">
                   {deliveryHealthMetrics.slice(0, 5).map((m) => (
-                    <div key={m.label} className="flex items-center justify-between rounded-xl border border-border/60 bg-background p-3">
+                    <div key={m.labelKey} className="flex items-center justify-between rounded-xl border border-border/60 bg-background p-3">
                       <div className="flex items-center gap-3">
                         <span className={`flex h-2.5 w-2.5 shrink-0 rounded-full ${
                           m.status === "healthy" ? "bg-emerald-500" : m.status === "warning" ? "bg-amber-500" : "bg-red-500"
                         }`} />
                         <div>
-                          <p className="text-sm font-semibold">{m.label}</p>
-                          <p className="text-xs text-muted-foreground">{m.detail}</p>
+                          <p className="text-sm font-semibold">{labels[m.labelKey] ?? m.label}</p>
+                          <p className="text-xs text-muted-foreground">{labels[m.detailKey] ?? m.detail}</p>
                         </div>
                       </div>
-                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${HEALTH_STYLES[m.status]}`}>{m.value}</span>
+                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${HEALTH_STYLES[m.status]}`}>{labels[m.valueKey] ?? m.value}</span>
                     </div>
                   ))}
                 </div>
@@ -377,7 +378,7 @@ export function AdminCommunicationsClient({locale, labels}: {locale: string; lab
                     <td className="px-4 py-3 font-bold">{c.name}</td>
                     <td className="max-w-[200px] truncate px-4 py-3 text-muted-foreground">{c.subject}</td>
                     <td className="px-4 py-3"><TypeBadge type={c.type} /></td>
-                    <td className="px-4 py-3 text-muted-foreground">{audienceLabels[c.audience]}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{labels[`aud${c.audience}`] ?? audienceSegmentNames[c.audience]}</td>
                     <td className="px-4 py-3"><span className="rounded-md bg-muted/60 px-2 py-0.5 text-xs font-bold uppercase">{c.language}</span></td>
                     <td className="px-4 py-3 text-end">{formatNumber(c.sent, locale)}</td>
                     <td className="px-4 py-3 text-end">{formatNumber(c.opened, locale)}</td>
@@ -410,7 +411,7 @@ export function AdminCommunicationsClient({locale, labels}: {locale: string; lab
                     selectedAudience === seg.id ? "border-primary bg-primary/5" : "border-border/60 bg-card hover:border-primary/30"
                   }`}>
                   <div>
-                    <p className="font-bold">{seg.name}</p>
+                    <p className="font-bold">{labels[`segName${seg.id}`] ?? seg.name}</p>
                     <p className="mt-0.5 text-2xl font-black tracking-tight">{formatNumber(seg.count, locale)}</p>
                   </div>
                   <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${
@@ -718,15 +719,15 @@ export function AdminCommunicationsClient({locale, labels}: {locale: string; lab
             <h2 className="text-xl font-black">{labels.deliveryHealthFull ?? "Delivery Health Overview"}</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {deliveryHealthMetrics.map((m) => (
-                <div key={m.label} className={`rounded-2xl border p-4 ${m.status === "critical" ? "border-red-500/30 bg-red-500/5" : "border-border/60 bg-card"}`}>
+                <div key={m.labelKey} className={`rounded-2xl border p-4 ${m.status === "critical" ? "border-red-500/30 bg-red-500/5" : "border-border/60 bg-card"}`}>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold">{m.label}</p>
+                    <p className="text-sm font-semibold">{labels[m.labelKey] ?? m.label}</p>
                     <span className={`flex h-2.5 w-2.5 rounded-full ${
                       m.status === "healthy" ? "bg-emerald-500" : m.status === "warning" ? "bg-amber-500" : "bg-red-500"
                     }`} />
                   </div>
-                  <p className="mt-2 text-lg font-black">{m.value}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{m.detail}</p>
+                  <p className="mt-2 text-lg font-black">{labels[m.valueKey] ?? m.value}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{labels[m.detailKey] ?? m.detail}</p>
                 </div>
               ))}
             </div>

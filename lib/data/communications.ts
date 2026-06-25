@@ -62,9 +62,12 @@ export interface AnalyticsDataPoint {
 }
 
 export interface DeliveryHealthMetric {
+  labelKey: string;
   label: string;
   status: DeliveryHealthStatus;
+  valueKey: string;
   value: string;
+  detailKey: string;
   detail: string;
 }
 
@@ -199,27 +202,17 @@ export function mockAnalytics(): { trends: AnalyticsDataPoint[]; topCampaigns: {
 }
 
 export const deliveryHealthMetrics: DeliveryHealthMetric[] = [
-  { label: "SMTP Server", status: "healthy", value: "Operational", detail: "99.9% uptime (30d)" },
-  { label: "Bounce Rate", status: "warning", value: "2.1%", detail: "Above 2% threshold" },
-  { label: "Spam Complaints", status: "healthy", value: "0.03%", detail: "Below 0.1% threshold" },
-  { label: "Queue Depth", status: "healthy", value: "12 emails", detail: "Processing normally" },
-  { label: "DKIM/SPF", status: "healthy", value: "Passing", detail: "All records verified" },
-  { label: "Delivery Latency", status: "warning", value: "4.2s avg", detail: "Above 3s baseline" },
-  { label: "Blacklist Status", status: "critical", value: "Listed on 1", detail: "ZenSpam – investigation needed" },
-  { label: "Rate Limiting", status: "healthy", value: "No throttling", detail: "Within SendGrid limits" },
+  { labelKey: "dhSmtpServer", label: "SMTP Server", status: "healthy", valueKey: "dhOperational", value: "Operational", detailKey: "dhSmtpDetail", detail: "99.9% uptime (30d)" },
+  { labelKey: "dhBounceRate", label: "Bounce Rate", status: "warning", valueKey: "dhBounceValue", value: "2.1%", detailKey: "dhBounceDetail", detail: "Above 2% threshold" },
+  { labelKey: "dhSpamComplaints", label: "Spam Complaints", status: "healthy", valueKey: "dhSpamValue", value: "0.03%", detailKey: "dhSpamDetail", detail: "Below 0.1% threshold" },
+  { labelKey: "dhQueueDepth", label: "Queue Depth", status: "healthy", valueKey: "dhQueueValue", value: "12 emails", detailKey: "dhQueueDetail", detail: "Processing normally" },
+  { labelKey: "dhDkimSpf", label: "DKIM/SPF", status: "healthy", valueKey: "dhDkimValue", value: "Passing", detailKey: "dhDkimDetail", detail: "All records verified" },
+  { labelKey: "dhDeliveryLatency", label: "Delivery Latency", status: "warning", valueKey: "dhLatencyValue", value: "4.2s avg", detailKey: "dhLatencyDetail", detail: "Above 3s baseline" },
+  { labelKey: "dhBlacklist", label: "Blacklist Status", status: "critical", valueKey: "dhBlacklistValue", value: "Listed on 1", detailKey: "dhBlacklistDetail", detail: "ZenSpam – investigation needed" },
+  { labelKey: "dhRateLimiting", label: "Rate Limiting", status: "healthy", valueKey: "dhRateValue", value: "No throttling", detailKey: "dhRateDetail", detail: "Within SendGrid limits" },
 ];
 
-export const typeLabels: Record<CampaignType, string> = {
-  welcome: "Welcome", verification: "Verification", newsletter: "Newsletter",
-  campaign_update: "Campaign Update", donation_receipt: "Donation Receipt",
-  volunteer_confirmation: "Volunteer Confirmation", event_invitation: "Event Invitation",
-  graatek_notification: "Graatek Notification", idea_update: "Idea Update",
-  password_reset: "Password Reset", magazine_digest: "Magazine Digest",
-  maintenance: "Maintenance", announcement: "Announcement",
-  fundraising: "Fundraising", reengagement: "Re-engagement",
-};
-
-export const audienceLabels: Record<AudienceSegment, string> = {
+export const audienceSegmentNames: Record<AudienceSegment, string> = {
   all: "All", arabic: "Arabic", french: "French", english: "English",
   donors: "Donors", volunteers: "Volunteers", graatek: "Graatek",
   ideas: "Ideas", inactive: "Inactive", new_users: "New Users", premium: "Premium",
