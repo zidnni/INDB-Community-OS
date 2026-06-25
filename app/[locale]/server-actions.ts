@@ -4748,6 +4748,11 @@ export async function createNotificationAction(formData: FormData) {
   const locale = normalizeLocale(formData.get('locale'));
   const title = formData.get('title');
   const message = formData.get('message');
+  const target = formData.get('target');
+  const language = formData.get('language');
+  const link = formData.get('link');
+  const scheduleTime = formData.get('scheduleTime');
+  const notificationType = formData.get('notificationType');
 
   const { getCurrentAdminProfile } = await import('@/lib/data/admin');
   const adminProfile = await getCurrentAdminProfile();
@@ -4755,15 +4760,85 @@ export async function createNotificationAction(formData: FormData) {
     redirect(withLocale('/', locale));
   }
 
-  await createNotification({
-    userId: adminProfile.id,
-    actorId: adminProfile.id,
-    type: 'admin_announcement',
-    entityType: 'announcement',
-    entityId: crypto.randomUUID(),
-    title: title.trim().slice(0, 100),
-    message: message.trim().slice(0, 500),
-  });
+  const admin = createAdminClient();
+  const safeTitle = title.trim().slice(0, 100);
+  const safeMessage = message.trim().slice(0, 500);
+  const safeTarget = typeof target === 'string' ? target : 'all';
+  const safeLanguage = typeof language === 'string' ? language : 'all';
+  const safeType = typeof notificationType === 'string' ? notificationType.trim().slice(0, 80) : 'admin_announcement';
+  const safeLink = typeof link === 'string' && link.trim().startsWith('/') && !link.trim().startsWith('//')
+    ? link.trim().slice(0, 200)
+    : null;
+  const safeScheduleTime = typeof scheduleTime === 'string' && scheduleTime.trim() ? scheduleTime.trim().slice(0, 80) : null;
+
+  if (admin && safeTitle && safeMessage) {
+    const profileQuery = admin.from('profiles').select('id, language_preference').limit(750);
+    const {data: profiles} = safeTarget === 'arabic' || safeLanguage === 'ar'
+      ? await profileQuery.eq('language_preference', 'ar')
+      : safeTarget === 'french' || safeLanguage === 'fr'
+        ? await profileQuery.eq('language_preference', 'fr')
+        : safeTarget === 'english' || safeLanguage === 'en'
+          ? await profileQuery.eq('language_preference', 'en')
+          : await profileQuery;
+
+    let targetIds = new Set((profiles ?? []).map((profile) => profile.id as string).filter((id) => id !== adminProfile.id));
+
+    if (['donors', 'volunteers'].includes(safeTarget)) {
+      const contributionType = safeTarget === 'donors' ? 'money' : 'volunteer';
+      const {data: contributions} = await admin
+        .from('support_contributions')
+        .select('contributor_id')
+        .eq('contribution_type', contributionType)
+        .not('contributor_id', 'is', null)
+        .limit(750);
+      targetIds = new Set((contributions ?? []).map((row) => row.contributor_id as string).filter((id) => id && id !== adminProfile.id));
+    } else if (safeTarget === 'idea_participants') {
+      const {data: participants} = await admin
+        .from('idea_participants')
+        .select('user_id')
+        .limit(750);
+      targetIds = new Set((participants ?? []).map((row) => row.user_id as string).filter((id) => id && id !== adminProfile.id));
+    } else if (safeTarget === 'graatek_users') {
+      const {data: shares} = await admin
+        .from('community_shares')
+        .select('owner_id')
+        .limit(750);
+      targetIds = new Set((shares ?? []).map((row) => row.owner_id as string).filter((id) => id && id !== adminProfile.id));
+    }
+
+    const entityId = crypto.randomUUID();
+    const rows = Array.from(targetIds).slice(0, 500).map((userId) => ({
+      user_id: userId,
+      actor_id: adminProfile.id,
+      type: safeType || 'admin_announcement',
+      entity_type: 'announcement',
+      entity_id: entityId,
+      title: safeTitle,
+      message: safeMessage,
+      metadata: {
+        target: safeTarget,
+        language: safeLanguage,
+        link: safeLink,
+        scheduleTime: safeScheduleTime,
+        source: 'admin_notifications',
+      },
+    }));
+
+    if (rows.length > 0) {
+      const {error} = await admin.from('notifications').insert(rows);
+      if (error) console.error('createNotificationAction broadcast error:', error);
+    }
+  } else if (safeTitle && safeMessage) {
+    await createNotification({
+      userId: adminProfile.id,
+      actorId: adminProfile.id,
+      type: 'admin_announcement',
+      entityType: 'announcement',
+      entityId: crypto.randomUUID(),
+      title: safeTitle,
+      message: safeMessage,
+    });
+  }
 
   revalidatePath('/admin/notifications');
   redirect(withLocale('/admin/notifications?status=sent', locale));
