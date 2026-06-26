@@ -48,7 +48,6 @@ const moreItems = [
   {href: "/memory", key: "memory", icon: Images, badge: null},
   {href: "/campaigns", key: "campaigns", icon: Megaphone, badge: "campaigns"},
   {href: "/volunteer", key: "volunteer", icon: UsersRound, badge: "volunteer"},
-  {href: "/about", key: "aboutPlatform", icon: Info, badge: null},
   {href: "/feed", key: "feed", icon: Newspaper, badge: null},
   {href: "/profile", key: "profile", icon: UserRound, badge: null},
   {href: "/profile/edit", key: "settings", icon: Settings, badge: null},
@@ -415,5 +414,6 @@ export function MobileNav({
 }
 
 function isActivePath(pathname: string, href: string) {
-  return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+  const p = pathname.replace(/^\/[a-z]{2}(?:\/|$)/, "/");
+  return href === "/" ? p === "/" || p === "" : p === href || p.startsWith(`${href}/`);
 }

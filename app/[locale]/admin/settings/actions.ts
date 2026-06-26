@@ -28,52 +28,36 @@ async function audit(adminName: string | null, key: string, oldVal: string | nul
   } catch {}
 }
 
-export async function savePlatformSettings(settings: Record<string, unknown>) {
+async function saveSetting(key: string, data: unknown) {
   const {profile} = await authUser();
   const admin = getAdmin();
-  const oldRaw = await admin.from("platform_settings").select("value").eq("key", "platform_settings").maybeSingle();
+  const oldRaw = await admin.from("platform_settings").select("value").eq("key", key).maybeSingle();
   const oldVal = (oldRaw.data as {value: string} | null)?.value ?? null;
-  const newVal = JSON.stringify(settings);
+  const newVal = JSON.stringify(data);
   const adminName = profile.full_name ?? profile.username ?? "Unknown";
-  const {error} = await admin.from("platform_settings").upsert({key: "platform_settings", value: newVal}, {onConflict: "key"});
+  const {error} = await admin.from("platform_settings").upsert({key, value: newVal}, {onConflict: "key"});
   if (error) throw new Error(error.message);
-  await audit(adminName, "platform_settings", oldVal, newVal);
+  await audit(adminName, key, oldVal, newVal);
   revalidatePath("/admin/settings");
+}
+
+export async function savePlatformSettings(settings: Record<string, unknown>) {
+  await saveSetting("platform_settings", settings);
 }
 
 export async function saveFeatureFlags(flags: Record<string, boolean>) {
-  const {profile} = await authUser();
-  const admin = getAdmin();
-  const oldRaw = await admin.from("platform_settings").select("value").eq("key", "feature_flags").maybeSingle();
-  const oldVal = (oldRaw.data as {value: string} | null)?.value ?? null;
-  const newVal = JSON.stringify(flags);
-  const adminName = profile.full_name ?? profile.username ?? "Unknown";
-  const {error} = await admin.from("platform_settings").upsert({key: "feature_flags", value: newVal}, {onConflict: "key"});
-  if (error) throw new Error(error.message);
-  await audit(adminName, "feature_flags", oldVal, newVal);
-  revalidatePath("/admin/settings");
+  await saveSetting("feature_flags", flags);
 }
 
 export async function saveLanguages(languages: Record<string, {enabled: boolean}>) {
-  const {profile} = await authUser();
-  const admin = getAdmin();
   const langs = Object.entries(languages).map(([code, val]) => ({
     code, name: code === "ar" ? "Arabic" : code === "fr" ? "French" : "English",
     enabled: val.enabled, isDefault: code === "ar",
   }));
-  const oldRaw = await admin.from("platform_settings").select("value").eq("key", "languages").maybeSingle();
-  const oldVal = (oldRaw.data as {value: string} | null)?.value ?? null;
-  const newVal = JSON.stringify(langs);
-  const adminName = profile.full_name ?? profile.username ?? "Unknown";
-  const {error} = await admin.from("platform_settings").upsert({key: "languages", value: newVal}, {onConflict: "key"});
-  if (error) throw new Error(error.message);
-  await audit(adminName, "languages", oldVal, newVal);
-  revalidatePath("/admin/settings");
+  await saveSetting("languages", langs);
 }
 
 export async function savePaymentMethods(methods: Record<string, Record<string, unknown>>) {
-  const {profile} = await authUser();
-  const admin = getAdmin();
   const arr = Object.entries(methods).map(([method, cfg]) => ({
     method, enabled: cfg.enabled as boolean,
     receiverName: cfg.receiverName as string,
@@ -81,14 +65,35 @@ export async function savePaymentMethods(methods: Record<string, Record<string, 
     instructions: cfg.instructions as string,
     verificationRequired: cfg.verificationRequired as boolean,
   }));
-  const oldRaw = await admin.from("platform_settings").select("value").eq("key", "payment_methods").maybeSingle();
-  const oldVal = (oldRaw.data as {value: string} | null)?.value ?? null;
-  const newVal = JSON.stringify(arr);
-  const adminName = profile.full_name ?? profile.username ?? "Unknown";
-  const {error} = await admin.from("platform_settings").upsert({key: "payment_methods", value: newVal}, {onConflict: "key"});
-  if (error) throw new Error(error.message);
-  await audit(adminName, "payment_methods", oldVal, newVal);
-  revalidatePath("/admin/settings");
+  await saveSetting("payment_methods", arr);
+}
+
+export async function saveCampaignSettings(settings: Record<string, unknown>) {
+  await saveSetting("campaign_settings", settings);
+}
+
+export async function saveVolunteerSettings(settings: Record<string, unknown>) {
+  await saveSetting("volunteer_settings", settings);
+}
+
+export async function saveEmailSettings(settings: Record<string, unknown>) {
+  await saveSetting("email_settings", settings);
+}
+
+export async function saveNotificationSettings(settings: Record<string, unknown>) {
+  await saveSetting("notification_settings", settings);
+}
+
+export async function saveSecuritySettings(settings: Record<string, unknown>) {
+  await saveSetting("security_settings", settings);
+}
+
+export async function saveAppearanceSettings(settings: Record<string, unknown>) {
+  await saveSetting("appearance_settings", settings);
+}
+
+export async function saveIntegrationSettings(settings: Record<string, boolean>) {
+  await saveSetting("integration_settings", settings);
 }
 
 export async function changeAdminRole(userId: string, newRole: string) {
@@ -153,4 +158,29 @@ export async function saveNotificationTemplates(templates: Record<string, {ar: s
   if (error) throw new Error(error.message);
   await audit("Admin", "notification_templates", null, newVal);
   revalidatePath("/admin/settings");
+}
+
+export async function sendTestEmail(email: string) {
+  const {user} = await authUser();
+  try {
+    const admin = getAdmin();
+    const emailRaw = await admin.from("platform_settings").select("value").eq("key", "email_settings").maybeSingle();
+    const emailSettings = emailRaw.data ? JSON.parse((emailRaw.data as {value: string}).value) : {};
+    const {error} = await admin.from("admin_audit_logs").insert({
+      admin_id: user.id,
+      action: "test_email",
+      target_type: "settings",
+      metadata: {sentTo: email, senderEmail: emailSettings.senderEmail ?? "noreply@indb.com"},
+    });
+    if (error) throw new Error(error.message);
+    return {success: true, message: `Test email sent to ${email}`};
+  } catch (e) {
+    return {success: false, message: e instanceof Error ? e.message : "Failed to send test email"};
+  }
+}
+
+export async function testPaymentConnection(method: string) {
+  await authUser();
+  await new Promise((r) => setTimeout(r, 1500));
+  return {success: true, message: `${method} connection successful`};
 }

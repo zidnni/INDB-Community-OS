@@ -28,7 +28,6 @@ const navItems = [
   {href: "/messages", key: "messages", icon: MessageCircleMore},
   {href: "/volunteer", key: "volunteer", icon: UsersRound},
   {href: "/campaigns", key: "campaigns", icon: Megaphone},
-  {href: "/about", key: "aboutPlatform", icon: Info},
   {href: "/profile", key: "profile", icon: UserRound},
 ] as const;
 
@@ -37,6 +36,9 @@ export function Sidebar() {
   const locale = useLocale();
   const pathname = usePathname();
   const unreadCount = useUnreadConversationsCount();
+
+  // Strip locale prefix from pathname for comparison with nav hrefs
+  const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}(?:\/|$)/, "/");
 
   const isRtl = ["ar", "ff", "snk"].includes(locale);
   const brandTitle = isRtl ? "مجتمع INDB" : "INDB Community";
@@ -64,8 +66,8 @@ export function Sidebar() {
             const Icon = item.icon;
             const active =
               item.href === "/"
-                ? pathname === "/"
-                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+                ? pathWithoutLocale === "/" || pathWithoutLocale === ""
+                : pathWithoutLocale === item.href || pathWithoutLocale.startsWith(`${item.href}/`);
 
             return (
               <li key={item.href}>

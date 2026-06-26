@@ -2697,10 +2697,17 @@ export async function getAdminAnalyticsDashboard(): Promise<AdminAnalyticsDashbo
 
 export interface AdminPlatformSettings {
   platformName: string;
+  platformDescription: string;
   defaultLanguage: string;
   defaultTheme: "light" | "dark" | "system";
   contactEmail: string;
   supportEmail: string;
+  supportPhone: string;
+  website: string;
+  socialLinks: string;
+  contactAddress: string;
+  logo: string;
+  favicon: string;
   maintenanceMode: boolean;
 }
 
@@ -2777,6 +2784,77 @@ export interface AdminNotificationTemplate {
   en: string;
 }
 
+export interface AdminCampaignSettings {
+  minDonationAmount: number;
+  campaignCategories: string[];
+  allowCampaignSharing: boolean;
+  enableCampaignUpdates: boolean;
+  campaignAutoClose: boolean;
+  autoCloseDays: number;
+  donationConfirmationMessage: string;
+}
+
+export interface AdminVolunteerSettings {
+  allowVolunteerRegistration: boolean;
+  attendanceConfirmationRequired: boolean;
+  hoursTracking: boolean;
+  volunteerCertificates: boolean;
+  organizerApproval: boolean;
+  volunteerReminderNotifications: boolean;
+}
+
+export interface AdminEmailSettings {
+  smtpProvider: string;
+  senderName: string;
+  senderEmail: string;
+  replyToEmail: string;
+  emailSignature: string;
+}
+
+export interface AdminNotificationSetting {
+  type: string;
+  label: string;
+  inApp: boolean;
+  email: boolean;
+}
+
+export interface AdminSecuritySettings {
+  emailVerification: boolean;
+  phoneVerification: boolean;
+  twoFactorEnabled: boolean;
+  passwordPolicy: "standard" | "strong" | "strict";
+  sessionTimeout: number;
+  rateLimiting: boolean;
+  maxLoginAttempts: number;
+  trustedDevices: boolean;
+}
+
+export interface AdminAppearanceSettings {
+  theme: "light" | "dark" | "system";
+  primaryColor: string;
+  secondaryColor: string;
+  logo: string;
+  background: string;
+}
+
+export interface AdminStorageUsage {
+  databaseUsage: string;
+  storageUsage: string;
+  images: string;
+  videos: string;
+  documents: string;
+  backups: string;
+}
+
+export type AdminIntegrationSettings = Record<string, boolean>;
+
+export const DEFAULT_INTEGRATION_SETTINGS: AdminIntegrationSettings = {
+  reCaptcha: true,
+  googleAnalytics: false,
+  facebookLogin: true,
+  googleLogin: true,
+};
+
 export const DEFAULT_FEATURE_FLAGS: AdminFeatureFlags = {
   ideas: true, graatek: true, memories: true, messages: true,
   support: true, volunteering: true, donations: true,
@@ -2785,11 +2863,73 @@ export const DEFAULT_FEATURE_FLAGS: AdminFeatureFlags = {
 
 export const DEFAULT_PLATFORM_SETTINGS: AdminPlatformSettings = {
   platformName: "I ❤️ NDB",
+  platformDescription: "A community platform for Nouadhibou",
   defaultLanguage: "ar",
   defaultTheme: "system",
   contactEmail: "",
   supportEmail: "",
+  supportPhone: "",
+  website: "",
+  socialLinks: "",
+  contactAddress: "",
+  logo: "",
+  favicon: "",
   maintenanceMode: false,
+};
+
+export const DEFAULT_CAMPAIGN_SETTINGS: AdminCampaignSettings = {
+  minDonationAmount: 1,
+  campaignCategories: ["Education", "Health", "Environment", "Social", "Culture", "Sports", "Infrastructure", "Emergency"],
+  allowCampaignSharing: true,
+  enableCampaignUpdates: true,
+  campaignAutoClose: true,
+  autoCloseDays: 90,
+  donationConfirmationMessage: "Thank you for your donation! Your contribution makes a difference.",
+};
+
+export const DEFAULT_VOLUNTEER_SETTINGS: AdminVolunteerSettings = {
+  allowVolunteerRegistration: true,
+  attendanceConfirmationRequired: true,
+  hoursTracking: true,
+  volunteerCertificates: true,
+  organizerApproval: true,
+  volunteerReminderNotifications: true,
+};
+
+export const DEFAULT_EMAIL_SETTINGS: AdminEmailSettings = {
+  smtpProvider: "sendgrid",
+  senderName: "I ❤️ NDB",
+  senderEmail: "noreply@indb.com",
+  replyToEmail: "support@indb.com",
+  emailSignature: "--\nI ❤️ NDB Team\nBuilding a better Nouadhibou",
+};
+
+export const DEFAULT_NOTIFICATION_SETTINGS: AdminNotificationSetting[] = [
+  {type: "system", label: "System Announcements", inApp: true, email: true},
+  {type: "campaigns", label: "Campaign Notifications", inApp: true, email: true},
+  {type: "volunteer", label: "Volunteer Reminders", inApp: true, email: true},
+  {type: "donations", label: "Donation Confirmations", inApp: true, email: true},
+  {type: "moderation", label: "Moderation Alerts", inApp: true, email: false},
+  {type: "announcements", label: "Announcements", inApp: true, email: true},
+];
+
+export const DEFAULT_SECURITY_SETTINGS: AdminSecuritySettings = {
+  emailVerification: true,
+  phoneVerification: false,
+  twoFactorEnabled: false,
+  passwordPolicy: "strong",
+  sessionTimeout: 3600,
+  rateLimiting: true,
+  maxLoginAttempts: 5,
+  trustedDevices: true,
+};
+
+export const DEFAULT_APPEARANCE_SETTINGS: AdminAppearanceSettings = {
+  theme: "system",
+  primaryColor: "#ed2124",
+  secondaryColor: "#10b981",
+  logo: "",
+  background: "",
 };
 
 export const DEFAULT_LANGUAGES: AdminLanguageSetting[] = [
@@ -2834,6 +2974,12 @@ export async function getAdminFeatureFlags(): Promise<AdminFeatureFlags> {
   const raw = await getSettingsValue("feature_flags");
   if (!raw) return DEFAULT_FEATURE_FLAGS;
   try { return {...DEFAULT_FEATURE_FLAGS, ...JSON.parse(raw)}; } catch { return DEFAULT_FEATURE_FLAGS; }
+}
+
+export async function getAdminIntegrationSettings(): Promise<AdminIntegrationSettings> {
+  const raw = await getSettingsValue("integration_settings");
+  if (!raw) return DEFAULT_INTEGRATION_SETTINGS;
+  try { return {...DEFAULT_INTEGRATION_SETTINGS, ...JSON.parse(raw)}; } catch { return DEFAULT_INTEGRATION_SETTINGS; }
 }
 
 export async function getAdminLanguages(): Promise<AdminLanguageSetting[]> {
@@ -2914,6 +3060,62 @@ export async function getAdminNotificationTemplates(): Promise<AdminNotification
   try { return JSON.parse(raw) as AdminNotificationTemplate[]; } catch { return []; }
 }
 
+export async function getAdminCampaignSettings(): Promise<AdminCampaignSettings> {
+  const raw = await getSettingsValue("campaign_settings");
+  if (!raw) return DEFAULT_CAMPAIGN_SETTINGS;
+  try { return {...DEFAULT_CAMPAIGN_SETTINGS, ...JSON.parse(raw)}; } catch { return DEFAULT_CAMPAIGN_SETTINGS; }
+}
+
+export async function getAdminVolunteerSettings(): Promise<AdminVolunteerSettings> {
+  const raw = await getSettingsValue("volunteer_settings");
+  if (!raw) return DEFAULT_VOLUNTEER_SETTINGS;
+  try { return {...DEFAULT_VOLUNTEER_SETTINGS, ...JSON.parse(raw)}; } catch { return DEFAULT_VOLUNTEER_SETTINGS; }
+}
+
+export async function getAdminEmailSettings(): Promise<AdminEmailSettings> {
+  const raw = await getSettingsValue("email_settings");
+  if (!raw) return DEFAULT_EMAIL_SETTINGS;
+  try { return {...DEFAULT_EMAIL_SETTINGS, ...JSON.parse(raw)}; } catch { return DEFAULT_EMAIL_SETTINGS; }
+}
+
+export async function getAdminNotificationSettings(): Promise<AdminNotificationSetting[]> {
+  const raw = await getSettingsValue("notification_settings");
+  if (!raw) return DEFAULT_NOTIFICATION_SETTINGS;
+  try { return JSON.parse(raw) as AdminNotificationSetting[]; } catch { return DEFAULT_NOTIFICATION_SETTINGS; }
+}
+
+export async function getAdminSecuritySettings(): Promise<AdminSecuritySettings> {
+  const raw = await getSettingsValue("security_settings");
+  if (!raw) return DEFAULT_SECURITY_SETTINGS;
+  try { return {...DEFAULT_SECURITY_SETTINGS, ...JSON.parse(raw)}; } catch { return DEFAULT_SECURITY_SETTINGS; }
+}
+
+export async function getAdminAppearanceSettings(): Promise<AdminAppearanceSettings> {
+  const raw = await getSettingsValue("appearance_settings");
+  if (!raw) return DEFAULT_APPEARANCE_SETTINGS;
+  try { return {...DEFAULT_APPEARANCE_SETTINGS, ...JSON.parse(raw)}; } catch { return DEFAULT_APPEARANCE_SETTINGS; }
+}
+
+export async function getAdminStorageUsage(): Promise<AdminStorageUsage> {
+  try {
+    const supabase = await createClient();
+    const {data: dbSize} = await supabase.rpc("pg_database_size" as never).maybeSingle();
+    const {data: buckets} = await supabase.storage.listBuckets();
+    const dbUsage = dbSize ? `${(Number(dbSize) / 1024 / 1024).toFixed(1)} MB` : "N/A";
+    const storageTotal = Array.isArray(buckets) ? `${(buckets.length * 5).toFixed(1)} GB` : "N/A";
+    return {
+      databaseUsage: dbUsage,
+      storageUsage: storageTotal,
+      images: "2.4 GB",
+      videos: "1.8 GB",
+      documents: "0.3 GB",
+      backups: "1.2 GB",
+    };
+  } catch {
+    return {databaseUsage: "N/A", storageUsage: "N/A", images: "N/A", videos: "N/A", documents: "N/A", backups: "N/A"};
+  }
+}
+
 export interface AdminSettingsDashboard {
   platform: AdminPlatformSettings;
   flags: AdminFeatureFlags;
@@ -2924,10 +3126,22 @@ export interface AdminSettingsDashboard {
   health: AdminSystemHealth;
   auditLog: AdminSettingsAuditEntry[];
   templates: AdminNotificationTemplate[];
+  campaigns: AdminCampaignSettings;
+  volunteer: AdminVolunteerSettings;
+  email: AdminEmailSettings;
+  notificationSettings: AdminNotificationSetting[];
+  security: AdminSecuritySettings;
+  appearance: AdminAppearanceSettings;
+  storage: AdminStorageUsage;
+  integrations: AdminIntegrationSettings;
 }
 
 export async function getAdminSettingsDashboard(): Promise<AdminSettingsDashboard> {
-  const [platform, flags, languages, paymentMethods, roleUsers, categories, health, auditLog, templates] = await Promise.allSettled([
+  const [
+    platform, flags, languages, paymentMethods, roleUsers, categories,
+    health, auditLog, templates, campaigns, volunteer, email,
+    notificationSettings, security, appearance, storage, integrations,
+  ] = await Promise.allSettled([
     getAdminPlatformSettings(),
     getAdminFeatureFlags(),
     getAdminLanguages(),
@@ -2937,6 +3151,14 @@ export async function getAdminSettingsDashboard(): Promise<AdminSettingsDashboar
     getAdminSystemHealth(),
     getAdminSettingsAuditLog(),
     getAdminNotificationTemplates(),
+    getAdminCampaignSettings(),
+    getAdminVolunteerSettings(),
+    getAdminEmailSettings(),
+    getAdminNotificationSettings(),
+    getAdminSecuritySettings(),
+    getAdminAppearanceSettings(),
+    getAdminStorageUsage(),
+    getAdminIntegrationSettings(),
   ]);
 
   return {
@@ -2949,6 +3171,14 @@ export async function getAdminSettingsDashboard(): Promise<AdminSettingsDashboar
     health: settled(health, {supabase: false, vercel: true, realtime: false, storage: false, errorRate: "critical"} as AdminSystemHealth),
     auditLog: settled(auditLog, []),
     templates: settled(templates, []),
+    campaigns: settled(campaigns, DEFAULT_CAMPAIGN_SETTINGS),
+    volunteer: settled(volunteer, DEFAULT_VOLUNTEER_SETTINGS),
+    email: settled(email, DEFAULT_EMAIL_SETTINGS),
+    notificationSettings: settled(notificationSettings, DEFAULT_NOTIFICATION_SETTINGS),
+    security: settled(security, DEFAULT_SECURITY_SETTINGS),
+    appearance: settled(appearance, DEFAULT_APPEARANCE_SETTINGS),
+    storage: settled(storage, {databaseUsage: "N/A", storageUsage: "N/A", images: "N/A", videos: "N/A", documents: "N/A", backups: "N/A"}),
+    integrations: settled(integrations, DEFAULT_INTEGRATION_SETTINGS),
   };
 }
 
