@@ -5,7 +5,7 @@ import {useLocale, useTranslations} from "next-intl";
 import {useEffect, useMemo, useRef, useState, useTransition} from "react";
 import {toast} from "sonner";
 
-import {UserAvatar} from "@/components/layout/user-avatar";
+import {OnlineAvatar} from "@/components/presence";
 import {Button} from "@/components/ui/button";
 import {Textarea} from "@/components/ui/textarea";
 import {TranslateButton} from "@/components/shared/translate-button";
@@ -130,10 +130,10 @@ export function CommentCard({
     <div id={`comment-${commentId}`} className="flex scroll-mt-28 items-start gap-2 rounded-xl bg-muted/60 p-3 target:ring-2 target:ring-primary/40">
       {authorHref ? (
         <Link href={authorHref} className="shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/40">
-          <UserAvatar className="h-7 w-7 shrink-0" label={author} avatarUrl={authorAvatarUrl} />
+          <OnlineAvatar userId={authorId} label={author} avatarUrl={authorAvatarUrl} className="h-7 w-7" />
         </Link>
       ) : (
-        <UserAvatar className="h-7 w-7 shrink-0" label={author} avatarUrl={authorAvatarUrl} />
+        <OnlineAvatar userId={authorId} label={author} avatarUrl={authorAvatarUrl} className="h-7 w-7" />
       )}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">

@@ -5,7 +5,7 @@ import { Archive, Inbox, MessageSquare, Search } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
-import { UserAvatar } from "@/components/layout/user-avatar";
+import { OnlineAvatar } from "@/components/presence";
 import { Link, usePathname } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils/cn";
@@ -205,6 +205,7 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
             {filtered.map((conversation) => {
               const isActive = activeConvId === conversation.id;
               const isIdeaGroup = conversation.type === "idea";
+              const otherUserId = !isIdeaGroup ? conversation.other_participant?.id : undefined;
               const name = isIdeaGroup
                 ? conversation.title || conversation.idea_title || t("idea")
                 : (conversation.other_participant?.full_name ??
@@ -235,7 +236,7 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
                       isActive ? "border-primary bg-primary/[0.07]" : "border-transparent",
                     )}
                   >
-                    <UserAvatar label={name} avatarUrl={avatarUrl} className="h-10 w-10 shrink-0 md:h-11 md:w-11" />
+                    <OnlineAvatar userId={otherUserId} label={name} avatarUrl={avatarUrl} className="h-10 w-10 shrink-0 md:h-11 md:w-11" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex min-w-0 items-center gap-1.5">

@@ -13,7 +13,7 @@ import {CommentCard} from "@/components/feed/comment-card";
 import {ReactionButton, REACTIONS} from "@/components/feed/reaction-button";
 import {ReactionModal} from "@/components/feed/reaction-modal";
 import {ReactionSummary} from "@/components/shared/reaction-summary";
-import {UserAvatar} from "@/components/layout/user-avatar";
+import {OnlineAvatar} from "@/components/presence";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
@@ -347,10 +347,10 @@ export function PostCard({
             <div className="flex items-start gap-3">
               {authorProfileHref ? (
                 <Link href={authorProfileHref} className="shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/40">
-                  <UserAvatar label={authorName} avatarUrl={post.author?.avatar_url} className="h-11 w-11 shrink-0" />
+                  <OnlineAvatar userId={post.author?.id} label={authorName} avatarUrl={post.author?.avatar_url} className="h-11 w-11" />
                 </Link>
               ) : (
-                <UserAvatar label={authorName} avatarUrl={post.author?.avatar_url} className="h-11 w-11 shrink-0" />
+                <OnlineAvatar userId={post.author?.id} label={authorName} avatarUrl={post.author?.avatar_url} className="h-11 w-11" />
               )}
               <div className="space-y-1">
                 <CardTitle className="text-base leading-none sm:text-lg">

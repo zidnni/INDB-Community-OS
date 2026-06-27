@@ -6,7 +6,7 @@ import {useTranslations} from "next-intl";
 
 import {BottomSheet} from "@/components/shared/bottom-sheet";
 import {Button} from "@/components/ui/button";
-import {UserAvatar} from "@/components/layout/user-avatar";
+import {OnlineAvatar} from "@/components/presence/online-avatar";
 import {Link} from "@/lib/i18n/routing";
 import {getPostReactionDetailsAction} from "@/app/[locale]/server-actions";
 import {REACTIONS} from "@/components/feed/reaction-button";
@@ -203,10 +203,10 @@ function ReactionModalContent({
                   <div className="flex items-center gap-3">
                     {profileHref ? (
                       <Link href={profileHref} onClick={onClose} className="rounded-full focus:outline-none focus:ring-2 focus:ring-primary/40">
-                        <UserAvatar label={fullName} avatarUrl={ru.profile?.avatar_url} className="h-10 w-10 shrink-0" />
+                        <OnlineAvatar userId={ru.user_id} label={fullName} avatarUrl={ru.profile?.avatar_url} className="h-10 w-10 shrink-0" />
                       </Link>
                     ) : (
-                      <UserAvatar label={fullName} avatarUrl={ru.profile?.avatar_url} className="h-10 w-10 shrink-0" />
+                      <OnlineAvatar userId={ru.user_id} label={fullName} avatarUrl={ru.profile?.avatar_url} className="h-10 w-10 shrink-0" />
                     )}
                     <div>
                       {profileHref ? (

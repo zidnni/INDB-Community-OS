@@ -56,7 +56,7 @@ export default async function FeedPage({
 
   return (
     <div className="space-y-3 sm:space-y-4">
-      <CreatePostCard avatarUrl={profile?.avatar_url} profileName={profileName} />
+      <CreatePostCard avatarUrl={profile?.avatar_url} profileName={profileName} userId={user?.id} />
 
       {posts.length > 0 ? (
         <div className="space-y-3 sm:space-y-4">

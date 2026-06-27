@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-import { UserAvatar } from "@/components/layout/user-avatar";
+import { OnlineAvatar, OnlineDot } from "@/components/presence";
 import { uploadMediaItem } from "@/lib/images/client-upload";
 import { Link, useRouter } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
@@ -85,9 +85,10 @@ interface ConversationAvatarProps {
   isGroup: boolean;
   memberFallback: string;
   className?: string;
+  otherUserId?: string | null;
 }
 
-function ConversationAvatar({ title, imageUrl, participants, isGroup, memberFallback, className }: ConversationAvatarProps) {
+function ConversationAvatar({ title, imageUrl, participants, isGroup, memberFallback, className, otherUserId }: ConversationAvatarProps) {
   if (imageUrl) {
     return (
       <img
@@ -103,8 +104,9 @@ function ConversationAvatar({ title, imageUrl, participants, isGroup, memberFall
     return (
       <div className={cn("relative shrink-0 rounded-full bg-muted", className)}>
         {shown.map((participant, index) => (
-          <UserAvatar
+          <OnlineAvatar
             key={participant.user_id}
+            userId={participant.user?.id}
             label={displayName(participant.user, memberFallback)}
             avatarUrl={participant.user?.avatar_url ?? null}
             className={cn(
@@ -119,7 +121,7 @@ function ConversationAvatar({ title, imageUrl, participants, isGroup, memberFall
     );
   }
 
-  return <UserAvatar label={title} avatarUrl={null} className={className} />;
+  return <OnlineAvatar userId={otherUserId} label={title} avatarUrl={null} className={className} />;
 }
 
 interface ConversationChatProps {
@@ -185,6 +187,8 @@ export function ConversationChat({
   const groupImageInputRef = useRef<HTMLInputElement>(null);
 
   const isIdeaGroup = conversationType === "idea";
+  const otherParticipant = participants.find((p) => p.user_id !== currentUserId)?.user;
+  const otherUserId = otherParticipant?.id;
   const currentParticipant = participants.find((p) => p.user_id === currentUserId);
   const isAdmin = currentParticipant?.role === "admin";
   const effectiveMemberCount = participants.length || memberCount || 0;
@@ -630,6 +634,7 @@ export function ConversationChat({
               participants={participants}
               isGroup={isIdeaGroup}
               memberFallback={memberFallback}
+              otherUserId={otherUserId}
               className="h-9 w-9 md:h-10 md:w-10"
             />
             <div className="min-w-0 flex-1">
@@ -690,7 +695,8 @@ export function ConversationChat({
                           className="block rounded-full outline-none ring-primary/40 focus-visible:ring-2"
                           aria-label={t("groupChat.openProfile", { name: senderName })}
                         >
-                          <UserAvatar
+                          <OnlineAvatar
+                            userId={sender?.id}
                             label={senderName}
                             avatarUrl={sender?.avatar_url ?? null}
                             className="h-7 w-7 md:h-9 md:w-9"
@@ -698,7 +704,8 @@ export function ConversationChat({
                         </Link>
                       )}
                       {isFirstInGroup && !senderProfileHref && (
-                        <UserAvatar
+                        <OnlineAvatar
+                          userId={sender?.id}
                           label={senderName}
                           avatarUrl={sender?.avatar_url ?? null}
                           className="h-7 w-7 md:h-9 md:w-9"
@@ -1022,10 +1029,10 @@ export function ConversationChat({
                               className="shrink-0 rounded-full outline-none ring-primary/40 focus-visible:ring-2"
                               aria-label={t("groupChat.openProfile", { name })}
                             >
-                              <UserAvatar label={name} avatarUrl={participant.user?.avatar_url ?? null} className="h-11 w-11" />
+                              <OnlineAvatar userId={participant.user?.id} label={name} avatarUrl={participant.user?.avatar_url ?? null} className="h-11 w-11" />
                             </Link>
                           ) : (
-                            <UserAvatar label={name} avatarUrl={participant.user?.avatar_url ?? null} className="h-11 w-11" />
+                            <OnlineAvatar userId={participant.user?.id} label={name} avatarUrl={participant.user?.avatar_url ?? null} className="h-11 w-11" />
                           )}
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-medium text-foreground">

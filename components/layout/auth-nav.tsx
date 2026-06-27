@@ -4,7 +4,7 @@ import {LogOut} from "lucide-react";
 import {useTranslations} from "next-intl";
 import {useFormStatus} from "react-dom";
 
-import {UserAvatar} from "@/components/layout/user-avatar";
+import {OnlineAvatar} from "@/components/presence/online-avatar";
 import {Button} from "@/components/ui/button";
 import {Link} from "@/lib/i18n/routing";
 import {signOutAction} from "@/app/[locale]/server-actions";
@@ -19,7 +19,7 @@ function LogoutButton({label, loading}: {label: string; loading: string}) {
   );
 }
 
-export function AuthNav({locale, isLoggedIn, avatarUrl, profileName}: {locale: string; isLoggedIn: boolean; avatarUrl?: string | null; profileName?: string}) {
+export function AuthNav({locale, isLoggedIn, avatarUrl, profileName, userId}: {locale: string; isLoggedIn: boolean; avatarUrl?: string | null; profileName?: string; userId?: string | null}) {
   const t = useTranslations("Navbar");
 
   if (!isLoggedIn) {
@@ -43,7 +43,7 @@ export function AuthNav({locale, isLoggedIn, avatarUrl, profileName}: {locale: s
     <div className="flex items-center gap-1">
       <Link href="/profile">
         <Button variant="ghost" size="icon" className="rounded-full">
-          <UserAvatar label={profileName ?? "?"} avatarUrl={avatarUrl} className="h-9 w-9" />
+          <OnlineAvatar userId={userId} label={profileName ?? "?"} avatarUrl={avatarUrl} className="h-9 w-9" />
         </Button>
       </Link>
       <form action={signOutAction}>

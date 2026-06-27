@@ -27,6 +27,7 @@ import type {CommunityImpactStats} from "@/lib/data/community-impact";
 import type {CommentWithAuthor, FadlaWithOwner, IdeaWithAuthor, MemoryWithContributor, PostWithAuthor, ProfileEducationRow, ProfileHobbyRow, ProfileInterestRow, ProfileLinkRow, ProfileTravelRow, ProfileWorkRow, ProfileWithCounts} from "@/types/database";
 
 import {CommunityRecognition} from "./community-recognition";
+import {OnlineDot} from "@/components/presence";
 import {ProfileAbout} from "./profile-about";
 import {ProfileCompleteness} from "./profile-completeness";
 
@@ -166,24 +167,27 @@ export function ProfileClient({
             <div className="flex flex-col sm:flex-row sm:items-end sm:gap-5">
               <div className="-mt-16 sm:-mt-20 z-20 flex shrink-0 justify-center sm:justify-start">
                 <button onClick={() => setEditModalOpen(true)} className="group relative inline-block">
-                  {profileData.avatar_url ? (
-                    <Image
-                      src={profileData.avatar_url}
-                      alt={displayName}
-                      width={160}
-                      height={160}
-                      className="h-32 w-32 rounded-full border-4 border-card object-cover shadow-lg sm:h-40 sm:w-40"
-                    />
-                  ) : (
-                    <div className="relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-card bg-muted sm:h-40 sm:w-40">
-                      <div className="absolute inset-0 flex items-center justify-center opacity-[0.08] dark:opacity-[0.05]">
-                        <Image src="/images/logondb.jpeg" alt="" fill sizes="120px" className="object-contain p-5" />
+                  <div className="relative inline-flex">
+                    {profileData.avatar_url ? (
+                      <Image
+                        src={profileData.avatar_url}
+                        alt={displayName}
+                        width={160}
+                        height={160}
+                        className="h-32 w-32 rounded-full border-4 border-card object-cover shadow-lg sm:h-40 sm:w-40"
+                      />
+                    ) : (
+                      <div className="relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-card bg-muted sm:h-40 sm:w-40">
+                        <div className="absolute inset-0 flex items-center justify-center opacity-[0.08] dark:opacity-[0.05]">
+                          <Image src="/images/logondb.jpeg" alt="" fill sizes="120px" className="object-contain p-5" />
+                        </div>
+                        <span className="relative select-none text-3xl font-bold tracking-wider text-primary/20 dark:text-primary/[0.12] sm:text-4xl">
+                          {initials}
+                        </span>
                       </div>
-                      <span className="relative select-none text-3xl font-bold tracking-wider text-primary/20 dark:text-primary/[0.12] sm:text-4xl">
-                        {initials}
-                      </span>
-                    </div>
-                  )}
+                    )}
+                    <OnlineDot userId={profileData.id} className="h-4 w-4 border-[3px] sm:h-5 sm:w-5" />
+                  </div>
                   <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/0 transition group-hover:bg-black/30">
                     <div className="flex h-9 w-9 items-center justify-center rounded-full bg-background/80 opacity-0 transition group-hover:opacity-100">
                       <Pencil size={15} className="text-foreground" />

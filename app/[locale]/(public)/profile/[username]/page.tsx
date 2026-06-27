@@ -8,6 +8,7 @@ import {getTranslations} from "next-intl/server";
 import {ProfileCompleteness} from "@/components/profile/profile-completeness";
 import {ProfileTabsContent} from "@/components/profile/profile-tabs-content";
 import {FollowSummary} from "@/components/profile/follow-summary";
+import {OnlineDot} from "@/components/presence";
 import {CommunityRecognition} from "@/components/profile/community-recognition";
 import {Badge} from "@/components/ui/badge";
 import {Card, CardContent} from "@/components/ui/card";
@@ -220,19 +221,22 @@ export default async function PublicProfilePage({
           {/* Avatar + Name row */}
           <div className="flex flex-col sm:flex-row sm:items-end sm:gap-5">
             <div className="-mt-16 sm:-mt-20 z-10 flex shrink-0 justify-center sm:justify-start">
-              {profile.avatar_url ? (
-                <Image
-                  src={profile.avatar_url}
-                  alt={displayName}
-                  width={160}
-                  height={160}
-                  className="h-32 w-32 rounded-full border-4 border-card object-cover shadow-lg sm:h-40 sm:w-40"
-                />
-              ) : (
-                <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-card bg-muted text-3xl font-bold shadow-lg sm:h-40 sm:w-40 sm:text-4xl">
-                  {initials}
-                </div>
-              )}
+              <div className="relative inline-flex">
+                {profile.avatar_url ? (
+                  <Image
+                    src={profile.avatar_url}
+                    alt={displayName}
+                    width={160}
+                    height={160}
+                    className="h-32 w-32 rounded-full border-4 border-card object-cover shadow-lg sm:h-40 sm:w-40"
+                  />
+                ) : (
+                  <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-card bg-muted text-3xl font-bold shadow-lg sm:h-40 sm:w-40 sm:text-4xl">
+                    {initials}
+                  </div>
+                )}
+                <OnlineDot userId={profile.id} className="h-4 w-4 border-[3px] sm:h-5 sm:w-5" />
+              </div>
             </div>
 
             <div className="mt-3 flex-1 text-center sm:mt-0 sm:text-start">

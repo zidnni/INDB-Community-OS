@@ -19,6 +19,7 @@ import {ThemeProvider} from "@/components/layout/theme-provider";
 import {routing} from "@/lib/i18n/routing";
 import {stripLocale} from "@/lib/i18n/paths";
 import {getSupportNavCounts} from "@/lib/data/support";
+import {PresenceProvider} from "@/components/presence";
 import {cn} from "@/lib/utils/cn";
 
 function getLanguageAlternates(pathname = "") {
@@ -94,6 +95,7 @@ export default async function LocaleLayout({
         <Suspense fallback={null}>
           <ToastHandler />
         </Suspense>
+        <PresenceProvider>
         <div
           dir={isRtl ? "rtl" : "ltr"}
           className={cn(
@@ -138,6 +140,7 @@ export default async function LocaleLayout({
             </>
           )}
         </div>
+      </PresenceProvider>
       </NextIntlClientProvider>
     </ThemeProvider>
   );

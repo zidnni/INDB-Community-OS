@@ -6,7 +6,7 @@ import {useCallback, useEffect, useRef, useState} from "react";
 import type {RealtimeChannel} from "@supabase/supabase-js";
 
 import {sendFadlaMessageAction} from "@/app/[locale]/server-actions";
-import {UserAvatar} from "@/components/layout/user-avatar";
+import {OnlineAvatar} from "@/components/presence/online-avatar";
 import {Button} from "@/components/ui/button";
 import {createClient} from "@/lib/supabase/client";
 import type {FadlaRequestMessageRow, FadlaRequestMessageWithSender} from "@/types/database";
@@ -19,6 +19,7 @@ interface Props {
   currentUserAvatarUrl?: string | null;
   conversationWithName?: string | null;
   conversationWithAvatarUrl?: string | null;
+  conversationWithUserId?: string | null;
   locale: string;
   initialMessages: FadlaRequestMessageWithSender[];
   status: string;
@@ -56,6 +57,7 @@ export function FadlaDiscussion({
   currentUserAvatarUrl,
   conversationWithName,
   conversationWithAvatarUrl,
+  conversationWithUserId,
   locale,
   initialMessages,
   status: initialStatus,
@@ -417,10 +419,11 @@ export function FadlaDiscussion({
             </div>
           ) : (
             <div className="flex w-full max-w-[82%] items-start gap-2.5 sm:max-w-[75%]">
-              <UserAvatar
+              <OnlineAvatar
+                userId={msg.sender_id}
                 label={senderName}
                 avatarUrl={msg.sender_avatar_url}
-                className="mt-5 size-9 shrink-0 text-[10px]"
+                className="mt-5 size-9 shrink-0"
               />
               <div className="flex min-w-0 flex-1 flex-col items-start">
                 <p className="mb-1 max-w-full truncate px-1 text-xs font-semibold leading-none text-foreground" dir="auto">
@@ -449,10 +452,11 @@ export function FadlaDiscussion({
   function renderConversationHeader() {
     return (
       <div className="mb-3 flex items-center gap-3 rounded-2xl border border-border/70 bg-card px-3.5 py-3 shadow-sm" dir={rtl ? "rtl" : "ltr"}>
-        <UserAvatar
+        <OnlineAvatar
+          userId={conversationWithUserId ?? firstReceivedMessage?.sender_id}
           label={activeConversationName}
           avatarUrl={activeConversationAvatarUrl}
-          className="size-10 shrink-0 text-[11px]"
+          className="size-10 shrink-0"
         />
         <div className="min-w-0">
           <p className="text-xs leading-tight text-muted-foreground">{conversationLabel}</p>

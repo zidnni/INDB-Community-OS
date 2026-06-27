@@ -8,7 +8,7 @@ import {useEffect, useRef, useState} from "react";
 import {toast} from "sonner";
 
 import {MemoryActions} from "@/components/memory/memory-actions";
-import {UserAvatar} from "@/components/layout/user-avatar";
+import {OnlineAvatar} from "@/components/presence";
 import {useContentScroll} from "@/hooks/use-content-scroll";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
@@ -199,10 +199,10 @@ export function MemoryCard({
           <div className="flex items-start gap-3 text-start">
             {authorProfileHref ? (
               <Link href={authorProfileHref} className="shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/40">
-                <UserAvatar label={contributorName} avatarUrl={memory.contributor?.avatar_url} className="h-10 w-10 shrink-0" />
+                <OnlineAvatar userId={memory.contributor?.id} label={contributorName} avatarUrl={memory.contributor?.avatar_url} className="h-10 w-10" />
               </Link>
             ) : (
-              <UserAvatar label={contributorName} avatarUrl={memory.contributor?.avatar_url} className="h-10 w-10 shrink-0" />
+              <OnlineAvatar userId={memory.contributor?.id} label={contributorName} avatarUrl={memory.contributor?.avatar_url} className="h-10 w-10" />
             )}
             <div className="min-w-0 space-y-1">
               <CardTitle className="truncate text-sm leading-none sm:text-base">

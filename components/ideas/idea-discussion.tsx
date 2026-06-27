@@ -6,7 +6,7 @@ import {useCallback, useEffect, useRef, useState} from "react";
 import type {RealtimeChannel} from "@supabase/supabase-js";
 
 import {sendIdeaMessageAction} from "@/app/[locale]/server-actions";
-import {UserAvatar} from "@/components/layout/user-avatar";
+import {OnlineAvatar} from "@/components/presence/online-avatar";
 import {Button} from "@/components/ui/button";
 import {createClient} from "@/lib/supabase/client";
 import type {IdeaMessageRow, IdeaMessageWithSender} from "@/types/database";
@@ -18,6 +18,7 @@ interface Props {
   currentUserAvatarUrl?: string | null;
   conversationWithName?: string | null;
   conversationWithAvatarUrl?: string | null;
+  conversationWithUserId?: string | null;
   locale: string;
   initialMessages: IdeaMessageWithSender[];
 }
@@ -67,6 +68,7 @@ export function IdeaDiscussion({
   currentUserAvatarUrl,
   conversationWithName,
   conversationWithAvatarUrl,
+  conversationWithUserId,
   locale,
   initialMessages,
 }: Props) {
@@ -378,10 +380,11 @@ export function IdeaDiscussion({
             }`}
           >
             {!isMine && (
-              <UserAvatar
+              <OnlineAvatar
+                userId={msg.sender_id}
                 label={senderName}
                 avatarUrl={msg.sender_avatar_url}
-                className="mt-5 size-9 shrink-0 text-[10px]"
+                className="mt-5 size-9 shrink-0"
               />
             )}
             <div className={`flex min-w-0 flex-col ${isMine ? "items-end" : "items-start"}`}>
@@ -424,10 +427,11 @@ export function IdeaDiscussion({
   function renderConversationHeader() {
     return (
       <div className="mb-3 flex items-center gap-2.5 rounded-xl border border-border/60 bg-card px-3 py-2.5" dir={rtl ? "rtl" : "ltr"}>
-        <UserAvatar
+        <OnlineAvatar
+          userId={conversationWithUserId ?? firstReceivedMessage?.sender_id}
           label={activeConversationName}
           avatarUrl={activeConversationAvatarUrl}
-          className="size-9 shrink-0 text-[10px]"
+          className="size-10 shrink-0"
         />
         <div className="min-w-0">
           <p className="text-[11px] leading-tight text-muted-foreground">{conversationLabel}</p>

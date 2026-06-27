@@ -20,7 +20,7 @@ import {
 } from "@/app/[locale]/server-actions";
 import {TranslateButton} from "@/components/shared/translate-button";
 import {detectContentLanguage, type ContentLanguage} from "@/lib/i18n/detectContentLanguage";
-import {UserAvatar} from "@/components/layout/user-avatar";
+import {OnlineAvatar} from "@/components/presence";
 import {Link, useRouter} from "@/lib/i18n/routing";
 import {createClient} from "@/lib/supabase/client";
 import {cn} from "@/lib/utils/cn";
@@ -335,17 +335,19 @@ export function IdeaComments({
                       <div key={comment.id} id={`comment-${comment.id}`} className="flex min-w-0 scroll-mt-28 gap-2.5 text-start target:rounded-xl target:ring-2 target:ring-primary/40">
                         {authorHref ? (
                           <Link href={authorHref} className="mt-0.5 shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/40">
-                            <UserAvatar
+                            <OnlineAvatar
+                              userId={comment.author?.id}
                               label={commentAuthorName}
                               avatarUrl={comment.author?.avatar_url}
-                              className="h-7 w-7 shrink-0"
+                              className="h-7 w-7"
                             />
                           </Link>
                         ) : (
-                          <UserAvatar
+                          <OnlineAvatar
+                            userId={comment.author?.id}
                             label={commentAuthorName}
                             avatarUrl={comment.author?.avatar_url}
-                            className="mt-0.5 h-7 w-7 shrink-0"
+                            className="mt-0.5 h-7 w-7"
                           />
                         )}
                         <div className="min-w-0 flex-1">

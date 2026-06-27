@@ -27,7 +27,7 @@ import {
   requestFadlaItemAction,
   shareCommunityShareAction,
 } from '@/app/[locale]/server-actions';
-import { UserAvatar } from '@/components/layout/user-avatar';
+import { OnlineAvatar } from '@/components/presence/online-avatar';
 import { MediaCarousel } from '@/components/media/media-carousel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -497,10 +497,11 @@ export function FadlaCard({
         {/* Owner row + primary action */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
-            <UserAvatar
+            <OnlineAvatar
+              userId={item.owner?.id}
               label={ownerName}
               avatarUrl={item.owner?.avatar_url}
-              className="size-8 shrink-0 text-[9px]"
+              className="size-8 shrink-0"
             />
             <span className="min-w-0">
               <span className="block truncate text-[13px] font-semibold leading-tight">{ownerName}</span>
@@ -577,10 +578,11 @@ export function FadlaCard({
                       className="space-y-2.5 rounded-xl border border-border/70 bg-card p-3"
                     >
                       <div className="flex items-start gap-2.5">
-                        <UserAvatar
+                        <OnlineAvatar
+                          userId={request.requester?.id}
                           label={request.requester?.full_name ?? request.requester?.username ?? '?'}
                           avatarUrl={request.requester?.avatar_url}
-                          className="size-8 shrink-0 text-[9px]"
+                          className="size-8 shrink-0"
                         />
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-1.5">
@@ -650,10 +652,11 @@ export function FadlaCard({
             {acceptedRequest && (
               <div className="rounded-xl border border-green-200/70 bg-green-50/50 p-3 dark:border-green-900/40 dark:bg-green-950/10">
                 <div className="flex items-center gap-2.5">
-                  <UserAvatar
+                  <OnlineAvatar
+                    userId={acceptedRequest.requester?.id}
                     label={acceptedRequesterName}
                     avatarUrl={acceptedRequest.requester?.avatar_url}
-                    className="size-8 shrink-0 text-[9px]"
+                    className="size-8 shrink-0"
                   />
                   <div className="min-w-0">
                     <p className="truncate text-[13px] font-semibold text-green-900 dark:text-green-100">

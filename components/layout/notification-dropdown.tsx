@@ -18,7 +18,7 @@ import {useEffect, useRef, useState} from "react";
 import {createPortal} from "react-dom";
 import {useTranslations} from "next-intl";
 
-import {UserAvatar} from "@/components/layout/user-avatar";
+import {OnlineAvatar} from "@/components/presence/online-avatar";
 import {Button} from "@/components/ui/button";
 import {createClient} from "@/lib/supabase/client";
 import {useRouter} from "@/lib/i18n/routing";
@@ -512,7 +512,8 @@ export function NotificationDropdown({
         }`}
       >
         <div className="relative shrink-0">
-          <UserAvatar
+          <OnlineAvatar
+            userId={n.actor?.id}
             label={displayName}
             avatarUrl={displayAvatarUrl}
             className="h-10 w-10"

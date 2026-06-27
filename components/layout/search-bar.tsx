@@ -4,7 +4,7 @@ import {Archive, Gift, Lightbulb, Loader2, Newspaper, Search, UserRound, X} from
 import {useLocale, useTranslations} from "next-intl";
 import {useEffect, useMemo, useRef, useState} from "react";
 
-import {UserAvatar} from "@/components/layout/user-avatar";
+import {OnlineAvatar} from "@/components/presence/online-avatar";
 import {Input} from "@/components/ui/input";
 import type {GlobalSearchResults, SearchResultItem, SearchResultType} from "@/lib/data/search";
 
@@ -171,7 +171,8 @@ export function SearchBar() {
                     className="flex w-full items-start gap-3 px-4 py-3 text-start transition hover:bg-muted/70"
                   >
                     {result.type === "profile" ? (
-                      <UserAvatar
+                      <OnlineAvatar
+                        userId={result.id}
                         label={result.title}
                         avatarUrl={result.avatarUrl}
                         className="h-10 w-10 shrink-0 text-xs"

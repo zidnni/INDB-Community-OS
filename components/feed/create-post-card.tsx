@@ -5,7 +5,7 @@ import {ImagePlus, X} from "lucide-react";
 import {useLocale, useTranslations} from "next-intl";
 import {toast} from "sonner";
 
-import {UserAvatar} from "@/components/layout/user-avatar";
+import {OnlineAvatar} from "@/components/presence/online-avatar";
 import {MediaUpload, type MediaItem} from "@/components/shared/media-upload";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent} from "@/components/ui/card";
@@ -30,7 +30,7 @@ function SubmitButton({label, loading, pending}: {label: string; loading: string
   );
 }
 
-export function CreatePostCard({avatarUrl, profileName}: {avatarUrl?: string | null; profileName?: string}) {
+export function CreatePostCard({avatarUrl, profileName, userId}: {avatarUrl?: string | null; profileName?: string; userId?: string | null}) {
   const t = useTranslations("FeedComposer");
   const toastT = useTranslations("Toasts");
   const imageUploadT = useTranslations("ImageUpload");
@@ -95,7 +95,7 @@ export function CreatePostCard({avatarUrl, profileName}: {avatarUrl?: string | n
       <Card id="create-post" className="border-border/70">
         <CardContent className="space-y-3 p-4 sm:space-y-4 sm:p-5">
           <div className="flex items-start gap-3">
-            <UserAvatar label={profileName ?? "?"} avatarUrl={avatarUrl} className="h-11 w-11 shrink-0" />
+            <OnlineAvatar userId={userId} label={profileName ?? "?"} avatarUrl={avatarUrl} className="h-11 w-11 shrink-0" />
             <button
               type="button"
               onClick={() => setShowForm(true)}
@@ -140,7 +140,7 @@ export function CreatePostCard({avatarUrl, profileName}: {avatarUrl?: string | n
           <input type="hidden" name="type" value="community" />
 
           <div className="flex items-start gap-3">
-            <UserAvatar label={profileName ?? "?"} avatarUrl={avatarUrl} className="mt-1 h-11 w-11 shrink-0" />
+            <OnlineAvatar userId={userId} label={profileName ?? "?"} avatarUrl={avatarUrl} className="mt-1 h-11 w-11 shrink-0" />
             <Textarea
               name="content"
               placeholder={placeholder}

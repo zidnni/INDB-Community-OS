@@ -66,7 +66,7 @@ export async function Navbar({locale}: {locale: string}) {
               <NotificationDropdown locale={locale} initialUnreadCount={initialUnreadCount} />
               <LanguageSwitcher />
               <ThemeToggle />
-              <AuthNav locale={locale} isLoggedIn={isLoggedIn} avatarUrl={avatarUrl} profileName={profileName} />
+              <AuthNav locale={locale} isLoggedIn={isLoggedIn} avatarUrl={avatarUrl} profileName={profileName} userId={data.user?.id} />
             </div>
           </div>
         ) : (
