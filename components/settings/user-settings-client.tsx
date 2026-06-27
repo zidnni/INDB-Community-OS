@@ -7,7 +7,6 @@ import {useSearchParams} from "next/navigation";
 import {useTheme} from "next-themes";
 import {toast} from "sonner";
 import {
-  Accessibility,
   AlertCircle,
   AlertTriangle,
   ArrowLeft,
@@ -34,6 +33,7 @@ import {
   Shield,
   Sparkles,
   Sun,
+  TextIcon,
   Trash2,
   UserRound,
 } from "lucide-react";
@@ -94,7 +94,6 @@ const sectionKeys = [
   "privacy",
   "recognition",
   "security",
-  "accessibility",
   "about",
   "actions",
 ] as const;
@@ -119,7 +118,6 @@ const sectionIcons = {
   privacy: Shield,
   recognition: Heart,
   security: Lock,
-  accessibility: Accessibility,
   about: Info,
   actions: AlertTriangle,
 };
@@ -150,7 +148,6 @@ function labelsFor(locale: string) {
       privacy: "الخصوصية",
       recognition: "التقدير المجتمعي",
       security: "الأمان",
-      accessibility: "إمكانية الوصول",
       about: "حول",
       actions: "إجراءات الحساب",
     },
@@ -171,6 +168,12 @@ function labelsFor(locale: string) {
       light: "نهاري",
       dark: "ليلي",
       system: "حسب النظام",
+      fontSize: "حجم الخط",
+      small: "صغير",
+      medium: "متوسط",
+      large: "كبير",
+      highContrast: "تباين عالٍ",
+      reduceAnimations: "تقليل الحركة",
     },
     notifications: {
       inApp: "داخل التطبيق",
@@ -248,14 +251,6 @@ function labelsFor(locale: string) {
       verifyPhoneAction: "توثيق رقم الهاتف",
       verifyEmailAction: "توثيق البريد الإلكتروني",
     },
-    accessibility: {
-      fontSize: "حجم الخط",
-      small: "صغير",
-      medium: "متوسط",
-      large: "كبير",
-      highContrast: "تباين عالٍ",
-      reduceAnimations: "تقليل الحركة",
-    },
     about: {
       version: "إصدار المنصة",
       privacy: "سياسة الخصوصية",
@@ -301,7 +296,6 @@ function labelsFor(locale: string) {
       privacy: "Confidentialité",
       recognition: "Reconnaissance",
       security: "Sécurité",
-      accessibility: "Accessibilité",
       about: "À propos",
       actions: "Actions du compte",
     },
@@ -322,6 +316,12 @@ function labelsFor(locale: string) {
       light: "Clair",
       dark: "Sombre",
       system: "Système",
+      fontSize: "Taille du texte",
+      small: "Petit",
+      medium: "Moyen",
+      large: "Grand",
+      highContrast: "Contraste élevé",
+      reduceAnimations: "Réduire les animations",
     },
     notifications: {
       inApp: "Dans l'application",
@@ -399,14 +399,6 @@ function labelsFor(locale: string) {
       verifyPhoneAction: "Vérifier le téléphone",
       verifyEmailAction: "Vérifier l'e-mail",
     },
-    accessibility: {
-      fontSize: "Taille du texte",
-      small: "Petit",
-      medium: "Moyen",
-      large: "Grand",
-      highContrast: "Contraste élevé",
-      reduceAnimations: "Réduire les animations",
-    },
     about: {
       version: "Version de la plateforme",
       privacy: "Politique de confidentialité",
@@ -452,7 +444,6 @@ function labelsFor(locale: string) {
       privacy: "Privacy",
       recognition: "Community recognition",
       security: "Security",
-      accessibility: "Accessibility",
       about: "About",
       actions: "Account actions",
     },
@@ -473,6 +464,12 @@ function labelsFor(locale: string) {
       light: "Light",
       dark: "Dark",
       system: "System",
+      fontSize: "Font size",
+      small: "Small",
+      medium: "Medium",
+      large: "Large",
+      highContrast: "High contrast",
+      reduceAnimations: "Reduce animations",
     },
     notifications: {
       inApp: "In-app",
@@ -549,14 +546,6 @@ function labelsFor(locale: string) {
       emailNotVerified: "Your email address is not verified.",
       verifyPhoneAction: "Verify Phone",
       verifyEmailAction: "Verify Email",
-    },
-    accessibility: {
-      fontSize: "Font size",
-      small: "Small",
-      medium: "Medium",
-      large: "Large",
-      highContrast: "High contrast",
-      reduceAnimations: "Reduce animations",
     },
     about: {
       version: "Platform version",
@@ -790,10 +779,10 @@ export function UserSettingsClient({
     }
   }
 
-  function setPreference<K extends keyof typeof preferences>(key: K, value: (typeof preferences)[K]) {
+  function setPreference<K extends keyof typeof preferences>(key: K, value: (typeof preferences)[K], showToast = false) {
     const nextPreferences = {...preferences, [key]: value};
     setPreferences(nextPreferences);
-    void persistPreferences(nextPreferences);
+    void persistPreferences(nextPreferences, showToast);
   }
 
   function savePrivacyPreference<K extends keyof typeof preferences>(
@@ -1165,43 +1154,32 @@ export function UserSettingsClient({
           </SectionCard>
 
           <SectionCard id="appearance" title={labels.sections.appearance} icon={Palette} visible={selectedSection === "appearance"}>
-            <div className="grid gap-4 lg:grid-cols-2">
-              <div className="rounded-2xl border border-border/70 bg-muted/25 p-3">
-                <label className="mb-2 flex items-center gap-2 text-sm font-black" htmlFor="settings-language">
-                  <Languages size={18} className="text-primary" />
-                  {labels.appearance.language}
-                </label>
-                <select
-                  id="settings-language"
-                  value={preferences.language}
-                  onChange={(event) => changeLanguage(event.target.value)}
-                  className="h-12 w-full rounded-xl border border-border bg-card px-3 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/30"
+            <div className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/70">
+              <div className="flex min-h-15 items-center justify-between gap-3 px-4 py-3">
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary"><Languages size={17} /></span>
+                  <span className="text-sm font-bold">{labels.appearance.language}</span>
+                </span>
+                <select value={preferences.language} onChange={(event) => changeLanguage(event.target.value)}
+                  className="h-10 rounded-xl border border-border bg-transparent px-3 text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                 >
                   {routing.locales.map((item) => (
-                    <option key={item} value={item}>
-                      {localeLabels[item]}
-                    </option>
+                    <option key={item} value={item}>{localeLabels[item]}</option>
                   ))}
                 </select>
               </div>
-              <div className="rounded-2xl border border-border/70 bg-muted/25 p-3">
-                <p className="mb-2 flex items-center gap-2 text-sm font-black">
-                  <Globe2 size={18} className="text-primary" />
-                  {labels.appearance.theme}
-                </p>
-                <div className="grid grid-cols-3 gap-2 rounded-2xl bg-muted p-1">
+              <div className="px-4 py-3">
+                <span className="flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary"><Globe2 size={17} /></span>
+                  <span className="text-sm font-bold">{labels.appearance.theme}</span>
+                </span>
+                <div className="mt-2 grid grid-cols-3 gap-2 rounded-2xl bg-muted p-1">
                   {themeOptions.map((option) => {
                     const Icon = option.icon;
                     const active = preferences.theme === option.value || (!preferences.theme && theme === option.value);
                     return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => changeTheme(option.value)}
-                        className={cn(
-                          "flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-xs font-black transition",
-                          active ? "bg-card text-foreground shadow-sm" : "text-muted-foreground",
-                        )}
+                      <button key={option.value} type="button" onClick={() => changeTheme(option.value)}
+                        className={cn("flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-xs font-black transition", active ? "bg-card text-foreground shadow-sm" : "text-muted-foreground")}
                       >
                         <Icon size={17} />
                         {option.label}
@@ -1210,11 +1188,18 @@ export function UserSettingsClient({
                   })}
                 </div>
               </div>
+              <div className="flex flex-wrap gap-2 px-4 py-3">
+                {(["small", "medium", "large"] as UserFontSizePreference[]).map((size) => (
+                  <button key={size} type="button" onClick={() => setPreference("fontSize", size, true)}
+                    className={cn("min-h-11 flex-1 rounded-xl border px-4 text-sm font-black transition", preferences.fontSize === size ? "border-primary bg-primary/10 text-primary" : "border-border bg-muted/25")}
+                  >
+                    {labels.appearance[size]}
+                  </button>
+                ))}
+              </div>
+              <Toggle checked={preferences.reduceAnimations} onChange={(value) => setPreference("reduceAnimations", value, true)} label={`🎞 ${labels.appearance.reduceAnimations}`} />
+              <Toggle checked={preferences.highContrast} onChange={(value) => setPreference("highContrast", value, true)} label={`🌓 ${labels.appearance.highContrast}`} />
             </div>
-            <Button onClick={savePreferences} disabled={isPending || preferencesSaving} className="mt-4 w-full gap-2 sm:w-auto">
-              <Save size={17} />
-              {isPending || preferencesSaving ? labels.saving : labels.save}
-            </Button>
           </SectionCard>
 
           <SectionCard id="notifications" title={labels.sections.notifications} icon={Bell} visible={selectedSection === "notifications"}>
@@ -1403,32 +1388,6 @@ export function UserSettingsClient({
                 </div>
               </div>
             )}
-          </SectionCard>
-
-          <SectionCard id="accessibility" title={labels.sections.accessibility} icon={Accessibility} visible={selectedSection === "accessibility"}>
-            <div className="grid gap-3 lg:grid-cols-3">
-              {(["small", "medium", "large"] as UserFontSizePreference[]).map((size) => (
-                <button
-                  key={size}
-                  type="button"
-                  onClick={() => setPreference("fontSize", size)}
-                  className={cn(
-                    "min-h-13 rounded-2xl border px-4 text-sm font-black transition",
-                    preferences.fontSize === size ? "border-primary bg-primary/10 text-primary" : "border-border bg-muted/25",
-                  )}
-                >
-                  {labels.accessibility[size]}
-                </button>
-              ))}
-            </div>
-            <div className="mt-3 grid gap-2 rounded-2xl border border-border/70 p-2 md:grid-cols-2">
-              <Toggle checked={preferences.highContrast} onChange={(value) => setPreference("highContrast", value)} label={labels.accessibility.highContrast} />
-              <Toggle checked={preferences.reduceAnimations} onChange={(value) => setPreference("reduceAnimations", value)} label={labels.accessibility.reduceAnimations} />
-            </div>
-            <Button onClick={savePreferences} disabled={isPending || preferencesSaving} className="mt-4 w-full gap-2 sm:w-auto">
-              <Save size={17} />
-              {isPending || preferencesSaving ? labels.saving : labels.save}
-            </Button>
           </SectionCard>
 
           <SectionCard id="about" title={labels.sections.about} icon={Info} visible={selectedSection === "about"}>
