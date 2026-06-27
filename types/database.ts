@@ -50,8 +50,8 @@ export interface ProfileRow {
 
 export type UserThemePreference = "light" | "dark" | "system";
 export type UserProfileVisibility = "public" | "members" | "followers" | "private";
-export type UserMessagePermission = "everyone" | "members" | "followers" | "no_one";
-export type UserLastSeenVisibility = "everyone" | "members" | "no_one";
+export type UserMessagePermission = "everyone" | "followers" | "no_one";
+export type UserLastSeenVisibility = "everyone" | "no_one";
 export type UserPhoneVisibility = "only_me" | "followers" | "no_one";
 export type UserEmailVisibility = "only_me" | "no_one";
 export type UserFontSizePreference = "small" | "medium" | "large";

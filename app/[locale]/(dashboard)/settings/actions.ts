@@ -17,7 +17,6 @@ import type {
   UserMessagePermission,
   UserPhoneVisibility,
   UserNotificationKey,
-  UserProfileVisibility,
   UserSettingsRow,
   UserThemePreference,
 } from "@/types/database";
@@ -145,7 +144,6 @@ export async function saveUserPreferencesAction(input: {
   locale: string;
   language: string;
   theme: UserThemePreference;
-  profileVisibility: UserProfileVisibility;
   messagePermission: UserMessagePermission;
   showCommunityRecognition: boolean;
   showVolunteerHours: boolean;
@@ -170,15 +168,12 @@ export async function saveUserPreferencesAction(input: {
     ? input.language
     : locale;
   const theme: UserThemePreference = ["light", "dark", "system"].includes(input.theme) ? input.theme : "system";
-  const profileVisibility: UserProfileVisibility = ["public", "members", "followers", "private"].includes(input.profileVisibility)
-    ? input.profileVisibility
-    : "public";
-  const messagePermission: UserMessagePermission = ["everyone", "members", "followers", "no_one"].includes(input.messagePermission)
+  const messagePermission: UserMessagePermission = ["everyone", "followers", "no_one"].includes(input.messagePermission)
     ? input.messagePermission
-    : "members";
-  const lastSeenVisibility: UserLastSeenVisibility = ["everyone", "members", "no_one"].includes(input.lastSeenVisibility)
+    : "everyone";
+  const lastSeenVisibility: UserLastSeenVisibility = ["everyone", "no_one"].includes(input.lastSeenVisibility)
     ? input.lastSeenVisibility
-    : "members";
+    : "everyone";
   const phoneVisibility: UserPhoneVisibility = ["only_me", "followers", "no_one"].includes(input.phoneVisibility)
     ? input.phoneVisibility
     : "only_me";
@@ -221,7 +216,7 @@ export async function saveUserPreferencesAction(input: {
       .upsert({
         user_id: user.id,
         theme,
-        profile_visibility: profileVisibility,
+        profile_visibility: "public",
         message_permission: messagePermission,
         show_community_recognition: Boolean(input.showCommunityRecognition),
         show_volunteer_hours: Boolean(input.showVolunteerHours),

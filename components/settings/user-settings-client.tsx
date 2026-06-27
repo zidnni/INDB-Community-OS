@@ -61,7 +61,6 @@ import type {
   UserMessagePermission,
   UserNotificationKey,
   UserPhoneVisibility,
-  UserProfileVisibility,
   UserSettingsRow,
   UserThemePreference,
 } from "@/types/database";
@@ -127,7 +126,7 @@ function labelsFor(locale: string) {
     subtitle: "مركز التحكم بحسابك وتفضيلاتك داخل I ❤️ NDB.\n\nيمكنك إدارة ملفك الشخصي، اللغة، الإشعارات، الخصوصية، والأمان من هنا.",
     save: "حفظ",
     saving: "جار الحفظ...",
-    saved: "تم حفظ الإعدادات",
+    saved: "تم حفظ الإعدادات بنجاح",
     back: "رجوع",
     cancel: "إلغاء",
     unsavedWarning: "لديك تغييرات غير محفوظة. هل تريد مغادرة هذا القسم؟",
@@ -181,13 +180,12 @@ function labelsFor(locale: string) {
       announcements: "إعلانات المنصة",
     },
     privacy: {
-      whoProfile: "من يمكنه مشاهدة ملفي؟",
       whoMessage: "من يمكنه مراسلتي؟",
-      public: "الجميع",
-      members: "الأعضاء فقط",
-      private: "أنا فقط",
+      personalInfo: "المعلومات الشخصية",
+      communityContributions: "المساهمات المجتمعية",
+      activity: "النشاط",
       everyone: "الجميع",
-      followers: "المتابعون",
+      followers: "المتابعون فقط",
       noOne: "لا أحد",
       onlyMe: "أنا فقط",
       showRecognition: "إظهار التقدير المجتمعي",
@@ -197,8 +195,7 @@ function labelsFor(locale: string) {
       showOnline: "إظهار حالة الاتصال",
       lastSeen: "من يمكنه رؤية آخر ظهور؟",
       phoneVisibility: "من يمكنه رؤية رقم الهاتف؟",
-      emailVisibility: "من يمكنه رؤية البريد؟",
-      unsaved: "تغييرات الخصوصية غير محفوظة",
+      emailVisibility: "من يمكنه رؤية البريد الإلكتروني؟",
     },
     recognition: {
       level: "المستوى المجتمعي",
@@ -312,13 +309,12 @@ function labelsFor(locale: string) {
       announcements: "Annonces plateforme",
     },
     privacy: {
-      whoProfile: "Qui peut voir mon profil ?",
       whoMessage: "Qui peut m'envoyer un message ?",
-      public: "Tout le monde",
-      members: "Membres seulement",
-      private: "Moi seulement",
+      personalInfo: "Informations personnelles",
+      communityContributions: "Contributions communautaires",
+      activity: "Activité",
       everyone: "Tout le monde",
-      followers: "Abonnés",
+      followers: "Abonnés uniquement",
       noOne: "Personne",
       onlyMe: "Moi seulement",
       showRecognition: "Afficher la reconnaissance",
@@ -329,7 +325,6 @@ function labelsFor(locale: string) {
       lastSeen: "Qui peut voir ma dernière activité ?",
       phoneVisibility: "Qui peut voir mon téléphone ?",
       emailVisibility: "Qui peut voir mon e-mail ?",
-      unsaved: "Modifications de confidentialité non enregistrées",
     },
     recognition: {
       level: "Niveau communautaire",
@@ -443,13 +438,12 @@ function labelsFor(locale: string) {
       announcements: "Platform announcements",
     },
     privacy: {
-      whoProfile: "Who can view my profile?",
       whoMessage: "Who can message me?",
-      public: "Everyone",
-      members: "Members only",
-      private: "Only me",
+      personalInfo: "Personal Information",
+      communityContributions: "Community Contributions",
+      activity: "Activity",
       everyone: "Everyone",
-      followers: "Followers",
+      followers: "Followers only",
       noOne: "No one",
       onlyMe: "Only me",
       showRecognition: "Show community recognition",
@@ -460,7 +454,6 @@ function labelsFor(locale: string) {
       lastSeen: "Who can see my last seen?",
       phoneVisibility: "Who can see my phone number?",
       emailVisibility: "Who can see my email?",
-      unsaved: "Unsaved privacy changes",
     },
     recognition: {
       level: "Community level",
@@ -526,6 +519,19 @@ function formatDate(value: string | null, locale: string) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function SelectRow<T extends string>({value, onChange, label, options}: {value: T; onChange: (v: T) => void; label: string; options: {value: T; label: string}[]}) {
+  return (
+    <div className="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl px-3 py-2">
+      <span className="text-sm font-bold">{label}</span>
+      <select value={value} onChange={(e) => onChange(e.target.value as T)}
+        className="h-10 rounded-xl border border-border bg-transparent px-3 text-sm font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+      >
+        {options.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+      </select>
+    </div>
+  );
 }
 
 function Toggle({
@@ -643,7 +649,6 @@ export function UserSettingsClient({
       ? profile.language_preference
       : locale,
     theme: settings.theme,
-    profileVisibility: settings.profile_visibility,
     messagePermission: settings.message_permission,
     showCommunityRecognition: settings.show_community_recognition,
     showVolunteerHours: settings.show_volunteer_hours,
@@ -660,19 +665,6 @@ export function UserSettingsClient({
     highContrast: settings.high_contrast,
     reduceAnimations: settings.reduce_animations,
   });
-  const [privacyDirty, setPrivacyDirty] = useState(false);
-  const initialPrivacyPreferences = useMemo(() => ({
-    profileVisibility: settings.profile_visibility,
-    messagePermission: settings.message_permission,
-    showCommunityRecognition: settings.show_community_recognition,
-    showVolunteerHours: settings.show_volunteer_hours,
-    showCompletedGraatek: settings.show_completed_graatek,
-    showMemories: settings.show_memories,
-    showOnlineStatus: settings.show_online_status,
-    lastSeenVisibility: settings.last_seen_visibility,
-    phoneVisibility: settings.phone_visibility,
-    emailVisibility: settings.email_visibility,
-  }), [settings]);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const selectedSection = activeSection ?? "account";
@@ -685,7 +677,7 @@ export function UserSettingsClient({
   }, [preferences.fontSize, preferences.highContrast, preferences.reduceAnimations]);
 
   useEffect(() => {
-    if (!accountDirty && !privacyDirty) return;
+    if (!accountDirty) return;
 
     function handleBeforeUnload(event: BeforeUnloadEvent) {
       event.preventDefault();
@@ -694,13 +686,10 @@ export function UserSettingsClient({
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [accountDirty, privacyDirty]);
+  }, [accountDirty]);
 
   function openSection(section: SectionKey | null) {
     if (accountDirty && section !== "account" && !window.confirm(labels.unsavedWarning)) {
-      return;
-    }
-    if (privacyDirty && section !== "privacy" && !window.confirm(labels.unsavedWarning)) {
       return;
     }
     setActiveSection(section);
@@ -729,12 +718,13 @@ export function UserSettingsClient({
     void persistPreferences(nextPreferences);
   }
 
-  function setPrivacyPreference<K extends keyof typeof initialPrivacyPreferences>(
+  function savePrivacyPreference<K extends keyof typeof preferences>(
     key: K,
-    value: (typeof initialPrivacyPreferences)[K],
+    value: (typeof preferences)[K],
   ) {
-    setPreferences((current) => ({...current, [key]: value}));
-    setPrivacyDirty(true);
+    const next = {...preferences, [key]: value};
+    setPreferences(next);
+    void persistPreferences(next, true);
   }
 
   function setAccountField<K extends keyof typeof account>(key: K, value: (typeof account)[K]) {
@@ -823,26 +813,11 @@ export function UserSettingsClient({
     });
   }
 
-  async function savePrivacyPreferences() {
-    startTransition(async () => {
-      const saved = await persistPreferences(preferences, true);
-      if (saved) setPrivacyDirty(false);
-    });
-  }
-
   function cancelAccountChanges() {
     setAccount(initialAccount);
     setAvatarPreview(initialAccount.avatarUrl);
     setCoverPreview(initialAccount.coverImageUrl);
     setAccountDirty(false);
-  }
-
-  function cancelPrivacyChanges() {
-    setPreferences((current) => ({
-      ...current,
-      ...initialPrivacyPreferences,
-    }));
-    setPrivacyDirty(false);
   }
 
   async function updatePassword() {
@@ -885,23 +860,14 @@ export function UserSettingsClient({
     {value: "system", label: labels.appearance.system, icon: Monitor},
   ];
 
-  const visibilityOptions: Array<{value: UserProfileVisibility; label: string}> = [
-    {value: "public", label: labels.privacy.public},
-    {value: "members", label: labels.privacy.members},
-    {value: "followers", label: labels.privacy.followers},
-    {value: "private", label: labels.privacy.private},
-  ];
-
   const messageOptions: Array<{value: UserMessagePermission; label: string}> = [
     {value: "everyone", label: labels.privacy.everyone},
-    {value: "members", label: labels.privacy.members},
     {value: "followers", label: labels.privacy.followers},
     {value: "no_one", label: labels.privacy.noOne},
   ];
 
   const lastSeenOptions: Array<{value: UserLastSeenVisibility; label: string}> = [
     {value: "everyone", label: labels.privacy.everyone},
-    {value: "members", label: labels.privacy.members},
     {value: "no_one", label: labels.privacy.noOne},
   ];
 
@@ -1157,73 +1123,38 @@ export function UserSettingsClient({
           </SectionCard>
 
           <SectionCard id="privacy" title={labels.sections.privacy} icon={Shield} visible={selectedSection === "privacy"}>
-            <div className="grid gap-3 md:grid-cols-2">
-              <Field label={labels.privacy.whoProfile}>
-                <select
-                  value={preferences.profileVisibility}
-                  onChange={(event) => setPrivacyPreference("profileVisibility", event.target.value as UserProfileVisibility)}
-                  className="h-12 w-full rounded-xl border border-border bg-card px-3 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  {visibilityOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-                </select>
-              </Field>
-              <Field label={labels.privacy.whoMessage}>
-                <select
-                  value={preferences.messagePermission}
-                  onChange={(event) => setPrivacyPreference("messagePermission", event.target.value as UserMessagePermission)}
-                  className="h-12 w-full rounded-xl border border-border bg-card px-3 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  {messageOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-                </select>
-              </Field>
-              <Field label={labels.privacy.lastSeen}>
-                <select
-                  value={preferences.lastSeenVisibility}
-                  onChange={(event) => setPrivacyPreference("lastSeenVisibility", event.target.value as UserLastSeenVisibility)}
-                  className="h-12 w-full rounded-xl border border-border bg-card px-3 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  {lastSeenOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-                </select>
-              </Field>
-              <Field label={labels.privacy.phoneVisibility}>
-                <select
-                  value={preferences.phoneVisibility}
-                  onChange={(event) => setPrivacyPreference("phoneVisibility", event.target.value as UserPhoneVisibility)}
-                  className="h-12 w-full rounded-xl border border-border bg-card px-3 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  {phoneVisibilityOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-                </select>
-              </Field>
-              <Field label={labels.privacy.emailVisibility}>
-                <select
-                  value={preferences.emailVisibility}
-                  onChange={(event) => setPrivacyPreference("emailVisibility", event.target.value as UserEmailVisibility)}
-                  className="h-12 w-full rounded-xl border border-border bg-card px-3 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  {emailVisibilityOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-                </select>
-              </Field>
+            <div className="space-y-1">
+              <p className="px-3 pb-1 pt-2 text-xs font-black uppercase tracking-wider text-muted-foreground">💬 {labels.privacy.whoMessage}</p>
+              <div className="space-y-0.5">
+                {messageOptions.map((opt) => (
+                  <button key={opt.value} type="button" onClick={() => savePrivacyPreference("messagePermission", opt.value as typeof preferences.messagePermission)}
+                    className={`flex w-full items-center justify-between rounded-2xl px-3 py-3 text-start transition hover:bg-muted/60 active:scale-[0.99] ${preferences.messagePermission === opt.value ? "bg-primary/5" : ""}`}
+                  >
+                    <span className={`text-sm font-bold ${preferences.messagePermission === opt.value ? "text-primary" : "text-foreground"}`}>{opt.label}</span>
+                    {preferences.messagePermission === opt.value ? <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-black text-primary-foreground">✓</span> : null}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="mt-3 grid gap-2 rounded-2xl border border-border/70 p-2 md:grid-cols-2">
-              <Toggle checked={preferences.showCommunityRecognition} onChange={(value) => setPrivacyPreference("showCommunityRecognition", value)} label={labels.privacy.showRecognition} />
-              <Toggle checked={preferences.showVolunteerHours} onChange={(value) => setPrivacyPreference("showVolunteerHours", value)} label={labels.privacy.showVolunteer} />
-              <Toggle checked={preferences.showCompletedGraatek} onChange={(value) => setPrivacyPreference("showCompletedGraatek", value)} label={labels.privacy.showGraatek} />
-              <Toggle checked={preferences.showMemories} onChange={(value) => setPrivacyPreference("showMemories", value)} label={labels.privacy.showMemories} />
-              <Toggle checked={preferences.showOnlineStatus} onChange={(value) => setPrivacyPreference("showOnlineStatus", value)} label={labels.privacy.showOnline} />
+
+            <div className="mt-4 space-y-1">
+              <p className="px-3 pb-1 pt-2 text-xs font-black uppercase tracking-wider text-muted-foreground">📱 {labels.privacy.personalInfo}</p>
+              <SelectRow value={preferences.phoneVisibility} onChange={(v) => savePrivacyPreference("phoneVisibility", v)} label={labels.privacy.phoneVisibility} options={phoneVisibilityOptions} />
+              <SelectRow value={preferences.emailVisibility} onChange={(v) => savePrivacyPreference("emailVisibility", v)} label={labels.privacy.emailVisibility} options={emailVisibilityOptions} />
             </div>
-            {privacyDirty ? (
-              <p className="mt-3 rounded-2xl border border-amber-300/60 bg-amber-100/70 px-4 py-3 text-sm font-bold text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100">
-                {labels.privacy.unsaved}
-              </p>
-            ) : null}
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-              <Button onClick={savePrivacyPreferences} disabled={!privacyDirty || isPending || preferencesSaving} className="w-full gap-2 sm:w-auto">
-                <Save size={17} />
-                {isPending || preferencesSaving ? labels.saving : labels.save}
-              </Button>
-              <Button type="button" variant="outline" onClick={cancelPrivacyChanges} disabled={!privacyDirty || isPending || preferencesSaving} className="w-full sm:w-auto">
-                {labels.cancel}
-              </Button>
+
+            <div className="mt-4 space-y-1">
+              <p className="px-3 pb-1 pt-2 text-xs font-black uppercase tracking-wider text-muted-foreground">❤️ {labels.privacy.communityContributions}</p>
+              <Toggle checked={preferences.showCommunityRecognition} onChange={(v) => savePrivacyPreference("showCommunityRecognition", v)} label={labels.privacy.showRecognition} />
+              <Toggle checked={preferences.showVolunteerHours} onChange={(v) => savePrivacyPreference("showVolunteerHours", v)} label={labels.privacy.showVolunteer} />
+              <Toggle checked={preferences.showCompletedGraatek} onChange={(v) => savePrivacyPreference("showCompletedGraatek", v)} label={labels.privacy.showGraatek} />
+              <Toggle checked={preferences.showMemories} onChange={(v) => savePrivacyPreference("showMemories", v)} label={labels.privacy.showMemories} />
+            </div>
+
+            <div className="mt-4 space-y-1">
+              <p className="px-3 pb-1 pt-2 text-xs font-black uppercase tracking-wider text-muted-foreground">💬 {labels.privacy.activity}</p>
+              <SelectRow value={preferences.lastSeenVisibility} onChange={(v) => savePrivacyPreference("lastSeenVisibility", v)} label={labels.privacy.lastSeen} options={lastSeenOptions} />
+              <Toggle checked={preferences.showOnlineStatus} onChange={(v) => savePrivacyPreference("showOnlineStatus", v)} label={labels.privacy.showOnline} />
             </div>
           </SectionCard>
 

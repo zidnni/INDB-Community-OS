@@ -16,13 +16,13 @@ export const defaultUserSettings: UserSettingsRow = {
   user_id: "",
   theme: "system",
   profile_visibility: "public",
-  message_permission: "members",
+  message_permission: "everyone",
   show_community_recognition: true,
   show_volunteer_hours: true,
   show_completed_graatek: true,
   show_memories: true,
   show_online_status: false,
-  last_seen_visibility: "members",
+  last_seen_visibility: "everyone",
   phone_visibility: "only_me",
   email_visibility: "no_one",
   recognition_visibility: {
@@ -109,7 +109,6 @@ export async function getUserSettings(userId: string): Promise<UserSettingsRow> 
 
 export type PublicProfilePrivacy = Pick<
   UserSettingsRow,
-  | "profile_visibility"
   | "message_permission"
   | "show_community_recognition"
   | "show_volunteer_hours"

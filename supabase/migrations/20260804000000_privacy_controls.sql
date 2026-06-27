@@ -23,7 +23,7 @@ alter table public.user_settings
 
 alter table public.user_settings
   add column if not exists show_online_status boolean not null default false,
-  add column if not exists last_seen_visibility text not null default 'members',
+  add column if not exists last_seen_visibility text not null default 'everyone',
   add column if not exists phone_visibility text not null default 'only_me',
   add column if not exists email_visibility text not null default 'no_one';
 
@@ -36,7 +36,7 @@ begin
   ) then
     alter table public.user_settings
       add constraint user_settings_last_seen_visibility_check
-      check (last_seen_visibility in ('everyone', 'members', 'no_one'));
+      check (last_seen_visibility in ('everyone', 'no_one'));
   end if;
 
   if not exists (
@@ -65,52 +65,12 @@ create or replace function public.can_view_profile(
   viewer_id uuid default auth.uid()
 )
 returns boolean
-language plpgsql
+language sql
 security definer
 set search_path = public
 stable
 as $$
-declare
-  visibility text;
-begin
-  if target_user_id is null then
-    return false;
-  end if;
-
-  if viewer_id = target_user_id then
-    return true;
-  end if;
-
-  select coalesce(profile_visibility, 'public')
-    into visibility
-  from public.user_settings
-  where user_id = target_user_id;
-
-  visibility := coalesce(visibility, 'public');
-
-  if visibility = 'public' then
-    return true;
-  end if;
-
-  if viewer_id is null then
-    return false;
-  end if;
-
-  if visibility = 'members' then
-    return true;
-  end if;
-
-  if visibility = 'followers' then
-    return exists (
-      select 1
-      from public.user_follows
-      where follower_id = viewer_id
-        and following_id = target_user_id
-    );
-  end if;
-
-  return false;
-end;
+  select true;
 $$;
 
 create or replace function public.can_message_user(
@@ -134,14 +94,14 @@ begin
     return false;
   end if;
 
-  select coalesce(message_permission, 'members')
+  select coalesce(message_permission, 'everyone')
     into permission
   from public.user_settings
   where user_id = target_user_id;
 
-  permission := coalesce(permission, 'members');
+  permission := coalesce(permission, 'everyone');
 
-  if permission = 'everyone' or permission = 'members' then
+  if permission = 'everyone' then
     return true;
   end if;
 
@@ -160,7 +120,6 @@ $$;
 
 create or replace function public.get_public_profile_privacy(target_user_id uuid)
 returns table (
-  profile_visibility text,
   message_permission text,
   show_community_recognition boolean,
   show_volunteer_hours boolean,
@@ -178,8 +137,7 @@ set search_path = public
 stable
 as $$
   select
-    coalesce(us.profile_visibility, 'public') as profile_visibility,
-    coalesce(us.message_permission, 'members') as message_permission,
+    coalesce(us.message_permission, 'everyone') as message_permission,
     coalesce(us.show_community_recognition, true) as show_community_recognition,
     coalesce(us.show_volunteer_hours, true) as show_volunteer_hours,
     coalesce(us.show_completed_graatek, true) as show_completed_graatek,
@@ -189,7 +147,7 @@ as $$
       '{"level":true,"badges":true,"summary":true,"donations":false,"volunteer":true}'::jsonb
     ) as recognition_visibility,
     coalesce(us.show_online_status, false) as show_online_status,
-    coalesce(us.last_seen_visibility, 'members') as last_seen_visibility,
+    coalesce(us.last_seen_visibility, 'everyone') as last_seen_visibility,
     coalesce(us.phone_visibility, 'only_me') as phone_visibility,
     coalesce(us.email_visibility, 'no_one') as email_visibility
   from public.profiles p
