@@ -893,9 +893,9 @@ export function ConversationChat({
   const canSaveName = draftTitle.trim().length >= 2 && draftTitle.trim() !== groupTitle;
 
   return (
-    <div ref={chatRootRef} className="relative flex h-full min-h-0 w-full flex-col overflow-hidden bg-background overscroll-contain">
-      <div className="shrink-0 border-b border-border/70 bg-card/95 px-2 py-1.5 pt-[max(0.375rem,var(--safe-top))] shadow-sm backdrop-blur md:px-2.5 md:py-2">
-        <div className="flex min-h-[52px] items-center gap-2">
+    <div ref={chatRootRef} className="relative flex h-full min-h-0 w-full max-w-full flex-col overflow-hidden bg-background overscroll-contain [touch-action:pan-y]">
+      <div className="shrink-0 overflow-x-hidden border-b border-border/70 bg-card/95 px-2 py-1.5 pt-[max(0.375rem,var(--safe-top))] shadow-sm backdrop-blur md:px-2.5 md:py-2">
+        <div className="flex min-h-[52px] min-w-0 items-center gap-2">
           <Link
             href="/messages"
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground transition active:bg-muted md:hidden"
@@ -939,9 +939,9 @@ export function ConversationChat({
         onScroll={() => {
           nearBottomRef.current = isNearBottom();
         }}
-        className="min-h-0 flex-1 overflow-y-auto scroll-smooth bg-muted/20 px-2.5 py-3 overscroll-contain [overflow-anchor:none] md:px-5 md:py-4"
+        className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-smooth bg-muted/20 px-2.5 py-3 overscroll-contain [overflow-anchor:none] [touch-action:pan-y] md:px-5 md:py-4"
       >
-        <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-end">
+        <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-end overflow-x-hidden">
           {isReadOnly && (
             <div className="mx-auto mb-4 flex max-w-md items-center justify-center gap-2 rounded-full bg-background/90 px-3 py-2 text-center text-xs text-muted-foreground shadow-sm">
               <Archive size={14} />
@@ -978,12 +978,12 @@ export function ConversationChat({
               <div
                 key={msg.id}
                 className={cn(
-                  "group/message flex w-full",
+                  "group/message flex w-full min-w-0 max-w-full overflow-x-hidden",
                   isMine ? "justify-end" : "justify-start",
                   index === 0 ? "mt-0" : isFirstInGroup ? "mt-3.5" : "mt-1",
                 )}
               >
-                <div className={cn("flex max-w-[86%] items-end gap-1.5 sm:max-w-[78%] md:max-w-[70%] md:gap-2", isMine && "flex-row-reverse")}>
+                <div className={cn("flex min-w-0 max-w-[86%] items-end gap-1.5 overflow-x-hidden sm:max-w-[78%] md:max-w-[70%] md:gap-2", isMine && "flex-row-reverse")}>
                   {!isMine && (
                     <div className="w-7 shrink-0 md:w-9">
                       {isFirstInGroup && senderProfileHref && (
@@ -1010,7 +1010,7 @@ export function ConversationChat({
                       )}
                     </div>
                   )}
-                  <div className={cn("relative flex min-w-0 flex-col", isMine ? "items-end" : "items-start")}>
+                  <div className={cn("relative flex min-w-0 max-w-full flex-col overflow-x-hidden", isMine ? "items-end" : "items-start")}>
                     {!isMine && isIdeaGroup && (
                       senderProfileHref ? (
                         <Link
@@ -1090,7 +1090,7 @@ export function ConversationChat({
                       onPointerLeave={cancelLongPress}
                       onPointerCancel={cancelLongPress}
                       className={cn(
-                        "min-w-[4rem] touch-manipulation select-none overflow-hidden rounded-2xl text-[14px] leading-relaxed shadow-sm [-webkit-touch-callout:none] [-webkit-user-select:none]",
+                        "min-w-[4rem] max-w-full touch-manipulation select-none overflow-hidden break-words rounded-2xl text-[14px] leading-relaxed shadow-sm [overflow-wrap:anywhere] [-webkit-touch-callout:none] [-webkit-user-select:none]",
                         hasImage && !isEditing ? "p-1.5" : "px-3 py-2 md:px-3.5 md:py-2.5",
                         isDeleted && "italic",
                         isMine
@@ -1100,7 +1100,7 @@ export function ConversationChat({
                       dir="auto"
                     >
                       {hasImage && (
-                        <div className={cn("grid gap-1", msgImages.length === 1 ? "grid-cols-1" : "grid-cols-2")}>
+                        <div className={cn("grid max-w-full gap-1 overflow-hidden", msgImages.length === 1 ? "grid-cols-1" : "grid-cols-2")}>
                           {msgImages.slice(0, 4).map((url, i) => (
                             <button
                               key={i}
@@ -1108,14 +1108,14 @@ export function ConversationChat({
                               onPointerDown={(event) => event.stopPropagation()}
                               onTouchStart={(event) => event.stopPropagation()}
                               onClick={() => { setViewerImages(msgImages); setViewerIndex(i); }}
-                              className={cn("overflow-hidden rounded-xl text-start", i === 3 && msgImages.length > 4 ? "relative" : "")}
+                              className={cn("max-w-full overflow-hidden rounded-xl text-start", i === 3 && msgImages.length > 4 ? "relative" : "")}
                               aria-label={t("groupChat.viewImage")}
                             >
                               <img
                                 src={url}
                                 alt=""
                                 className={cn(
-                                  "h-full w-full select-none object-cover [-webkit-user-drag:none]",
+                                  "h-full w-full max-w-full select-none object-cover [-webkit-user-drag:none]",
                                   msgImages.length === 1 ? "max-h-80 min-w-40 sm:min-w-52" : "aspect-square",
                                 )}
                               />
@@ -1138,7 +1138,7 @@ export function ConversationChat({
                             maxLength={msg.message_type === "image" ? 500 : 1000}
                             autoFocus
                             className={cn(
-                              "min-h-9 w-full min-w-44 rounded-lg border px-2.5 text-sm outline-none focus:ring-2",
+                              "min-h-9 w-full min-w-0 max-w-full rounded-lg border px-2.5 text-sm outline-none focus:ring-2",
                               isMine
                                 ? "border-primary-foreground/40 bg-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/60 focus:ring-primary-foreground/30"
                                 : "border-border bg-background text-foreground focus:ring-primary/30",
@@ -1159,7 +1159,7 @@ export function ConversationChat({
                           </div>
                         </div>
                       ) : msg.message ? (
-                        <p className={cn("select-none", hasImage && "px-2 py-1.5")}>{msg.message}</p>
+                        <p className={cn("max-w-full select-none break-words [overflow-wrap:anywhere]", hasImage && "px-2 py-1.5")}>{msg.message}</p>
                       ) : null}
                       <div className={cn("mt-1 flex items-center justify-end gap-1 text-[10px]", isMine ? "text-primary-foreground/75" : "text-muted-foreground")}>
                         <span>{formatTime(msg.created_at)}</span>
@@ -1219,7 +1219,7 @@ export function ConversationChat({
           )}
 
           {!isReadOnly && (
-            <form onSubmit={handleSend} className="mx-auto flex max-w-3xl items-end gap-2">
+            <form onSubmit={handleSend} className="mx-auto flex w-full max-w-3xl min-w-0 items-end gap-2 overflow-x-hidden">
               <input
                 ref={imageInputRef}
                 type="file"

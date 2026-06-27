@@ -160,6 +160,7 @@ html[data-chat-open="true"] [data-app-shell] {
 html[data-chat-open="true"],
 html[data-chat-open="true"] body {
   overflow: hidden;
+  overflow-x: hidden;
   overscroll-behavior: none;
 }
 
