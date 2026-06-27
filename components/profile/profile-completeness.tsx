@@ -1,7 +1,7 @@
 "use client";
 
-import {useTranslations} from "next-intl";
 import {CheckCircle2} from "lucide-react";
+import {useTranslations} from "next-intl";
 import {Card, CardContent} from "@/components/ui/card";
 
 interface ProfileCompletenessProps {
@@ -9,6 +9,8 @@ interface ProfileCompletenessProps {
   hasCover: boolean;
   hasBio: boolean;
   hasCity: boolean;
+  phoneVerified: boolean;
+  emailVerified: boolean;
   hasWork: boolean;
   hasEducation: boolean;
   hasInterests: boolean;
@@ -16,14 +18,16 @@ interface ProfileCompletenessProps {
 }
 
 const ITEMS = [
-  {key: "avatar", weight: 15},
-  {key: "cover", weight: 10},
-  {key: "bio", weight: 20},
-  {key: "city", weight: 10},
-  {key: "work", weight: 15},
-  {key: "education", weight: 10},
-  {key: "interests", weight: 10},
-  {key: "links", weight: 10},
+  {key: "avatar", weight: 12},
+  {key: "cover", weight: 8},
+  {key: "bio", weight: 15},
+  {key: "city", weight: 8},
+  {key: "phoneVerified", weight: 15},
+  {key: "emailVerified", weight: 12},
+  {key: "work", weight: 10},
+  {key: "education", weight: 8},
+  {key: "interests", weight: 6},
+  {key: "links", weight: 6},
 ] as const;
 
 export function ProfileCompleteness(props: ProfileCompletenessProps) {
@@ -34,6 +38,8 @@ export function ProfileCompleteness(props: ProfileCompletenessProps) {
     cover: props.hasCover,
     bio: props.hasBio,
     city: props.hasCity,
+    phoneVerified: props.phoneVerified,
+    emailVerified: props.emailVerified,
     work: props.hasWork,
     education: props.hasEducation,
     interests: props.hasInterests,
@@ -43,6 +49,8 @@ export function ProfileCompleteness(props: ProfileCompletenessProps) {
   const completed = ITEMS.filter((item) => status[item.key]).length;
   const total = ITEMS.length;
   const percent = Math.round((completed / total) * 100);
+
+  if (percent >= 100) return null;
 
   return (
     <Card className="border-primary/20 bg-primary/[0.03]">
@@ -58,7 +66,7 @@ export function ProfileCompleteness(props: ProfileCompletenessProps) {
           />
         </div>
         <p className="mt-2 text-xs text-muted-foreground">{t("completeYourProfile")}</p>
-        <div className="mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+        <div className="mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-5">
           {ITEMS.map((item) => {
             const done = status[item.key];
             return (

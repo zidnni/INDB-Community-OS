@@ -8,11 +8,10 @@ import {getTranslations} from "next-intl/server";
 import {ProfileCompleteness} from "@/components/profile/profile-completeness";
 import {ProfileTabsContent} from "@/components/profile/profile-tabs-content";
 import {FollowSummary} from "@/components/profile/follow-summary";
-import {CommunityImpactSection} from "@/components/profile/community-impact-section";
+import {CommunityRecognition} from "@/components/profile/community-recognition";
 import {Badge} from "@/components/ui/badge";
 import {Card, CardContent} from "@/components/ui/card";
 import {getCommentsForPosts} from "@/lib/data/comments";
-import {getContributionRankKey} from "@/lib/contribution";
 import {getCommunityImpact} from "@/lib/data/community-impact";
 import {getFullProfileDetails} from "@/lib/data/profile-details";
 import {getFollowStats, isFollowing} from "@/lib/data/follows";
@@ -33,7 +32,6 @@ export async function generateMetadata({
   const {username} = await params;
   const profile = await getProfileByUsername(username);
   if (!profile) return {title: "Not Found"};
-
   return {
     title: profile.full_name ?? profile.username ?? "Profile",
     description: profile.bio ?? `Community profile of ${profile.username}`,
@@ -54,6 +52,14 @@ function formatJoinDate(dateStr: string, locale: string): string {
     month: "long",
   });
 }
+
+const LEVEL_LABELS: Record<string, string> = {
+  community_supporter: "داعم المجتمع",
+  active_contributor: "مساهم نشط",
+  community_builder: "باني المجتمع",
+  community_champion: "بطل المجتمع",
+  guardian_of_nouadhibou: "ولد الخير",
+};
 
 async function ProfileTabsFetcher({
   profileId,
@@ -104,6 +110,8 @@ async function ProfileTabsFetcher({
           hasCover={!!profile.cover_image_url}
           hasBio={!!profile.bio}
           hasCity={!!profile.city}
+          phoneVerified={false}
+          emailVerified={false}
           hasWork={profileDetails.work.length > 0}
           hasEducation={profileDetails.education.length > 0}
           hasInterests={profileDetails.interests.length > 0}
@@ -193,8 +201,8 @@ export default async function PublicProfilePage({
   const displayName = profile.full_name ?? profile.username ?? "?";
   const initials = getInitials(displayName);
   const joinDate = formatJoinDate(profile.created_at, locale);
-  const contributionScore = profile.contribution_score ?? 0;
-  const contributionRank = getContributionRankKey(contributionScore);
+  const communityLevel = impact?.community_level ?? "community_supporter";
+  const levelLabel = LEVEL_LABELS[communityLevel] ?? communityLevel;
   const requestedTab = activeTab === "posts" ? "posts" : activeTab === "memories" ? "memories" : activeTab === "ideas" ? "ideas" : activeTab === "shares" ? "shares" : "about";
   const currentTab = (!showMemories && requestedTab === "memories") || (!showGraatek && requestedTab === "shares")
     ? "about"
@@ -203,22 +211,20 @@ export default async function PublicProfilePage({
   const t = await getTranslations({locale, namespace: "Profile"});
 
   return (
-    <div className="space-y-4">
+    <div className="mx-auto max-w-4xl space-y-5">
+      {/* Hero Card */}
       <Card className="overflow-hidden border-border/70 shadow-[0_12px_32px_rgba(8,33,56,0.08)]">
-        <div
-          className="relative h-40 sm:h-56"
-          style={
-            profile.cover_image_url
-              ? {backgroundImage: `url(${profile.cover_image_url})`, backgroundSize: "cover", backgroundPosition: "center"}
-              : {}
-          }
-        >
-          {!profile.cover_image_url ? (
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-accent/75 to-primary/70" />
-          ) : null}
+        {/* Cover */}
+        <div className="relative h-44 sm:h-56">
+          {profile.cover_image_url ? (
+            <Image src={profile.cover_image_url} alt="" fill sizes="(max-width: 768px) 100vw, 896px" className="object-cover" />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/95 via-accent/75 to-primary/70" />
+          )}
         </div>
 
         <CardContent className="relative px-4 pb-4 sm:px-6 sm:pb-6">
+          {/* Avatar + Name row */}
           <div className="flex flex-col sm:flex-row sm:items-end sm:gap-5">
             <div className="-mt-16 sm:-mt-20 z-10 flex shrink-0 justify-center sm:justify-start">
               {profile.avatar_url ? (
@@ -227,34 +233,35 @@ export default async function PublicProfilePage({
                   alt={displayName}
                   width={160}
                   height={160}
-                  className="h-32 w-32 rounded-full border-4 border-card object-cover sm:h-40 sm:w-40"
+                  className="h-32 w-32 rounded-full border-4 border-card object-cover shadow-lg sm:h-40 sm:w-40"
                 />
               ) : (
-                <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-card bg-muted text-3xl font-bold sm:h-40 sm:w-40 sm:text-4xl">
+                <div className="flex h-32 w-32 items-center justify-center rounded-full border-4 border-card bg-muted text-3xl font-bold shadow-lg sm:h-40 sm:w-40 sm:text-4xl">
                   {initials}
                 </div>
               )}
             </div>
 
             <div className="mt-3 flex-1 text-center sm:mt-0 sm:text-start">
-              <div className="flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-3">
-                <div>
-                  <h1 className="text-2xl font-bold sm:text-3xl">{displayName}</h1>
-                  {profile.username ? (
-                    <p className="text-sm text-muted-foreground">@{profile.username}</p>
-                  ) : null}
-                </div>
+              <div className="flex flex-col items-center gap-1 sm:flex-row sm:items-center sm:gap-3">
+                <h1 className="text-2xl font-black tracking-tight sm:text-3xl">{displayName}</h1>
                 {profile.role && profile.role !== "member" ? (
-                  <Badge className="rounded-full px-3 py-1 text-xs font-medium">
-                    {t(`role.${profile.role}`)}
-                  </Badge>
+                  <Badge className="rounded-full px-3 py-0.5 text-xs font-semibold">{t(`role.${profile.role}`)}</Badge>
                 ) : null}
               </div>
-
-              {profile.bio ? (
-                <p className="mt-2 text-sm text-foreground/90">{profile.bio}</p>
+              {profile.username ? (
+                <p className="text-sm text-muted-foreground">@{profile.username}</p>
               ) : null}
 
+              {/* Community Level — replaces contribution score */}
+              {showRecognition && impact ? (
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-amber-200/60 bg-amber-50 px-3.5 py-1.5 text-sm font-bold text-amber-800 dark:border-amber-800/30 dark:bg-amber-900/20 dark:text-amber-300">
+                  <Heart size={14} fill="currentColor" />
+                  {levelLabel}
+                </div>
+              ) : null}
+
+              {/* City + Join Date */}
               <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground sm:justify-start">
                 {profile.city ? (
                   <span className="inline-flex items-center gap-1">
@@ -267,21 +274,14 @@ export default async function PublicProfilePage({
                   {t("joined")} {joinDate}
                 </span>
               </div>
-              {showRecognition ? (
-              <div className="mt-3 inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary sm:justify-start">
-                <Heart size={16} fill="currentColor" />
-                <span>{contributionScore} {t("contributionScore")}</span>
-                <span className="text-primary/60">•</span>
-                <span>{t(`contributionRanks.${contributionRank}`)}</span>
-              </div>
-              ) : null}
             </div>
 
+            {/* Follow + Edit */}
             <div className="mt-3 flex justify-center sm:mt-0 sm:self-center">
               <div className="flex flex-col items-center gap-2">
                 {isOwnProfile ? (
                   <Link href="/profile">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-2 text-xs font-medium text-primary hover:bg-primary/20">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-2 text-xs font-semibold text-primary transition hover:bg-primary/20">
                       {t("editProfile")}
                     </span>
                   </Link>
@@ -300,38 +300,40 @@ export default async function PublicProfilePage({
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-4 gap-2 rounded-2xl bg-muted/40 p-3 sm:gap-3 sm:p-4">
-            <div className="text-center">
-              <p className="text-lg font-bold sm:text-xl">{postsCount}</p>
-              <p className="text-xs text-muted-foreground">{t("stats.posts")}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold sm:text-xl">{memoriesCount}</p>
-              <p className="text-xs text-muted-foreground">{t("stats.memories")}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold sm:text-xl">{ideasCount}</p>
-              <p className="text-xs text-muted-foreground">{t("stats.ideas")}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold sm:text-xl">{commentsCount}</p>
-              <p className="text-xs text-muted-foreground">{t("stats.comments")}</p>
-            </div>
+          {/* Bio */}
+          {profile.bio ? (
+            <p className="mt-3 text-sm leading-6 text-foreground/85 sm:text-base">{profile.bio}</p>
+          ) : null}
+
+          {/* Stats */}
+          <div className="mt-4 grid grid-cols-4 divide-x divide-border rounded-2xl border border-border/70 bg-card">
+            {[
+              {count: postsCount, label: t("stats.posts")},
+              {count: memoriesCount, label: t("stats.memories")},
+              {count: ideasCount, label: t("stats.ideas")},
+              {count: commentsCount, label: t("stats.comments")},
+            ].map((s) => (
+              <div key={s.label} className="py-3 text-center">
+                <p className="text-lg font-bold sm:text-xl">{s.count}</p>
+                <p className="text-xs text-muted-foreground">{s.label}</p>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
 
+      {/* Community Recognition Section */}
       {showRecognition && impact ? (
-        <CommunityImpactSection
+        <CommunityRecognition
           impact={impact}
           locale={locale}
-          showPassportLink={isOwnProfile}
           showVolunteer={showVolunteerHours}
           showGraatek={showGraatek}
           showMemories={showMemories}
         />
       ) : null}
 
+      {/* Tabs */}
       <Suspense fallback={<ProfileTabsFallback />}>
         <ProfileTabsFetcher
           profileId={profile.id}
@@ -348,7 +350,7 @@ export default async function PublicProfilePage({
             city: profile.city,
             hometown: profile.hometown ?? null,
             languages_spoken: profile.languages_spoken ?? [],
-            contribution_score: contributionScore,
+            contribution_score: profile.contribution_score ?? 0,
             created_at: profile.created_at,
           }}
           isOwnProfile={isOwnProfile}

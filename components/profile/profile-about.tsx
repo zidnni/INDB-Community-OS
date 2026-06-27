@@ -277,12 +277,6 @@ function OverviewTab({profile}: {profile: ProfileAboutData; isOwn?: boolean}) {
             <span className="text-xs text-muted-foreground">{t("memberSince")} {joinDate}</span>
           </div>
 
-          <div className="flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5">
-            <Heart size={14} className="text-primary" fill="currentColor" />
-            <span className="text-xs font-medium text-primary">
-              {profile.contribution_score} Points
-            </span>
-          </div>
         </div>
       </CardContent>
     </Card>

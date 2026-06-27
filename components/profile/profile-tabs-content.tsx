@@ -81,12 +81,17 @@ export function ProfileTabsContent({
   const emptyFadla = useTranslations("EmptyStates.fadla");
 
   const tabs = [
-    {key: "about", label: t("tabs.about"), count: null},
-    {key: "posts", label: t("tabs.posts"), count: allPosts.length},
-    showMemories ? {key: "memories", label: t("tabs.memories"), count: memories.length} : null,
-    {key: "ideas", label: t("tabs.ideas"), count: ideas.length},
-    showGraatek ? {key: "shares", label: t("tabs.shares"), count: shares.length} : null,
-  ].filter((tab): tab is NonNullable<typeof tab> => Boolean(tab));
+    {key: "about" as const, label: t("tabs.about"), count: null},
+    ...(allPosts.length > 0 ? [{key: "posts" as const, label: t("tabs.posts"), count: allPosts.length}] : []),
+    ...(showMemories && memories.length > 0 ? [{key: "memories" as const, label: t("tabs.memories"), count: memories.length}] : []),
+    ...(ideas.length > 0 ? [{key: "ideas" as const, label: t("tabs.ideas"), count: ideas.length}] : []),
+    ...(showGraatek && shares.length > 0 ? [{key: "shares" as const, label: t("tabs.shares"), count: shares.length}] : []),
+  ];
+
+  // At least show about if everything else is empty
+  if (tabs.length === 0) {
+    tabs.push({key: "about", label: t("tabs.about"), count: null});
+  }
 
   return (
     <>
