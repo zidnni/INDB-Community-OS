@@ -45,8 +45,8 @@ begin
   values ('direct', '')
   returning id into v_conv_id;
 
-  insert into public.conversation_participants (conversation_id, user_id, role)
-  values (v_conv_id, p_user1_id, 'member'), (v_conv_id, p_user2_id, 'member')
+  insert into public.conversation_participants (conversation_id, user_id)
+  values (v_conv_id, p_user1_id), (v_conv_id, p_user2_id)
   on conflict do nothing;
 
   return v_conv_id;
