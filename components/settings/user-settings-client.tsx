@@ -48,7 +48,6 @@ import {signOutAction} from "@/app/[locale]/server-actions";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Textarea} from "@/components/ui/textarea";
-import {Badge} from "@/components/ui/badge";
 import {prepareImageForUpload} from "@/lib/images/client-compression";
 import {ACCEPTED_IMAGE_EXTENSIONS} from "@/lib/images/upload-config";
 import {uploadFileToStorage} from "@/lib/images/client-upload";
@@ -842,10 +841,6 @@ export function UserSettingsClient({
             <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">{labels.title}</h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">{labels.subtitle}</p>
           </div>
-          <Badge className="w-fit gap-1.5 bg-emerald-500/10 text-emerald-700">
-            <CheckCircle2 size={14} />
-            {settings.account_status}
-          </Badge>
         </div>
       </header>
 
