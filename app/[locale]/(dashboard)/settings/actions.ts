@@ -252,23 +252,99 @@ export async function saveUserPreferencesAction(input: {
   return {success: true};
 }
 
-export async function changePasswordFromSettingsAction(input: {
-  locale: string;
-  password: string;
+export async function sendEmailVerificationAction(): Promise<ActionResult> {
+  const {supabase, user} = await getCurrentUser();
+  if (!user) return {success: false, error: "not_authenticated"};
+  if (!user.email) return {success: false, error: "no_email"};
+
+  const {error} = await supabase.auth.resend({
+    type: "signup",
+    email: user.email,
+    options: {emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://indb-community-os.vercel.app"}/settings`},
+  });
+  if (error) return {success: false, error: "send_failed"};
+  return {success: true};
+}
+
+export async function sendPhoneVerificationAction(): Promise<ActionResult> {
+  const {supabase, user} = await getCurrentUser();
+  if (!user) return {success: false, error: "not_authenticated"};
+  if (!user.phone) return {success: false, error: "no_phone"};
+
+  const {error} = await supabase.auth.updateUser({phone: user.phone});
+  if (error) return {success: false, error: "send_failed"};
+  return {success: true};
+}
+
+export async function changePasswordWithCurrentAction(input: {
+  currentPassword: string;
+  newPassword: string;
   confirmPassword: string;
 }): Promise<ActionResult> {
   const {supabase, user} = await getCurrentUser();
   if (!user) return {success: false, error: "not_authenticated"};
 
-  if (input.password.length < 8 || input.password.length > 50) {
-    return {success: false, error: "weak_password"};
+  let signInError: {message?: string} | null = null;
+  if (user.email) {
+    ({error: signInError} = await supabase.auth.signInWithPassword({email: user.email, password: input.currentPassword}));
+  } else if (user.phone) {
+    ({error: signInError} = await supabase.auth.signInWithPassword({phone: user.phone, password: input.currentPassword}));
+  } else {
+    return {success: false, error: "no_credentials"};
   }
-  if (input.password !== input.confirmPassword) {
-    return {success: false, error: "password_mismatch"};
-  }
+  if (signInError) return {success: false, error: "wrong_password"};
 
-  const {error} = await supabase.auth.updateUser({password: input.password});
+  if (input.newPassword.length < 8) return {success: false, error: "weak_password"};
+  if (input.newPassword !== input.confirmPassword) return {success: false, error: "password_mismatch"};
+
+  const {error} = await supabase.auth.updateUser({password: input.newPassword});
   if (error) return {success: false, error: "password_failed"};
+  return {success: true};
+}
+
+export async function getUserSessionsAction(): Promise<{
+  success: boolean;
+  error?: string;
+  sessions?: Array<{id: string; created_at: string; updated_at: string; user_agent: string | null; ip: string | null; is_current: boolean}>;
+}> {
+  const {supabase, user} = await getCurrentUser();
+  if (!user) return {success: false, error: "not_authenticated"};
+
+  const admin = createAdminClient();
+  if (!admin) return {success: false, error: "admin_not_configured"};
+
+  const {data: sessions, error} = await admin
+    .from("auth.sessions")
+    .select("id, created_at, updated_at, user_agent, ip")
+    .eq("user_id", user.id)
+    .order("updated_at", {ascending: false});
+
+  if (error) return {success: false, error: "fetch_failed"};
+
+  const list = (sessions ?? []) as Array<{id: string; created_at: string; updated_at: string; user_agent: string | null; ip: unknown}>;
+
+  return {
+    success: true,
+    sessions: list.map((s, i) => ({
+      id: s.id,
+      created_at: s.created_at ? String(s.created_at) : "",
+      updated_at: s.updated_at ? String(s.updated_at) : "",
+      user_agent: s.user_agent ?? null,
+      ip: s.ip != null ? String(s.ip) : null,
+      is_current: i === 0,
+    })),
+  };
+}
+
+export async function removeSessionAction(sessionId: string): Promise<ActionResult> {
+  const {user} = await getCurrentUser();
+  if (!user) return {success: false, error: "not_authenticated"};
+
+  const admin = createAdminClient();
+  if (!admin) return {success: false, error: "admin_not_configured"};
+
+  const {error} = await admin.from("auth.sessions").delete().eq("id", sessionId).eq("user_id", user.id);
+  if (error) return {success: false, error: "remove_failed"};
   return {success: true};
 }
 
