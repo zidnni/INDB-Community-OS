@@ -47,7 +47,7 @@ function statusLabel(status: string | null | undefined, t: TranslationFn): strin
 function conversationCategory(conversation: ConversationListItem): InboxCategory | null {
   if (conversation.type === "graatek") return "graatek";
   if (conversation.type === "idea") return "ideas";
-  if (conversation.type === "direct" && conversation.is_mutual_follow) return "people";
+  if (conversation.type === "direct") return "people";
   return null;
 }
 
