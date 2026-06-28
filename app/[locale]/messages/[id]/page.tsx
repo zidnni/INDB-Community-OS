@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { getConversationById, getConversationMessages, getUserConversations } from "@/lib/data/conversations";
+import { getConversationById, getConversationMessages, getDirectConversationBlockState, getUserConversations } from "@/lib/data/conversations";
 import { ConversationList } from "@/components/messages/conversation-list";
 import { ConversationChat } from "@/components/messages/conversation-chat";
 import { notFound, redirect } from "next/navigation";
@@ -29,6 +29,7 @@ export default async function ConversationPage({
   if (!isParticipant) notFound();
 
   const messages = await getConversationMessages(id, 80, user.id);
+  const blockState = await getDirectConversationBlockState(id, user.id, conversation);
 
   return (
     <section className="fixed inset-x-0 top-[var(--chat-viewport-top,0px)] bottom-auto z-[60] flex h-[var(--chat-viewport-height,100dvh)] min-h-0 w-full max-w-[100vw] overflow-hidden bg-background [touch-action:pan-y] md:relative md:inset-auto md:z-auto md:h-full md:max-w-none">
@@ -51,6 +52,7 @@ export default async function ConversationPage({
           ideaStatus={conversation.idea_status}
           memberCount={conversation.member_count}
           participants={conversation.participants}
+          initialBlockState={blockState}
         />
       </div>
     </section>

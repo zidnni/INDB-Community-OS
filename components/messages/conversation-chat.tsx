@@ -30,6 +30,7 @@ import { Link, useRouter } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils/cn";
 import type {
+  ConversationBlockState,
   ConversationMessageWithSender,
   ConversationParticipantInfo,
   ConversationUserProfile,
@@ -180,9 +181,18 @@ interface ConversationAvatarProps {
   memberFallback: string;
   className?: string;
   otherUserId?: string | null;
+  isBlocked?: boolean;
 }
 
-function ConversationAvatar({ title, imageUrl, participants, isGroup, memberFallback, className, otherUserId }: ConversationAvatarProps) {
+function ConversationAvatar({ title, imageUrl, participants, isGroup, memberFallback, className, otherUserId, isBlocked }: ConversationAvatarProps) {
+  if (isBlocked) {
+    return (
+      <div className={cn("flex shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground", className)}>
+        <Ban size={20} />
+      </div>
+    );
+  }
+
   if (imageUrl) {
     return (
       <img
@@ -232,6 +242,7 @@ interface ConversationChatProps {
   ideaStatus?: string | null;
   memberCount?: number;
   participants: ConversationParticipantInfo[];
+  initialBlockState?: ConversationBlockState;
 }
 
 export function ConversationChat({
@@ -248,6 +259,7 @@ export function ConversationChat({
   ideaStatus = null,
   memberCount,
   participants: initialParticipants,
+  initialBlockState,
 }: ConversationChatProps) {
   const t = useTranslations("Messages");
   const memberFallback = t("groupChat.memberFallback");
@@ -284,6 +296,9 @@ export function ConversationChat({
   const [detailsSaving, setDetailsSaving] = useState(false);
   const [showReportSheet, setShowReportSheet] = useState(false);
   const [reportReason, setReportReason] = useState("spam");
+  const [localBlockedByMe, setLocalBlockedByMe] = useState(Boolean(initialBlockState?.blockedByMe));
+  const [localBlockedByOther, setLocalBlockedByOther] = useState(Boolean(initialBlockState?.blockedByOther));
+  const [localBlockedByMeAt, setLocalBlockedByMeAt] = useState<string | null>(initialBlockState?.blockedByMeAt ?? null);
 
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const typingBroadcastRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -305,6 +320,7 @@ export function ConversationChat({
   const isDirectConversation = conversationType === "direct";
   const otherParticipant = participants.find((p) => p.user_id !== currentUserId)?.user;
   const otherUserId = otherParticipant?.id;
+  const isDirectBlocked = isDirectConversation && (localBlockedByMe || localBlockedByOther);
   const detailsTitle = isDirectConversation ? displayName(otherParticipant, groupTitle) : groupTitle;
   const detailsUsername = isDirectConversation
     ? (otherParticipant?.username ? `@${otherParticipant.username}` : t("groupChat.usernameMissing"))
@@ -319,6 +335,11 @@ export function ConversationChat({
     return new Map(participants.map((participant) => [participant.user_id, participant]));
   }, [participants]);
   const participantByIdRef = useRef(participantById);
+  const blockFilterRef = useRef({
+    blockedByMe: localBlockedByMe,
+    blockedUserId: otherUserId ?? null,
+    blockedAt: localBlockedByMeAt,
+  });
   const activeOtherParticipants = useMemo(() => {
     return participants.filter((participant) =>
       participant.user_id !== currentUserId &&
@@ -401,6 +422,27 @@ export function ConversationChat({
     participantByIdRef.current = participantById;
   }, [participantById]);
 
+  useEffect(() => {
+    blockFilterRef.current = {
+      blockedByMe: localBlockedByMe,
+      blockedUserId: otherUserId ?? null,
+      blockedAt: localBlockedByMeAt,
+    };
+  }, [localBlockedByMe, localBlockedByMeAt, otherUserId]);
+
+  useEffect(() => {
+    setLocalBlockedByMe(Boolean(initialBlockState?.blockedByMe));
+    setLocalBlockedByOther(Boolean(initialBlockState?.blockedByOther));
+    setLocalBlockedByMeAt(initialBlockState?.blockedByMeAt ?? null);
+  }, [initialBlockState?.blockedByMe, initialBlockState?.blockedByOther, initialBlockState?.blockedByMeAt]);
+
+  const shouldHideBlockedMessage = useCallback((message: ConversationMessageWithSender) => {
+    const filter = blockFilterRef.current;
+    if (!filter.blockedByMe || !filter.blockedUserId || !filter.blockedAt) return false;
+    if (message.sender_id !== filter.blockedUserId) return false;
+    return new Date(message.created_at).getTime() >= new Date(filter.blockedAt).getTime();
+  }, []);
+
   const applyParticipantReadAt = useCallback((userId: string, readAt: string | null) => {
     if (!readAt) return;
     setParticipants((prev) =>
@@ -435,20 +477,21 @@ export function ConversationChat({
   }, [currentUserId]);
 
   const mergeServerMessages = useCallback((serverMessages: ConversationMessageWithSender[]) => {
+    const visibleServerMessages = serverMessages.filter((message) => !shouldHideBlockedMessage(message));
     setMessages((prev) => {
       const unmatchedOptimistic = prev.filter((message) =>
         message.id.startsWith("optimistic-") &&
-        !serverMessages.some((serverMessage) => isMatchingOptimisticMessage(message, serverMessage))
+        !visibleServerMessages.some((serverMessage) => isMatchingOptimisticMessage(message, serverMessage))
       );
-      const serverById = new Map(serverMessages.map((message) => [message.id, message]));
+      const serverById = new Map(visibleServerMessages.map((message) => [message.id, message]));
       const localOnlyMessages = prev.filter((message) =>
-        !message.id.startsWith("optimistic-") && !serverById.has(message.id)
+        !message.id.startsWith("optimistic-") && !serverById.has(message.id) && !shouldHideBlockedMessage(message)
       );
-      return [...serverMessages, ...localOnlyMessages, ...unmatchedOptimistic].sort(
+      return [...visibleServerMessages, ...localOnlyMessages, ...unmatchedOptimistic].sort(
         (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
       );
     });
-  }, []);
+  }, [shouldHideBlockedMessage]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -494,8 +537,8 @@ export function ConversationChat({
   }, []);
 
   useEffect(() => {
-    setMessages(initialMessages);
-  }, [initialMessages]);
+    setMessages(initialMessages.filter((message) => !shouldHideBlockedMessage(message)));
+  }, [initialMessages, shouldHideBlockedMessage]);
 
   useEffect(() => {
     setParticipants(initialParticipants);
@@ -678,6 +721,7 @@ export function ConversationChat({
         (payload) => {
           const newMsg = payload.new as Record<string, unknown>;
           const nextMsg = normalizeRealtimeMessage(newMsg, participantByIdRef.current);
+          if (shouldHideBlockedMessage(nextMsg)) return;
           setMessages((prev) => {
             if (prev.some((m) => m.id === nextMsg.id)) return prev;
             const matchingOptimistic = prev.find((message) => isMatchingOptimisticMessage(message, nextMsg));
@@ -702,6 +746,11 @@ export function ConversationChat({
         },
         (payload) => {
           const nextMsg = normalizeRealtimeMessage(payload.new as Record<string, unknown>, participantByIdRef.current);
+          if (shouldHideBlockedMessage(nextMsg)) {
+            setMessages((prev) => prev.filter((message) => message.id !== nextMsg.id));
+            setActionMessage((current) => current?.id === nextMsg.id ? null : current);
+            return;
+          }
           setMessages((prev) => prev.map((message) => message.id === nextMsg.id ? {...message, ...nextMsg, sender: message.sender ?? nextMsg.sender} : message));
           setActionMessage((current) => current?.id === nextMsg.id ? {...current, ...nextMsg, sender: current.sender ?? nextMsg.sender} : current);
           if (editingMessageId === nextMsg.id && nextMsg.is_deleted) {
@@ -749,7 +798,7 @@ export function ConversationChat({
       supabase.removeChannel(channel);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
-  }, [applyParticipantReadAt, conversationId, currentUserId, memberFallback, mergeServerMessages]);
+  }, [applyParticipantReadAt, conversationId, currentUserId, memberFallback, mergeServerMessages, shouldHideBlockedMessage]);
 
   const markVisibleMessagesRead = useCallback(async () => {
     if (!hasIncomingMessages) return;
@@ -1233,9 +1282,41 @@ export function ConversationChat({
     try {
       const { blockConversationUserAction } = await import("@/app/[locale]/server-actions");
       const res = await blockConversationUserAction(conversationId);
-      if (!res.success) setError(res.error ?? "update_failed");
+      if (!res.success) {
+        setError(res.error ?? "update_failed");
+        return;
+      }
+      const blockedAt = res.blockedAt ?? new Date().toISOString();
+      setLocalBlockedByMe(true);
+      setLocalBlockedByMeAt(blockedAt);
+      if (otherUserId) {
+        setMessages((prev) => prev.filter((message) =>
+          !(message.sender_id === otherUserId && new Date(message.created_at).getTime() >= new Date(blockedAt).getTime())
+        ));
+      }
     } catch (e) {
       console.error("block user error:", e);
+      setError("update_failed");
+    } finally {
+      setDetailsSaving(false);
+    }
+  }
+
+  async function handleUnblockUser() {
+    if (!isDirectConversation) return;
+    setDetailsSaving(true);
+    setError(null);
+    try {
+      const { unblockConversationUserAction } = await import("@/app/[locale]/server-actions");
+      const res = await unblockConversationUserAction(conversationId);
+      if (!res.success) {
+        setError(res.error ?? "update_failed");
+        return;
+      }
+      setLocalBlockedByMe(false);
+      setLocalBlockedByMeAt(null);
+    } catch (e) {
+      console.error("unblock user error:", e);
       setError("update_failed");
     } finally {
       setDetailsSaving(false);
@@ -1307,11 +1388,12 @@ export function ConversationChat({
           >
             <ConversationAvatar
               title={detailsTitle}
-              imageUrl={isDirectConversation ? otherParticipant?.avatar_url ?? null : groupImageUrl}
+              imageUrl={isDirectConversation && !isDirectBlocked ? otherParticipant?.avatar_url ?? null : groupImageUrl}
               participants={participants}
               isGroup={isIdeaGroup}
               memberFallback={memberFallback}
               otherUserId={otherUserId}
+              isBlocked={isDirectBlocked}
               className="h-9 w-9 md:h-10 md:w-10"
             />
             <div className="min-w-0 flex-1">
@@ -1691,10 +1773,11 @@ export function ConversationChat({
                     <div className="mx-auto h-28 w-28">
                       <ConversationAvatar
                         title={detailsTitle}
-                        imageUrl={isDirectConversation ? otherParticipant?.avatar_url ?? null : groupImageUrl}
+                        imageUrl={isDirectConversation && !isDirectBlocked ? otherParticipant?.avatar_url ?? null : groupImageUrl}
                         participants={participants}
                         isGroup={isIdeaGroup}
                         memberFallback={memberFallback}
+                        isBlocked={isDirectBlocked}
                         className="h-28 w-28"
                       />
                     </div>
@@ -1703,7 +1786,9 @@ export function ConversationChat({
                       {isDirectConversation ? (
                         <>
                           <p>{detailsUsername}</p>
-                          <p className="font-medium text-emerald-600 dark:text-emerald-300">{t("groupChat.onlineNow")}</p>
+                          <p className={cn("font-medium", isDirectBlocked ? "text-muted-foreground" : "text-emerald-600 dark:text-emerald-300")}>
+                            {isDirectBlocked ? t("groupChat.blockedProfile") : t("groupChat.onlineNow")}
+                          </p>
                         </>
                       ) : (
                         <>
@@ -1740,10 +1825,18 @@ export function ConversationChat({
                                 className="shrink-0 rounded-full outline-none ring-primary/40 focus-visible:ring-2"
                                 aria-label={t("groupChat.openProfile", { name })}
                               >
-                                <OnlineAvatar userId={participant.user?.id} label={name} avatarUrl={participant.user?.avatar_url ?? null} className="h-11 w-11" />
+                                {isDirectBlocked ? (
+                                  <ConversationAvatar title={name} imageUrl={null} participants={[]} isGroup={false} memberFallback={memberFallback} isBlocked className="h-11 w-11" />
+                                ) : (
+                                  <OnlineAvatar userId={participant.user?.id} label={name} avatarUrl={participant.user?.avatar_url ?? null} className="h-11 w-11" />
+                                )}
                               </Link>
                             ) : (
-                              <OnlineAvatar userId={participant.user?.id} label={name} avatarUrl={participant.user?.avatar_url ?? null} className="h-11 w-11" />
+                              isDirectBlocked ? (
+                                <ConversationAvatar title={name} imageUrl={null} participants={[]} isGroup={false} memberFallback={memberFallback} isBlocked className="h-11 w-11" />
+                              ) : (
+                                <OnlineAvatar userId={participant.user?.id} label={name} avatarUrl={participant.user?.avatar_url ?? null} className="h-11 w-11" />
+                              )
                             )}
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-sm font-medium text-foreground">
@@ -1766,10 +1859,17 @@ export function ConversationChat({
                   <section className="space-y-2 rounded-2xl border border-border/70 bg-card p-2 shadow-sm">
                     {isDirectConversation ? (
                       <>
-                        <button type="button" onClick={handleBlockUser} disabled={detailsSaving} className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-start text-sm font-semibold text-destructive transition hover:bg-destructive/10 disabled:opacity-50">
-                          <Ban size={17} />
-                          {t("groupChat.blockUser")}
-                        </button>
+                        {localBlockedByMe ? (
+                          <button type="button" onClick={handleUnblockUser} disabled={detailsSaving} className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-start text-sm font-semibold text-primary transition hover:bg-primary/10 disabled:opacity-50">
+                            <Ban size={17} />
+                            {t("groupChat.unblockUser")}
+                          </button>
+                        ) : (
+                          <button type="button" onClick={handleBlockUser} disabled={detailsSaving} className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-start text-sm font-semibold text-destructive transition hover:bg-destructive/10 disabled:opacity-50">
+                            <Ban size={17} />
+                            {t("groupChat.blockUser")}
+                          </button>
+                        )}
                         <button type="button" onClick={() => setShowReportSheet(true)} disabled={detailsSaving} className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-start text-sm font-semibold text-destructive transition hover:bg-destructive/10 disabled:opacity-50">
                           <Flag size={17} />
                           {t("groupChat.reportUser")}

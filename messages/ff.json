@@ -1985,6 +1985,8 @@
       "clearChat": "Clear chat",
       "deleteConversation": "Delete conversation",
       "blockUser": "Block user",
+      "unblockUser": "Unblock user",
+      "blockedProfile": "Blocked",
       "reportUser": "Report user",
       "onlineNow": "Online now",
       "lastActiveSoon": "Last seen coming soon",

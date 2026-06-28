@@ -68,6 +68,9 @@ export interface ConversationListItem {
   } | null;
   unread_count: number;
   other_participant: ConversationUserProfile | null;
+  is_blocked_by_me?: boolean;
+  is_blocked_by_other?: boolean;
+  blocked_at?: string | null;
 }
 
 export interface ConversationDetails {
@@ -85,6 +88,14 @@ export interface ConversationDetails {
   idea_status: string | null;
   member_count: number;
   participants: ConversationParticipantInfo[];
+}
+
+export interface ConversationBlockState {
+  blockedByMe: boolean;
+  blockedByOther: boolean;
+  blockedByMeAt: string | null;
+  blockedByOtherAt: string | null;
+  otherUserId: string | null;
 }
 
 type RawConversationParticipant = Partial<ConversationParticipantInfo> & {
@@ -174,6 +185,17 @@ function mapInboxRow(row: Record<string, unknown>): ConversationListItem {
   };
 }
 
+function mapLastMessage(row: Record<string, unknown> | null | undefined): ConversationListItem['last_message'] {
+  if (!row?.created_at) return null;
+  return {
+    message: asString(row.message),
+    message_type: normalizeMessageType(row.message_type),
+    image_url: asString(row.image_url),
+    created_at: row.created_at as string,
+    sender_id: row.sender_id as string,
+  };
+}
+
 export async function getUserConversations(userId: string): Promise<ConversationListItem[]> {
   const supabase = await createClient();
 
@@ -184,6 +206,63 @@ export async function getUserConversations(userId: string): Promise<Conversation
   }
 
   let conversations = ((data ?? []) as Record<string, unknown>[]).map(mapInboxRow);
+  const directOtherIds = conversations
+    .filter((conversation) => conversation.type === 'direct' && conversation.other_participant?.id)
+    .map((conversation) => conversation.other_participant?.id as string);
+
+  if (directOtherIds.length > 0) {
+    const { data: blockRows, error: blockError } = await supabase
+      .from('blocked_users')
+      .select('blocker_id, blocked_id, created_at')
+      .or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`);
+
+    if (!blockError && blockRows?.length) {
+      const blockedByMeAt = new Map<string, string>();
+      const blockedByOtherAt = new Map<string, string>();
+      blockRows.forEach((row) => {
+        if (row.blocker_id === userId) blockedByMeAt.set(row.blocked_id, row.created_at);
+        if (row.blocked_id === userId) blockedByOtherAt.set(row.blocker_id, row.created_at);
+      });
+
+      const lastVisibleMessages = new Map<string, ConversationListItem['last_message']>();
+      for (const conversation of conversations) {
+        const otherId = conversation.other_participant?.id;
+        const blockedAt = otherId ? blockedByMeAt.get(otherId) : null;
+        if (!otherId || !blockedAt) continue;
+
+        const { data: messageRows, error: messageError } = await supabase
+          .from('conversation_messages')
+          .select('message, message_type, image_url, created_at, sender_id')
+          .eq('conversation_id', conversation.id)
+          .order('created_at', { ascending: false })
+          .limit(100);
+
+        if (messageError) continue;
+        const visibleLastMessage = (messageRows ?? []).find((message) =>
+          !(message.sender_id === otherId && new Date(message.created_at).getTime() >= new Date(blockedAt).getTime())
+        );
+        lastVisibleMessages.set(conversation.id, mapLastMessage(visibleLastMessage as Record<string, unknown> | undefined));
+      }
+
+      conversations = conversations.map((conversation) => {
+        const otherId = conversation.other_participant?.id;
+        if (!otherId) return conversation;
+        const blockedAt = blockedByMeAt.get(otherId) ?? null;
+        const blockedMeAt = blockedByOtherAt.get(otherId) ?? null;
+        return {
+          ...conversation,
+          last_message: blockedAt ? (lastVisibleMessages.get(conversation.id) ?? null) : conversation.last_message,
+          unread_count: blockedAt && conversation.last_message?.sender_id === otherId
+            ? 0
+            : conversation.unread_count,
+          is_blocked_by_me: Boolean(blockedAt),
+          is_blocked_by_other: Boolean(blockedMeAt),
+          blocked_at: blockedAt,
+        };
+      });
+    }
+  }
+
   const { data: hiddenStates, error: hiddenError } = await supabase
     .from('conversation_user_states')
     .select('conversation_id, deleted_at')
@@ -199,7 +278,7 @@ export async function getUserConversations(userId: string): Promise<Conversation
       const deletedAt = deletedAtByConversation.get(conversation.id);
       if (!deletedAt) return true;
 
-      const lastActivityAt = conversation.last_message?.created_at ?? conversation.updated_at ?? conversation.created_at;
+      const lastActivityAt = conversation.last_message?.created_at ?? conversation.created_at;
       return new Date(lastActivityAt).getTime() > new Date(deletedAt).getTime();
     });
   }
@@ -408,6 +487,8 @@ export async function getConversationMessages(
   const supabase = await createClient();
 
   let hiddenBefore: string | null = null;
+  let blockedSenderId: string | null = null;
+  let blockedSenderSince: string | null = null;
   if (userId) {
     const { data: userState, error: stateError } = await supabase
       .from('conversation_user_states')
@@ -425,6 +506,12 @@ export async function getConversationMessages(
         hiddenBefore = clearedAt ?? deletedAt;
       }
     }
+
+    const blockState = await getDirectConversationBlockState(conversationId, userId);
+    if (blockState.blockedByMe && blockState.otherUserId && blockState.blockedByMeAt) {
+      blockedSenderId = blockState.otherUserId;
+      blockedSenderSince = blockState.blockedByMeAt;
+    }
   }
 
   let query = supabase
@@ -436,6 +523,10 @@ export async function getConversationMessages(
 
   if (hiddenBefore) {
     query = query.gt('created_at', hiddenBefore);
+  }
+
+  if (blockedSenderId && blockedSenderSince) {
+    query = query.or(`sender_id.neq.${blockedSenderId},created_at.lt.${blockedSenderSince}`);
   }
 
   const { data, error } = await query;
@@ -476,10 +567,6 @@ export async function sendConversationMessage(
   },
 ): Promise<{ id: string; created_at: string } | null> {
   const supabase = await createClient();
-  if (await isConversationBlockedForSender(conversationId, senderId)) {
-    console.error('sendConversationMessage blocked');
-    return null;
-  }
   const isTextInput = typeof input === 'string';
   const messageType = isTextInput ? 'text' : input.messageType ?? (input.imageUrl ? 'image' : 'text');
   const message = (isTextInput ? input : input.message ?? '').trim();
@@ -631,37 +718,65 @@ export async function markConversationRead(
   return readAt;
 }
 
-async function isConversationBlockedForSender(conversationId: string, senderId: string): Promise<boolean> {
-  const userClient = await createClient();
-  const client = createAdminClient() ?? userClient;
+export async function getDirectConversationBlockState(
+  conversationId: string,
+  userId: string,
+  conversationDetails?: ConversationDetails | null,
+): Promise<ConversationBlockState> {
+  const empty: ConversationBlockState = {
+    blockedByMe: false,
+    blockedByOther: false,
+    blockedByMeAt: null,
+    blockedByOtherAt: null,
+    otherUserId: null,
+  };
+  const supabase = await createClient();
 
-  const { data: conversation, error: conversationError } = await client
-    .from('conversations')
-    .select('id, type')
-    .eq('id', conversationId)
-    .maybeSingle();
+  let type = conversationDetails?.type ?? null;
+  let participantIds = conversationDetails?.participants.map((participant) => participant.user_id) ?? null;
 
-  if (conversationError || conversation?.type !== 'direct') return false;
+  if (!type) {
+    const { data: conversation, error: conversationError } = await supabase
+      .from('conversations')
+      .select('id, type')
+      .eq('id', conversationId)
+      .maybeSingle();
 
-  const { data: participants, error: participantsError } = await client
-    .from('conversation_participants')
-    .select('user_id, left_at, removed_at')
-    .eq('conversation_id', conversationId);
+    if (conversationError || !conversation) return empty;
+    type = conversation.type;
+  }
 
-  if (participantsError) return false;
-  const other = (participants ?? []).find((participant) =>
-    participant.user_id !== senderId && !participant.left_at && !participant.removed_at
-  );
-  if (!other?.user_id) return false;
+  if (type !== 'direct') return empty;
 
-  const { data: blocks, error: blockError } = await client
+  if (!participantIds) {
+    const { data: participants, error: participantsError } = await supabase
+      .from('conversation_participants')
+      .select('user_id')
+      .eq('conversation_id', conversationId);
+
+    if (participantsError) return empty;
+    participantIds = (participants ?? []).map((participant) => participant.user_id);
+  }
+
+  const otherUserId = participantIds.find((participantId) => participantId !== userId) ?? null;
+  if (!otherUserId) return empty;
+
+  const { data: blocks, error: blockError } = await supabase
     .from('blocked_users')
-    .select('blocker_id')
-    .or(`and(blocker_id.eq.${senderId},blocked_id.eq.${other.user_id}),and(blocker_id.eq.${other.user_id},blocked_id.eq.${senderId})`)
-    .limit(1);
+    .select('blocker_id, blocked_id, created_at')
+    .or(`and(blocker_id.eq.${userId},blocked_id.eq.${otherUserId}),and(blocker_id.eq.${otherUserId},blocked_id.eq.${userId})`);
 
-  if (blockError) return false;
-  return (blocks ?? []).length > 0;
+  if (blockError) return { ...empty, otherUserId };
+  const blockedByMe = (blocks ?? []).find((block) => block.blocker_id === userId);
+  const blockedByOther = (blocks ?? []).find((block) => block.blocked_id === userId);
+
+  return {
+    blockedByMe: Boolean(blockedByMe),
+    blockedByOther: Boolean(blockedByOther),
+    blockedByMeAt: blockedByMe?.created_at ?? null,
+    blockedByOtherAt: blockedByOther?.created_at ?? null,
+    otherUserId,
+  };
 }
 
 async function upsertConversationUserState(
@@ -728,18 +843,35 @@ export async function muteConversationForUser(
 }
 
 export async function blockDirectConversationUser(conversationId: string, userId: string): Promise<boolean> {
-  const conversation = await getConversationById(conversationId, userId);
-  if (!conversation || conversation.type !== 'direct') return false;
-  const other = conversation.participants.find((participant) => participant.user_id !== userId);
-  if (!other?.user_id) return false;
+  const blockState = await getDirectConversationBlockState(conversationId, userId);
+  if (!blockState.otherUserId) return false;
 
   const supabase = await createClient();
   const { error } = await supabase
     .from('blocked_users')
-    .upsert({ blocker_id: userId, blocked_id: other.user_id }, { onConflict: 'blocker_id,blocked_id' });
+    .upsert({ blocker_id: userId, blocked_id: blockState.otherUserId }, { onConflict: 'blocker_id,blocked_id' });
 
   if (error) {
     console.error('blockDirectConversationUser error:', error);
+    return false;
+  }
+
+  return true;
+}
+
+export async function unblockDirectConversationUser(conversationId: string, userId: string): Promise<boolean> {
+  const blockState = await getDirectConversationBlockState(conversationId, userId);
+  if (!blockState.otherUserId) return false;
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('blocked_users')
+    .delete()
+    .eq('blocker_id', userId)
+    .eq('blocked_id', blockState.otherUserId);
+
+  if (error) {
+    console.error('unblockDirectConversationUser error:', error);
     return false;
   }
 

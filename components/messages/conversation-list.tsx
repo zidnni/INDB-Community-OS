@@ -1,7 +1,7 @@
 "use client";
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import { Archive, Inbox, MessageSquare, Search } from "lucide-react";
+import { Archive, Ban, Inbox, MessageSquare, Search } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
@@ -32,7 +32,7 @@ function timeAgo(dateStr: string, locale: string, nowLabel: string): string {
 
 function typeBadge(type: string, t: TranslationFn): string {
   if (type === "graatek") return t("groupChat.gar3tak");
-  if (type === "direct") return t("direct");
+  if (type === "direct") return t("groupChat.directChat");
   return t("idea");
 }
 
@@ -124,6 +124,7 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
         if (index === -1) return prev;
         const current = prev[index];
         const senderId = typeof row.sender_id === "string" ? row.sender_id : "";
+        if (current.is_blocked_by_me && senderId === current.other_participant?.id) return prev;
         const updated: ConversationListItem = {
           ...current,
           last_message: {
@@ -217,6 +218,7 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
               const avatarUrl = isIdeaGroup
                 ? conversation.image_url
                 : conversation.other_participant?.avatar_url ?? null;
+              const isBlocked = Boolean(conversation.is_blocked_by_me || conversation.is_blocked_by_other);
               const lastMessage = conversation.last_message?.message_type === "image"
                 ? conversation.last_message.message
                   ? t("groupChat.imageWithCaption", { caption: conversation.last_message.message })
@@ -238,7 +240,13 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
                       isActive ? "border-primary bg-primary/[0.07]" : "border-transparent",
                     )}
                   >
-                    <OnlineAvatar userId={otherUserId} label={name} avatarUrl={avatarUrl} className="h-10 w-10 shrink-0 md:h-11 md:w-11" />
+                    {isBlocked && !isIdeaGroup ? (
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground md:h-11 md:w-11">
+                        <Ban size={18} />
+                      </div>
+                    ) : (
+                      <OnlineAvatar userId={otherUserId} label={name} avatarUrl={avatarUrl} className="h-10 w-10 shrink-0 md:h-11 md:w-11" />
+                    )}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex min-w-0 items-center gap-1.5">

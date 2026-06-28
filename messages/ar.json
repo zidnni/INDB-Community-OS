@@ -3066,6 +3066,8 @@
       "clearChat": "مسح المحادثة",
       "deleteConversation": "حذف المحادثة",
       "blockUser": "حظر المستخدم",
+      "unblockUser": "إلغاء الحظر",
+      "blockedProfile": "محظور",
       "reportUser": "الإبلاغ عن المستخدم",
       "onlineNow": "متصل الآن",
       "lastActiveSoon": "آخر ظهور قريبا",

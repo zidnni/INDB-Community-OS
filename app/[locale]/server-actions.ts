@@ -4576,12 +4576,25 @@ export async function muteConversationAction(
 
 export async function blockConversationUserAction(
   conversationId: string,
+): Promise<{ success: boolean; error?: string; blockedAt?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'unauthorized' };
+  const { blockDirectConversationUser, getDirectConversationBlockState } = await import('@/lib/data/conversations');
+  const ok = await blockDirectConversationUser(conversationId, user.id);
+  if (!ok) return { success: false, error: 'update_failed' };
+  const blockState = await getDirectConversationBlockState(conversationId, user.id);
+  return { success: true, blockedAt: blockState.blockedByMeAt ?? new Date().toISOString() };
+}
+
+export async function unblockConversationUserAction(
+  conversationId: string,
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: 'unauthorized' };
-  const { blockDirectConversationUser } = await import('@/lib/data/conversations');
-  const ok = await blockDirectConversationUser(conversationId, user.id);
+  const { unblockDirectConversationUser } = await import('@/lib/data/conversations');
+  const ok = await unblockDirectConversationUser(conversationId, user.id);
   if (!ok) return { success: false, error: 'update_failed' };
   return { success: true };
 }

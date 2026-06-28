@@ -3066,6 +3066,8 @@
       "clearChat": "Effacer la conversation",
       "deleteConversation": "Supprimer la conversation",
       "blockUser": "Bloquer l'utilisateur",
+      "unblockUser": "Débloquer l'utilisateur",
+      "blockedProfile": "Bloqué",
       "reportUser": "Signaler l'utilisateur",
       "onlineNow": "En ligne",
       "lastActiveSoon": "Dernière activité bientôt",
