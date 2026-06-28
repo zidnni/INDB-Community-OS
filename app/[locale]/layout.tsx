@@ -121,19 +121,25 @@ export default async function LocaleLayout({
               <Navbar locale={locale} />
               <div
                 className={cn(
-                  "mx-auto grid w-full max-w-7xl grid-cols-1 gap-4 px-3 py-4 sm:gap-5 sm:px-4 sm:py-5 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-6 lg:py-6 xl:grid-cols-[250px_minmax(0,1fr)_310px]",
-                  isMessagesRoute && "max-lg:gap-0 max-lg:px-0 max-lg:py-0",
+                  "mx-auto grid w-full grid-cols-1",
+                  isMessagesRoute
+                    ? "max-w-7xl gap-0 px-0 py-0 sm:px-4 sm:py-4 lg:px-6 lg:py-6"
+                    : "max-w-7xl gap-4 px-3 py-4 sm:gap-5 sm:px-4 sm:py-5 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-6 lg:py-6 xl:grid-cols-[250px_minmax(0,1fr)_310px]",
                 )}
               >
-                <aside className="hidden lg:block">
-                  <Sidebar />
-                </aside>
+                {!isMessagesRoute ? (
+                  <aside className="hidden lg:block">
+                    <Sidebar />
+                  </aside>
+                ) : null}
                 <main className={cn("min-w-0", isMessagesRoute && "max-lg:min-h-0")}>
                   <PageTransition>{children}</PageTransition>
                 </main>
-                <aside className="hidden xl:block">
-                  <RightSidebar />
-                </aside>
+                {!isMessagesRoute ? (
+                  <aside className="hidden xl:block">
+                    <RightSidebar />
+                  </aside>
+                ) : null}
               </div>
               {!isConversationRoute ? (
                 <MobileNav
