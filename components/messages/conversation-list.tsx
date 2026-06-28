@@ -1,7 +1,7 @@
 "use client";
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
-import { Archive, Ban, Inbox, MessageSquare, Search } from "lucide-react";
+import { Archive, Ban, Gift, Inbox, Lightbulb, MessageSquare, Search, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils/cn";
 import type { ConversationListItem } from "@/lib/data/conversations";
 
 type TranslationFn = (key: string, values?: Record<string, string | number>) => string;
+type InboxCategory = "people" | "graatek" | "ideas";
 
 function timeAgo(dateStr: string, locale: string, nowLabel: string): string {
   const now = Date.now();
@@ -43,6 +44,13 @@ function statusLabel(status: string | null | undefined, t: TranslationFn): strin
   return t(key);
 }
 
+function conversationCategory(conversation: ConversationListItem): InboxCategory | null {
+  if (conversation.type === "graatek") return "graatek";
+  if (conversation.type === "idea") return "ideas";
+  if (conversation.type === "direct" && conversation.is_mutual_follow) return "people";
+  return null;
+}
+
 interface ConversationListProps {
   initialConversations: ConversationListItem[];
   currentUserId: string;
@@ -57,13 +65,40 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const [filterArchived, setFilterArchived] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<InboxCategory>("people");
+  const activeConvId = pathname?.match(/\/messages\/([^/?#]+)/)?.[1] ?? searchParams.get("conversation");
+  const activeConvIdRef = useRef(activeConvId);
+
+  const visibleByArchive = useMemo(() => {
+    return conversations.filter((conversation) => {
+      if (!filterArchived && conversation.archived_at) return false;
+      if (filterArchived && !conversation.archived_at) return false;
+      return true;
+    });
+  }, [conversations, filterArchived]);
+
+  const categoryStats = useMemo(() => {
+    const stats: Record<InboxCategory, { count: number; unread: number }> = {
+      people: { count: 0, unread: 0 },
+      graatek: { count: 0, unread: 0 },
+      ideas: { count: 0, unread: 0 },
+    };
+
+    visibleByArchive.forEach((conversation) => {
+      const category = conversationCategory(conversation);
+      if (!category) return;
+      stats[category].count += 1;
+      stats[category].unread += conversation.unread_count;
+    });
+
+    return stats;
+  }, [visibleByArchive]);
 
   const filtered = useMemo(() => {
     const q = deferredSearchQuery.trim().toLowerCase();
 
-    return conversations.filter((conversation) => {
-      if (!filterArchived && conversation.archived_at) return false;
-      if (filterArchived && !conversation.archived_at) return false;
+    return visibleByArchive.filter((conversation) => {
+      if (conversationCategory(conversation) !== activeCategory) return false;
       if (!q) return true;
 
       const otherName = (
@@ -78,10 +113,16 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
         (conversation.idea_title ?? "").toLowerCase().includes(q)
       );
     });
-  }, [conversations, deferredSearchQuery, filterArchived]);
+  }, [activeCategory, deferredSearchQuery, visibleByArchive]);
 
-  const activeConvId = pathname?.match(/\/messages\/([^/?#]+)/)?.[1] ?? searchParams.get("conversation");
-  const activeConvIdRef = useRef(activeConvId);
+  const categories = useMemo(
+    () => [
+      { key: "people" as const, label: t("categories.people"), icon: Users, ...categoryStats.people },
+      { key: "graatek" as const, label: t("categories.graatek"), icon: Gift, ...categoryStats.graatek },
+      { key: "ideas" as const, label: t("categories.ideas"), icon: Lightbulb, ...categoryStats.ideas },
+    ],
+    [categoryStats, t],
+  );
 
   useEffect(() => {
     setConversations(initialConversations);
@@ -90,6 +131,9 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
   useEffect(() => {
     activeConvIdRef.current = activeConvId;
     if (!activeConvId) return;
+    const activeConversation = conversations.find((conversation) => conversation.id === activeConvId);
+    const activeConversationCategory = activeConversation ? conversationCategory(activeConversation) : null;
+    if (activeConversationCategory) setActiveCategory(activeConversationCategory);
     setConversations((prev) =>
       prev.map((conversation) =>
         conversation.id === activeConvId
@@ -184,6 +228,36 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
       </div>
 
       <div className="border-b border-border/70 bg-background px-3 py-2">
+        <div className="mb-2 grid grid-cols-3 gap-1 rounded-2xl bg-muted/60 p-1">
+          {categories.map((category) => {
+            const Icon = category.icon;
+            const active = activeCategory === category.key;
+            return (
+              <button
+                key={category.key}
+                type="button"
+                onClick={() => setActiveCategory(category.key)}
+                className={cn(
+                  "relative flex min-h-11 min-w-0 items-center justify-center gap-1.5 rounded-xl px-2 text-xs font-semibold transition",
+                  active ? "bg-card text-foreground shadow-sm" : "text-muted-foreground active:bg-card/60 md:hover:bg-card/50",
+                )}
+                aria-pressed={active}
+              >
+                <Icon size={15} className="shrink-0" />
+                <span className="truncate">{category.label}</span>
+                {category.unread > 0 ? (
+                  <span className="absolute -top-1 end-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                    {category.unread > 99 ? "99+" : category.unread}
+                  </span>
+                ) : category.count > 0 ? (
+                  <span className="hidden rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground sm:inline-flex">
+                    {category.count}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
         <div className="relative">
           <Search size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -199,9 +273,10 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
 
       <div className="flex-1 overflow-y-auto scroll-smooth pb-[max(0.75rem,env(safe-area-inset-bottom))] md:pb-0">
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+          <div className="flex flex-col items-center justify-center px-6 py-16 text-center text-muted-foreground">
             <MessageSquare size={36} className="mb-3 opacity-30" />
-            <p className="text-sm">{t("empty")}</p>
+            <p className="text-sm font-medium text-foreground">{t(`categoryEmpty.${activeCategory}`)}</p>
+            <p className="mt-1 text-xs">{t("categoryEmptyHint")}</p>
           </div>
         ) : (
           <ul>

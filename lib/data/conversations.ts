@@ -68,6 +68,7 @@ export interface ConversationListItem {
   } | null;
   unread_count: number;
   other_participant: ConversationUserProfile | null;
+  is_mutual_follow?: boolean;
   is_blocked_by_me?: boolean;
   is_blocked_by_other?: boolean;
   blocked_at?: string | null;
@@ -209,8 +210,44 @@ export async function getUserConversations(userId: string): Promise<Conversation
   const directOtherIds = conversations
     .filter((conversation) => conversation.type === 'direct' && conversation.other_participant?.id)
     .map((conversation) => conversation.other_participant?.id as string);
+  const uniqueDirectOtherIds = Array.from(new Set(directOtherIds));
+  const mutualFollowIds = new Set<string>();
 
-  if (directOtherIds.length > 0) {
+  if (uniqueDirectOtherIds.length > 0) {
+    const [{ data: followingRows, error: followingError }, { data: followerRows, error: followerError }] = await Promise.all([
+      supabase
+        .from('user_follows')
+        .select('following_id')
+        .eq('follower_id', userId)
+        .in('following_id', uniqueDirectOtherIds),
+      supabase
+        .from('user_follows')
+        .select('follower_id')
+        .eq('following_id', userId)
+        .in('follower_id', uniqueDirectOtherIds),
+    ]);
+
+    if (!followingError && !followerError) {
+      const followingIds = new Set((followingRows ?? []).map((row) => row.following_id as string));
+      const followerIds = new Set((followerRows ?? []).map((row) => row.follower_id as string));
+      uniqueDirectOtherIds.forEach((otherId) => {
+        if (followingIds.has(otherId) && followerIds.has(otherId)) {
+          mutualFollowIds.add(otherId);
+        }
+      });
+    }
+
+    conversations = conversations.map((conversation) => {
+      const otherId = conversation.other_participant?.id;
+      if (conversation.type !== 'direct' || !otherId) return conversation;
+      return {
+        ...conversation,
+        is_mutual_follow: mutualFollowIds.has(otherId),
+      };
+    });
+  }
+
+  if (uniqueDirectOtherIds.length > 0) {
     const { data: blockRows, error: blockError } = await supabase
       .from('blocked_users')
       .select('blocker_id, blocked_id, created_at')

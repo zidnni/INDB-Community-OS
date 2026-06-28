@@ -1882,6 +1882,17 @@
     "activeConversations": "{count} ndotooje golleeje",
     "unreadMessages": "{count} mesaje njaɓaaka",
     "typing": "no winndude...",
+    "categories": {
+      "people": "People",
+      "graatek": "Graatek",
+      "ideas": "Idea groups"
+    },
+    "categoryEmpty": {
+      "people": "No messages with mutual followers yet.",
+      "graatek": "No Graatek conversations yet.",
+      "ideas": "No idea groups yet."
+    },
+    "categoryEmptyHint": "Conversations will appear here when they are available.",
     "groupChat": {
       "memberFallback": "Gollotooɗo",
       "active": "E doggol",

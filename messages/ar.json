@@ -2963,6 +2963,17 @@
     "activeConversations": "{count} محادثة نشطة",
     "unreadMessages": "{count} رسالة غير مقروءة",
     "typing": "يكتب...",
+    "categories": {
+      "people": "الأشخاص",
+      "graatek": "گرعتك",
+      "ideas": "مجموعات الأفكار"
+    },
+    "categoryEmpty": {
+      "people": "لا توجد رسائل مع متابعين مشتركين.",
+      "graatek": "لا توجد محادثات گرعتك بعد.",
+      "ideas": "لا توجد مجموعات أفكار بعد."
+    },
+    "categoryEmptyHint": "ستظهر المحادثات هنا عند توفرها.",
     "groupChat": {
       "memberFallback": "عضو",
       "active": "نشط",

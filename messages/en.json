@@ -3047,6 +3047,17 @@
     "activeConversations": "{count} active conversations",
     "unreadMessages": "{count} unread messages",
     "typing": "is typing...",
+    "categories": {
+      "people": "People",
+      "graatek": "Graatek",
+      "ideas": "Idea groups"
+    },
+    "categoryEmpty": {
+      "people": "No messages with mutual followers yet.",
+      "graatek": "No Graatek conversations yet.",
+      "ideas": "No idea groups yet."
+    },
+    "categoryEmptyHint": "Conversations will appear here when they are available.",
     "groupChat": {
       "memberFallback": "Member",
       "active": "Active",

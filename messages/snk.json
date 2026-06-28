@@ -1879,6 +1879,17 @@
     "activeConversations": "{count} ndotooje golleje",
     "unreadMessages": "{count} mesaase xaatu xeete",
     "typing": "a winndu...",
+    "categories": {
+      "people": "People",
+      "graatek": "Graatek",
+      "ideas": "Idea groups"
+    },
+    "categoryEmpty": {
+      "people": "No messages with mutual followers yet.",
+      "graatek": "No Graatek conversations yet.",
+      "ideas": "No idea groups yet."
+    },
+    "categoryEmptyHint": "Conversations will appear here when they are available.",
     "groupChat": {
       "memberFallback": "Komme",
       "active": "Ga na",

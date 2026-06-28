@@ -2963,6 +2963,17 @@
     "activeConversations": "{count} conversations actives",
     "unreadMessages": "{count} messages non lus",
     "typing": "écrit...",
+    "categories": {
+      "people": "Personnes",
+      "graatek": "Graatek",
+      "ideas": "Groupes d'idées"
+    },
+    "categoryEmpty": {
+      "people": "Aucun message avec des abonnés mutuels.",
+      "graatek": "Aucune conversation Graatek pour le moment.",
+      "ideas": "Aucun groupe d'idées pour le moment."
+    },
+    "categoryEmptyHint": "Les conversations apparaîtront ici lorsqu'elles seront disponibles.",
     "groupChat": {
       "memberFallback": "Membre",
       "active": "Actif",
