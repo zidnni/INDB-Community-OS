@@ -4526,13 +4526,13 @@ export async function leaveIdeaGroupAction(
 
 export async function markConversationReadAction(
   conversationId: string,
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; readAt?: string; error?: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: 'unauthorized' };
   const { markConversationRead } = await import('@/lib/data/conversations');
-  await markConversationRead(conversationId, user.id);
-  return { success: true };
+  const readAt = await markConversationRead(conversationId, user.id);
+  return { success: true, readAt };
 }
 
 export async function editConversationMessageAction(

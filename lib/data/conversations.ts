@@ -551,7 +551,7 @@ export async function reportConversationMessage(
 export async function markConversationRead(
   conversationId: string,
   userId: string,
-): Promise<void> {
+): Promise<string> {
   const supabase = await createClient();
   const readAt = new Date().toISOString();
   const { error } = await supabase.rpc('mark_conversation_read', {
@@ -576,6 +576,8 @@ export async function markConversationRead(
     .eq('conversation_id', conversationId)
     .neq('sender_id', userId)
     .is('read_at', null);
+
+  return readAt;
 }
 
 export async function searchUserConversations(

@@ -93,6 +93,28 @@ function normalizeRealtimeMessage(
   };
 }
 
+function sameImageSet(a: string[] | null | undefined, b: string[] | null | undefined) {
+  return (a ?? []).join("|") === (b ?? []).join("|");
+}
+
+function isMatchingOptimisticMessage(
+  optimistic: ConversationMessageWithSender,
+  confirmed: ConversationMessageWithSender,
+) {
+  if (!optimistic.id.startsWith("optimistic-")) return false;
+  if (optimistic.conversation_id !== confirmed.conversation_id) return false;
+  if (optimistic.sender_id !== confirmed.sender_id) return false;
+  if ((optimistic.message ?? "") !== (confirmed.message ?? "")) return false;
+  if (optimistic.message_type !== confirmed.message_type) return false;
+  if (!sameImageSet(optimistic.image_urls, confirmed.image_urls)) return false;
+
+  const optimisticTime = new Date(optimistic.created_at).getTime();
+  const confirmedTime = new Date(confirmed.created_at).getTime();
+  return Number.isFinite(optimisticTime) && Number.isFinite(confirmedTime)
+    ? Math.abs(optimisticTime - confirmedTime) < 60000
+    : true;
+}
+
 type TranslationFn = (key: string, values?: Record<string, string | number>) => string;
 
 function statusLabel(status: string | null | undefined, t: TranslationFn) {
@@ -298,11 +320,15 @@ export function ConversationChat({
       const readerIds = new Set<string>();
       activeOtherParticipants.forEach((participant) => {
         if (!participant.last_read_at) return false;
-        if (new Date(participant.last_read_at).getTime() >= createdAt) {
+        const participantReadAt = new Date(participant.last_read_at).getTime();
+        if (participantReadAt > Date.now() + 30000) return false;
+        if (participantReadAt >= createdAt) {
           readerIds.add(participant.user_id);
         }
       });
-      const readCount = Math.max(readerIds.size, message.read_at ? 1 : 0);
+      const messageReadAt = message.read_at ? new Date(message.read_at).getTime() : 0;
+      const hasMessageReadAt = messageReadAt > 0 && messageReadAt <= Date.now() + 30000;
+      const readCount = Math.max(readerIds.size, hasMessageReadAt ? 1 : 0);
       if (readCount === 0) continue;
       if (!latest || createdAt >= latest.createdAt) {
         latest = { messageId: message.id, seenByCount: readCount, createdAt };
@@ -357,9 +383,15 @@ export function ConversationChat({
 
   const mergeServerMessages = useCallback((serverMessages: ConversationMessageWithSender[]) => {
     setMessages((prev) => {
+      const unmatchedOptimistic = prev.filter((message) =>
+        message.id.startsWith("optimistic-") &&
+        !serverMessages.some((serverMessage) => isMatchingOptimisticMessage(message, serverMessage))
+      );
       const serverById = new Map(serverMessages.map((message) => [message.id, message]));
-      const optimisticMessages = prev.filter((message) => message.id.startsWith("optimistic-") && !serverById.has(message.id));
-      return [...serverMessages, ...optimisticMessages].sort(
+      const localOnlyMessages = prev.filter((message) =>
+        !message.id.startsWith("optimistic-") && !serverById.has(message.id)
+      );
+      return [...serverMessages, ...localOnlyMessages, ...unmatchedOptimistic].sort(
         (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
       );
     });
@@ -592,9 +624,18 @@ export function ConversationChat({
         },
         (payload) => {
           const newMsg = payload.new as Record<string, unknown>;
+          const nextMsg = normalizeRealtimeMessage(newMsg, participantByIdRef.current);
           setMessages((prev) => {
-            if (prev.some((m) => m.id === newMsg.id)) return prev;
-            return [...prev, normalizeRealtimeMessage(newMsg, participantByIdRef.current)];
+            if (prev.some((m) => m.id === nextMsg.id)) return prev;
+            const matchingOptimistic = prev.find((message) => isMatchingOptimisticMessage(message, nextMsg));
+            if (matchingOptimistic) {
+              return prev.map((message) =>
+                message.id === matchingOptimistic.id
+                  ? {...nextMsg, sender: message.sender ?? nextMsg.sender}
+                  : message,
+              );
+            }
+            return [...prev, nextMsg];
           });
         },
       )
@@ -663,8 +704,9 @@ export function ConversationChat({
     async function markRead() {
       try {
         const { markConversationReadAction } = await import("@/app/[locale]/server-actions");
-        await markConversationReadAction(conversationId);
-        const readAt = new Date().toISOString();
+        const res = await markConversationReadAction(conversationId);
+        if (!res.success || !res.readAt) return;
+        const readAt = res.readAt;
         applyParticipantReadAt(currentUserId, readAt);
         sendReadReceipt(readAt);
       } catch (e) {
