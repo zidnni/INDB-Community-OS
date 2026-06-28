@@ -262,6 +262,8 @@ export function ConversationChat({
   const imageInputRef = useRef<HTMLInputElement>(null);
   const groupImageInputRef = useRef<HTMLInputElement>(null);
   const realtimeChannelRef = useRef<ReturnType<ReturnType<typeof createClient>["channel"]> | null>(null);
+  const realtimeReadyRef = useRef(false);
+  const pendingReadReceiptRef = useRef<{ reader_id: string; read_at: string } | null>(null);
   const nearBottomRef = useRef(true);
   const viewerTouchStartXRef = useRef<number | null>(null);
   const viewerTouchStartYRef = useRef<number | null>(null);
@@ -324,6 +326,24 @@ export function ConversationChat({
           : participant,
       ),
     );
+  }, [currentUserId]);
+
+  const sendReadReceipt = useCallback((readAt: string) => {
+    const payload = {
+      reader_id: currentUserId,
+      read_at: readAt,
+    };
+
+    if (!realtimeReadyRef.current || !realtimeChannelRef.current) {
+      pendingReadReceiptRef.current = payload;
+      return;
+    }
+
+    realtimeChannelRef.current.send({
+      type: "broadcast",
+      event: "read_receipt",
+      payload,
+    });
   }, [currentUserId]);
 
   useEffect(() => {
@@ -586,14 +606,28 @@ export function ConversationChat({
           applyParticipantReadAt(readerId, readAt);
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        realtimeReadyRef.current = status === "SUBSCRIBED";
+        if (status !== "SUBSCRIBED" || !pendingReadReceiptRef.current) return;
+
+        channel.send({
+          type: "broadcast",
+          event: "read_receipt",
+          payload: pendingReadReceiptRef.current,
+        });
+        pendingReadReceiptRef.current = null;
+      });
 
     realtimeChannelRef.current = channel;
+    const refreshTimer = window.setInterval(refreshConversation, 5000);
 
     return () => {
+      window.clearInterval(refreshTimer);
       if (realtimeChannelRef.current === channel) {
         realtimeChannelRef.current = null;
       }
+      realtimeReadyRef.current = false;
+      pendingReadReceiptRef.current = null;
       supabase.removeChannel(channel);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
@@ -606,20 +640,13 @@ export function ConversationChat({
         await markConversationReadAction(conversationId);
         const readAt = new Date().toISOString();
         applyParticipantReadAt(currentUserId, readAt);
-        realtimeChannelRef.current?.send({
-          type: "broadcast",
-          event: "read_receipt",
-          payload: {
-            reader_id: currentUserId,
-            read_at: readAt,
-          },
-        });
+        sendReadReceipt(readAt);
       } catch (e) {
         console.error("markRead error:", e);
       }
     }
     markRead();
-  }, [applyParticipantReadAt, conversationId, currentUserId, messages.length]);
+  }, [applyParticipantReadAt, conversationId, currentUserId, messages.length, sendReadReceipt]);
 
   const broadcastTyping = useCallback(() => {
     if (typingBroadcastRef.current) return;
