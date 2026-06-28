@@ -262,6 +262,7 @@ export function ConversationChat({
   const bottomRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const groupImageInputRef = useRef<HTMLInputElement>(null);
+  const realtimeChannelRef = useRef<ReturnType<ReturnType<typeof createClient>["channel"]> | null>(null);
   const nearBottomRef = useRef(true);
   const viewerTouchStartXRef = useRef<number | null>(null);
   const viewerTouchStartYRef = useRef<number | null>(null);
@@ -290,6 +291,21 @@ export function ConversationChat({
   useEffect(() => {
     participantByIdRef.current = participantById;
   }, [participantById]);
+
+  const applyParticipantReadAt = useCallback((userId: string, readAt: string | null) => {
+    if (!readAt) return;
+    setParticipants((prev) =>
+      prev.map((participant) =>
+        participant.user_id === userId
+          ? {
+              ...participant,
+              last_read_at: readAt,
+              unread_count: participant.user_id === currentUserId ? 0 : participant.unread_count,
+            }
+          : participant,
+      ),
+    );
+  }, [currentUserId]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -481,7 +497,27 @@ export function ConversationChat({
           table: "conversation_participants",
           filter: `conversation_id=eq.${conversationId}`,
         },
-        refreshConversation,
+        (payload) => {
+          const participant = payload.new as Partial<ConversationParticipantInfo>;
+          if (participant.user_id) {
+            setParticipants((prev) =>
+              prev.map((item) =>
+                item.user_id === participant.user_id
+                  ? {
+                      ...item,
+                      role: participant.role ?? item.role,
+                      last_read_at: participant.last_read_at ?? item.last_read_at,
+                      unread_count: typeof participant.unread_count === "number" ? participant.unread_count : item.unread_count,
+                      left_at: participant.left_at ?? item.left_at,
+                      removed_at: participant.removed_at ?? item.removed_at,
+                      removed_by: participant.removed_by ?? item.removed_by,
+                    }
+                  : item,
+              ),
+            );
+          }
+          refreshConversation();
+        },
       )
       .on(
         "postgres_changes",
@@ -524,25 +560,47 @@ export function ConversationChat({
           typingTimeoutRef.current = setTimeout(() => setTypingName(null), 2500);
         }
       })
+      .on("broadcast", { event: "read_receipt" }, (payload) => {
+        const readerId = payload.payload.reader_id as string | undefined;
+        const readAt = payload.payload.read_at as string | undefined;
+        if (readerId && readerId !== currentUserId && readAt) {
+          applyParticipantReadAt(readerId, readAt);
+        }
+      })
       .subscribe();
 
+    realtimeChannelRef.current = channel;
+
     return () => {
+      if (realtimeChannelRef.current === channel) {
+        realtimeChannelRef.current = null;
+      }
       supabase.removeChannel(channel);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     };
-  }, [conversationId, currentUserId, memberFallback]);
+  }, [applyParticipantReadAt, conversationId, currentUserId, memberFallback]);
 
   useEffect(() => {
     async function markRead() {
       try {
         const { markConversationReadAction } = await import("@/app/[locale]/server-actions");
         await markConversationReadAction(conversationId);
+        const readAt = new Date().toISOString();
+        applyParticipantReadAt(currentUserId, readAt);
+        realtimeChannelRef.current?.send({
+          type: "broadcast",
+          event: "read_receipt",
+          payload: {
+            reader_id: currentUserId,
+            read_at: readAt,
+          },
+        });
       } catch (e) {
         console.error("markRead error:", e);
       }
     }
     markRead();
-  }, [conversationId, messages.length]);
+  }, [applyParticipantReadAt, conversationId, currentUserId, messages.length]);
 
   const broadcastTyping = useCallback(() => {
     if (typingBroadcastRef.current) return;
