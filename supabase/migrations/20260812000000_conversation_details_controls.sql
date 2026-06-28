@@ -1,3 +1,21 @@
+create or replace function public.can_access_conversation(p_conv_id uuid, p_user_id uuid default auth.uid())
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.conversation_participants cp
+    where cp.conversation_id = p_conv_id
+      and cp.user_id = p_user_id
+      and p_user_id is not null
+      and cp.left_at is null
+      and cp.removed_at is null
+  );
+$$;
+
 create table if not exists public.blocked_users (
   blocker_id uuid not null references public.profiles(id) on delete cascade,
   blocked_id uuid not null references public.profiles(id) on delete cascade,
