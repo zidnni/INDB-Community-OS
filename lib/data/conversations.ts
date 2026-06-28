@@ -186,13 +186,22 @@ export async function getUserConversations(userId: string): Promise<Conversation
   let conversations = ((data ?? []) as Record<string, unknown>[]).map(mapInboxRow);
   const { data: hiddenStates, error: hiddenError } = await supabase
     .from('conversation_user_states')
-    .select('conversation_id')
+    .select('conversation_id, deleted_at')
     .eq('user_id', userId)
     .not('deleted_at', 'is', null);
 
   if (!hiddenError && hiddenStates?.length) {
-    const hiddenIds = new Set(hiddenStates.map((state) => state.conversation_id));
-    conversations = conversations.filter((conversation) => !hiddenIds.has(conversation.id));
+    const deletedAtByConversation = new Map(
+      hiddenStates.map((state) => [state.conversation_id, state.deleted_at as string | null]),
+    );
+
+    conversations = conversations.filter((conversation) => {
+      const deletedAt = deletedAtByConversation.get(conversation.id);
+      if (!deletedAt) return true;
+
+      const lastActivityAt = conversation.last_message?.created_at ?? conversation.updated_at ?? conversation.created_at;
+      return new Date(lastActivityAt).getTime() > new Date(deletedAt).getTime();
+    });
   }
 
   const ideaIdsNeedingImages = conversations
@@ -398,7 +407,7 @@ export async function getConversationMessages(
 ): Promise<ConversationMessageWithSender[]> {
   const supabase = await createClient();
 
-  let clearedAt: string | null = null;
+  let hiddenBefore: string | null = null;
   if (userId) {
     const { data: userState, error: stateError } = await supabase
       .from('conversation_user_states')
@@ -408,8 +417,13 @@ export async function getConversationMessages(
       .maybeSingle();
 
     if (!stateError) {
-      if (userState?.deleted_at) return [];
-      clearedAt = userState?.cleared_at ?? null;
+      const clearedAt = userState?.cleared_at ?? null;
+      const deletedAt = userState?.deleted_at ?? null;
+      if (clearedAt && deletedAt) {
+        hiddenBefore = new Date(clearedAt).getTime() > new Date(deletedAt).getTime() ? clearedAt : deletedAt;
+      } else {
+        hiddenBefore = clearedAt ?? deletedAt;
+      }
     }
   }
 
@@ -420,8 +434,8 @@ export async function getConversationMessages(
     .order('created_at', { ascending: false })
     .limit(limit);
 
-  if (clearedAt) {
-    query = query.gt('created_at', clearedAt);
+  if (hiddenBefore) {
+    query = query.gt('created_at', hiddenBefore);
   }
 
   const { data, error } = await query;
