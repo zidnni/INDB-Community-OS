@@ -65,6 +65,7 @@ export function FollowList({
 }: FollowListProps) {
   const t = useTranslations("Follow");
   const tProfile = useTranslations("Profile");
+  const tProfileAbout = useTranslations("ProfileAbout");
   const toasts = useTranslations("Toasts");
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -185,8 +186,8 @@ export function FollowList({
   const VALID_LEVELS = new Set(["community_supporter", "active_contributor", "community_builder", "community_champion", "guardian_of_nouadhibou"]);
 
   function getLevelLabel(level: string | null | undefined): string {
-    if (!level || !VALID_LEVELS.has(level)) return tProfile("communityLevel.unknown");
-    return tProfile(`communityLevel.${level}`);
+    if (!level || !VALID_LEVELS.has(level)) return tProfileAbout("communityLevel.unknown");
+    return tProfileAbout(`communityLevel.${level}`);
   }
 
   function handleMessage(userId: string) {
