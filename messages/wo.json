@@ -625,7 +625,8 @@
     "backToIdeas": "Back to Ideas",
     "projectRoomVoteFirst": "Vote first to open the project room.",
     "voteNow": "Vote now",
-    "projectRoomDescription": "The project room is for people who voted and want to follow the work and coordinate."
+    "projectRoomDescription": "The project room is for people who voted and want to follow the work and coordinate.",
+    "projectRoomOpenFailed": "Could not open the project room. Please try again."
   },
   "IdeaForm": {
     "title": "Ngalif xalaat siwil",

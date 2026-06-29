@@ -5,7 +5,6 @@ import {
   Circle,
   FolderOpen,
   Loader2,
-  MessageCircle,
   ThumbsUp,
 } from "lucide-react";
 import {useLocale, useTranslations} from "next-intl";
@@ -150,17 +149,12 @@ export function IdeaListCard({
         </Link>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-muted/35 p-2">
-        {[
-          {icon: ThumbsUp, value: votesCount, label: t("votes")},
-          {icon: MessageCircle, value: idea.comments_count ?? 0, label: t("comments")},
-        ].map(({icon: Icon, value, label}) => (
-          <div key={label} className="min-w-0 rounded-xl bg-background/70 px-2 py-2 text-center">
-            <Icon size={16} className="mx-auto text-primary" />
-            <p className="mt-1 text-sm font-bold text-foreground">{value}</p>
-            <p className="truncate text-[10px] text-muted-foreground">{label}</p>
-          </div>
-        ))}
+      <div className="mt-4 rounded-2xl bg-muted/35 p-2">
+        <div className="min-w-0 rounded-xl bg-background/70 px-3 py-2 text-center">
+          <ThumbsUp size={16} className="mx-auto text-primary" />
+          <p className="mt-1 text-sm font-bold text-foreground">{votesCount}</p>
+          <p className="truncate text-[10px] text-muted-foreground">{t("votes")}</p>
+        </div>
       </div>
 
       <div className="mt-4 grid gap-2 sm:grid-cols-5">

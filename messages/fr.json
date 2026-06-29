@@ -756,7 +756,8 @@
     "backToIdeas": "Back to Ideas",
     "projectRoomVoteFirst": "Votez d’abord pour ouvrir la salle du projet.",
     "voteNow": "Voter maintenant",
-    "projectRoomDescription": "La salle du projet est réservée aux personnes qui ont voté et souhaitent suivre le travail."
+    "projectRoomDescription": "La salle du projet est réservée aux personnes qui ont voté et souhaitent suivre le travail.",
+    "projectRoomOpenFailed": "Impossible d’ouvrir la salle du projet. Réessayez."
   },
   "IdeaForm": {
     "title": "Soumettre une idée citoyenne",

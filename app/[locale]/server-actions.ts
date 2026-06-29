@@ -4121,22 +4121,121 @@ export async function openIdeaProjectRoomAction(
   if (!user) return { success: false, error: 'unauthorized' };
   if (!ideaId) return { success: false, error: 'invalid' };
 
+  const { data: idea } = await supabase
+    .from('ideas')
+    .select('id, title, image_url, author_id')
+    .eq('id', ideaId)
+    .maybeSingle();
+
+  if (!idea) return { success: false, error: 'not_found' };
+
+  const [{ data: vote }, { data: profile }] = await Promise.all([
+    supabase
+      .from('idea_votes')
+      .select('id')
+      .eq('idea_id', ideaId)
+      .eq('user_id', user.id)
+      .maybeSingle(),
+    supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle(),
+  ]);
+
+  const isOwner = idea.author_id === user.id;
+  const isAdmin = profile?.role === 'admin';
+  if (!isOwner && !isAdmin && !vote) return { success: false, error: 'vote_required' };
+
   const { data: conversationId, error } = await supabase.rpc('join_idea_project_room', {
     p_idea_id: ideaId,
     p_user_id: user.id,
   });
 
-  if (error || !conversationId) {
+  let resolvedConversationId = typeof conversationId === 'string' ? conversationId : null;
+
+  if (error || !resolvedConversationId) {
     const message = error?.message?.toLowerCase() ?? '';
     if (message.includes('vote_required')) return { success: false, error: 'vote_required' };
     if (message.includes('unauthorized')) return { success: false, error: 'unauthorized' };
     if (message.includes('not_found')) return { success: false, error: 'not_found' };
-    console.error('openIdeaProjectRoomAction error:', error);
-    return { success: false, error: 'failed' };
+
+    const writeClient = createAdminClient() ?? supabase;
+
+    const { data: existingProjectRoom } = await writeClient
+      .from('conversations')
+      .select('id')
+      .eq('idea_id', ideaId)
+      .eq('type', 'idea_project_room')
+      .maybeSingle();
+
+    resolvedConversationId = existingProjectRoom?.id ?? null;
+
+    if (!resolvedConversationId) {
+      const { data: insertedProjectRoom, error: insertProjectRoomError } = await writeClient
+        .from('conversations')
+        .insert({
+          type: 'idea_project_room',
+          idea_id: ideaId,
+          title: idea.title ?? '',
+          image_url: idea.image_url ?? null,
+        })
+        .select('id')
+        .single();
+
+      resolvedConversationId = insertedProjectRoom?.id ?? null;
+
+      if (insertProjectRoomError || !resolvedConversationId) {
+        const { data: existingIdeaRoom } = await writeClient
+          .from('conversations')
+          .select('id')
+          .eq('idea_id', ideaId)
+          .eq('type', 'idea')
+          .maybeSingle();
+
+        resolvedConversationId = existingIdeaRoom?.id ?? null;
+
+        if (!resolvedConversationId) {
+          const { data: insertedIdeaRoom, error: insertIdeaRoomError } = await writeClient
+            .from('conversations')
+            .insert({
+              type: 'idea',
+              idea_id: ideaId,
+              title: idea.title ?? '',
+              image_url: idea.image_url ?? null,
+            })
+            .select('id')
+            .single();
+
+          if (insertIdeaRoomError || !insertedIdeaRoom?.id) {
+            console.error('openIdeaProjectRoomAction fallback error:', error, insertProjectRoomError, insertIdeaRoomError);
+            return { success: false, error: 'failed' };
+          }
+
+          resolvedConversationId = insertedIdeaRoom.id;
+        }
+      }
+    }
+
+    const participantRows = [
+      { conversation_id: resolvedConversationId, user_id: idea.author_id, role: 'admin', left_at: null, removed_at: null, removed_by: null },
+      { conversation_id: resolvedConversationId, user_id: user.id, role: isOwner ? 'admin' : 'member', left_at: null, removed_at: null, removed_by: null },
+    ].filter((row, index, rows) => row.user_id && rows.findIndex((item) => item.user_id === row.user_id) === index);
+
+    const { error: participantError } = await writeClient
+      .from('conversation_participants')
+      .upsert(participantRows, { onConflict: 'conversation_id,user_id' });
+
+    if (participantError) {
+      console.error('openIdeaProjectRoomAction participant fallback error:', participantError);
+      return { success: false, error: 'failed' };
+    }
   }
 
+  if (!resolvedConversationId) return { success: false, error: 'failed' };
+
   const { getConversationById } = await import('@/lib/data/conversations');
-  const conversation = await getConversationById(conversationId as string, user.id);
+  const conversation = await getConversationById(resolvedConversationId, user.id);
   if (!conversation) return { success: false, error: 'forbidden' };
 
   const owner = conversation.participants.find((participant) => participant.role === 'admin')?.user_id;
@@ -4148,11 +4247,11 @@ export async function openIdeaProjectRoomAction(
       entityType: 'idea',
       entityId: ideaId,
       title: 'Joined your project room',
-      metadata: { conversationId },
+      metadata: { conversationId: resolvedConversationId },
     });
   }
 
-  return { success: true, conversationId: conversationId as string };
+  return { success: true, conversationId: resolvedConversationId };
 }
 
 export async function getIdeaParticipationDataAction(

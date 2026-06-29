@@ -140,8 +140,29 @@ export function IdeaDetailClient({
       return;
     }
     if (!userVoted) {
-      setRoomError(t("projectRoomVoteFirst"));
-      return;
+      const previousCount = votesCount;
+      setUserVoted(true);
+      setVotesCount((count) => count + 1);
+      setVotePending(true);
+      setRoomError(null);
+
+      const formData = new FormData();
+      formData.set("ideaId", idea.id);
+      const voteResult = await voteIdeaAction(formData);
+      setVotePending(false);
+
+      if (!voteResult.success || !voteResult.voted) {
+        setUserVoted(false);
+        setVotesCount(previousCount);
+        if (voteResult.error === "unauthorized") {
+          router.push(`/login?next=${encodeURIComponent(`/ideas/${idea.id}`)}`);
+        } else {
+          setRoomError(t("projectRoomVoteFirst"));
+        }
+        return;
+      }
+
+      setVotesCount(voteResult.votes ?? previousCount + 1);
     }
     setRoomPending(true);
     const result = await openIdeaProjectRoomAction(idea.id);
@@ -151,7 +172,7 @@ export function IdeaDetailClient({
       if (result.error === "vote_required" || result.error === "forbidden") {
         setRoomError(t("projectRoomVoteFirst"));
       } else {
-        toast.error(t("participationError"));
+        toast.error(t("projectRoomOpenFailed"));
       }
       return;
     }
@@ -183,17 +204,12 @@ export function IdeaDetailClient({
 
         <p className="mt-5 whitespace-pre-line text-base leading-7 text-foreground/85">{idea.description}</p>
 
-        <div className="mt-5 grid grid-cols-2 gap-2 rounded-2xl bg-muted/35 p-2">
-          {[
-            {icon: ThumbsUp, value: votesCount, label: t("votes")},
-            {icon: MessageCircle, value: idea.comments_count ?? 0, label: t("comments")},
-          ].map(({icon: Icon, value, label}) => (
-            <div key={label} className="rounded-xl bg-background/70 px-2 py-3 text-center">
-              <Icon size={17} className="mx-auto text-primary" />
-              <p className="mt-1 text-lg font-black text-foreground">{value}</p>
-              <p className="truncate text-[11px] text-muted-foreground">{label}</p>
-            </div>
-          ))}
+        <div className="mt-5 rounded-2xl bg-muted/35 p-2">
+          <div className="rounded-xl bg-background/70 px-3 py-3 text-center">
+            <ThumbsUp size={17} className="mx-auto text-primary" />
+            <p className="mt-1 text-lg font-black text-foreground">{votesCount}</p>
+            <p className="truncate text-[11px] text-muted-foreground">{t("votes")}</p>
+          </div>
         </div>
 
         <div className="mt-5 grid gap-2 sm:grid-cols-5">
@@ -207,17 +223,15 @@ export function IdeaDetailClient({
 
       </section>
 
-      <section className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm sm:p-5">
-        <h2 className="text-base font-black text-foreground">{t("latestUpdate")}</h2>
-        {latestUpdate ? (
+      {latestUpdate ? (
+        <section className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm sm:p-5">
+          <h2 className="text-base font-black text-foreground">{t("latestUpdate")}</h2>
           <div className="mt-3 rounded-2xl bg-muted/35 p-4">
             <p className="text-xs font-semibold text-primary">{new Date(latestUpdate.created_at).toLocaleDateString(uiLocale, {weekday: "long", day: "numeric", month: "short"})}</p>
             <p className="mt-2 whitespace-pre-line text-sm leading-6 text-foreground">{latestUpdate.content}</p>
           </div>
-        ) : (
-          <p className="mt-2 text-sm text-muted-foreground">{t("noUpdatesYet")}</p>
-        )}
-      </section>
+        </section>
+      ) : null}
 
       <section className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm sm:p-5">
         <h2 className="text-base font-black text-foreground">{t("discussionButton")}</h2>
@@ -247,9 +261,9 @@ export function IdeaDetailClient({
         </div>
       </section>
 
-      <section className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm sm:p-5">
-        <h2 className="text-base font-black text-foreground">{t("projectGallery")}</h2>
-        {mediaItems.length > 0 ? (
+      {mediaItems.length > 0 ? (
+        <section className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm sm:p-5">
+          <h2 className="text-base font-black text-foreground">{t("projectGallery")}</h2>
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
             {mediaItems.slice(0, 12).map((item, index) => (
               <div key={`${item.url}-${index}`} className="overflow-hidden rounded-2xl bg-muted">
@@ -261,10 +275,8 @@ export function IdeaDetailClient({
               </div>
             ))}
           </div>
-        ) : (
-          <p className="mt-2 text-sm text-muted-foreground">{t("noProjectMedia")}</p>
-        )}
-      </section>
+        </section>
+      ) : null}
 
       <section className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm sm:p-5">
         <h2 className="text-base font-black text-foreground">{t("projectTimelineTitle")}</h2>
