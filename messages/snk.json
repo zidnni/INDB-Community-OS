@@ -676,7 +676,15 @@
     "followedToast": "I no wiri jaŋ profil nku",
     "unfollowedToast": "Wirin profil nku fota",
     "loginToFollow": "Don ga wiri nkuntun",
-    "failed": "Sagalin wiri wa"
+    "failed": "Sagalin wiri wa",
+    "searchFollowers": "Yilli wiritun",
+    "searchFollowing": "Yilli naŋ i no wirin",
+    "listPrivate": "Lisi nki sutura",
+    "listPrivateDesc": "Jon profil siita lisi nki wuya.",
+    "noFollowers": "Wiritun si taa",
+    "noFollowing": "Si wiri ŋa taa",
+    "endOfList": "I tagin bindila",
+    "back": "Jabi"
   },
   "ProfileCard": {
     "bio": "Taariixutun jamasiye no siiɓu jikku, miiji, e proje nokku.",

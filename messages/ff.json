@@ -677,7 +677,15 @@
     "followedToast": "Aɗa rewa jooni profil ɗoo",
     "unfollowedToast": "A accitii rewde profil ɗoo",
     "loginToFollow": "Naatu ngam rewde yimɓe",
-    "failed": "Taƴtirde darnde rewde waawaa"
+    "failed": "Taƴtirde darnde rewde waawaa",
+    "searchFollowers": "Yiylo rewotooɓe",
+    "searchFollowing": "Yiylo mo ɓe rewata",
+    "listPrivate": "Dogol ngol ko suturo",
+    "listPrivateDesc": "Jom profil suɓi wakkattinde dogol ngol.",
+    "noFollowers": "Rewotooɓe alaa jooni",
+    "noFollowing": "Rewata hay gooto jooni",
+    "endOfList": "A yottike laawol ngol",
+    "back": "Rutto"
   },
   "ProfileCard": {
     "bio": "Daartoowo renndo no winda teskooji, miijooji, e proje nokkuuje.",

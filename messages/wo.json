@@ -676,7 +676,15 @@
     "followedToast": "Nga topp profil bi ba leegi",
     "unfollowedToast": "Nga bÃ yyi topp profil bi",
     "loginToFollow": "Dugg ngir topp nit",
-    "failed": "MÃ«nul soppi daraja topp"
+    "failed": "Mënul soppi daraja topp",
+    "searchFollowers": "Seet ñu koy topp",
+    "searchFollowing": "Seet ñu mungi topp",
+    "listPrivate": "Limu bi ñowu",
+    "listPrivateDesc": "Mbonnat bi tànnul limu boobu won.",
+    "noFollowers": "Amul ku koy topp ba leegi",
+    "noFollowing": "Mënul topp ku ba leegi",
+    "endOfList": "Deggu la",
+    "back": "Wone"
   },
   "ProfileCard": {
     "bio": "Taariixkat mbootaay mungi bind jikku, xalaat ak proje Ã±ook.",
