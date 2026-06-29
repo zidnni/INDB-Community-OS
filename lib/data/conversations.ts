@@ -317,12 +317,11 @@ export async function getConversationById(
   const supabase = await createClient();
   let resolvedInboxConversation: ConversationListItem | null = inboxConversation ?? null;
 
-  if (userId && inboxConversation === undefined) {
+  if (userId && !inboxConversation) {
     const { data: inboxRows, error: inboxError } = await supabase.rpc('get_user_inbox', { p_user_id: userId });
     if (!inboxError) {
       const row = ((inboxRows ?? []) as Record<string, unknown>[]).find((item) => item.id === conversationId);
-      if (!row) return null;
-      resolvedInboxConversation = mapInboxRow(row);
+      if (row) resolvedInboxConversation = mapInboxRow(row);
     } else {
       console.error('getConversationById inbox error:', inboxError);
     }

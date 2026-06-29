@@ -339,8 +339,11 @@ export function ConversationChat({
   const isDirectConversation = conversationType === "direct";
   const otherParticipant = participants.find((p) => p.user_id !== currentUserId)?.user;
   const otherUserId = otherParticipant?.id;
-  const isOtherUserOnline = useIsOnline(otherUserId);
   const isDirectBlocked = isDirectConversation && (localBlockedByMe || localBlockedByOther);
+  const otherProfileHref = isDirectConversation && !isDirectBlocked && otherParticipant?.id
+    ? profileHref(otherParticipant, otherParticipant.id)
+    : null;
+  const isOtherUserOnline = useIsOnline(otherUserId);
   const detailsTitle = isDirectConversation ? displayName(otherParticipant, groupTitle) : groupTitle;
   const detailsUsername = isDirectConversation
     ? (otherParticipant?.username ? `@${otherParticipant.username}` : t("groupChat.usernameMissing"))
@@ -1967,21 +1970,51 @@ export function ConversationChat({
                 <div className="space-y-4">
                   <section className="rounded-2xl border border-border/70 bg-card px-4 py-6 text-center shadow-sm">
                     <div className="mx-auto h-28 w-28">
-                      <ConversationAvatar
-                        title={detailsTitle}
-                        imageUrl={isDirectConversation && !isDirectBlocked ? otherParticipant?.avatar_url ?? null : groupImageUrl}
-                        participants={participants}
-                        isGroup={isIdeaGroup}
-                        memberFallback={memberFallback}
-                        isBlocked={isDirectBlocked}
-                        className="h-28 w-28"
-                      />
+                      {otherProfileHref ? (
+                        <Link
+                          href={otherProfileHref}
+                          className="block rounded-full outline-none ring-primary/40 focus-visible:ring-2"
+                          aria-label={t("groupChat.openProfile", { name: detailsTitle })}
+                        >
+                          <ConversationAvatar
+                            title={detailsTitle}
+                            imageUrl={otherParticipant?.avatar_url ?? null}
+                            participants={participants}
+                            isGroup={false}
+                            memberFallback={memberFallback}
+                            isBlocked={false}
+                            className="h-28 w-28"
+                          />
+                        </Link>
+                      ) : (
+                        <ConversationAvatar
+                          title={detailsTitle}
+                          imageUrl={isDirectConversation && !isDirectBlocked ? otherParticipant?.avatar_url ?? null : groupImageUrl}
+                          participants={participants}
+                          isGroup={isIdeaGroup}
+                          memberFallback={memberFallback}
+                          isBlocked={isDirectBlocked}
+                          className="h-28 w-28"
+                        />
+                      )}
                     </div>
-                    <h2 className="mx-auto mt-4 max-w-sm truncate text-xl font-semibold tracking-tight text-foreground">{detailsTitle}</h2>
+                    {otherProfileHref ? (
+                      <Link href={otherProfileHref} className="block outline-none ring-primary/40 focus-visible:ring-2 rounded-lg">
+                        <h2 className="mx-auto mt-4 max-w-sm truncate text-xl font-semibold tracking-tight text-foreground transition-colors hover:text-primary">{detailsTitle}</h2>
+                      </Link>
+                    ) : (
+                      <h2 className="mx-auto mt-4 max-w-sm truncate text-xl font-semibold tracking-tight text-foreground">{detailsTitle}</h2>
+                    )}
                     <div className="mt-2 space-y-1 text-sm text-muted-foreground">
                       {isDirectConversation ? (
                         <>
-                          <p>{detailsUsername}</p>
+                          {otherProfileHref ? (
+                            <Link href={otherProfileHref} className="block rounded-md outline-none ring-primary/40 focus-visible:ring-2">
+                              <p className="transition-colors hover:text-foreground">{detailsUsername}</p>
+                            </Link>
+                          ) : (
+                            <p>{detailsUsername}</p>
+                          )}
                           {isDirectBlocked ? (
                             <p className="font-medium text-muted-foreground">{t("groupChat.blockedProfile")}</p>
                           ) : isOtherUserOnline ? (
