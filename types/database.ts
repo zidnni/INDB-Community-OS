@@ -7,8 +7,12 @@ export type ProjectStatus = "planning" | "in_progress" | "recruiting" | "complet
 export type PostStatus = "published" | "hidden" | "archived";
 export type CommentStatus = "published" | "hidden";
 export type MemoryVerificationStatus = "pending" | "approved" | "rejected" | "needs_more_info";
-export type IdeaStatus = "published" | "interested" | "discussion" | "in_progress" | "completed" | "archived";
+export type IdeaStatus = "published" | "interested" | "discussion" | "gathering_participants" | "approved" | "in_progress" | "completed" | "archived";
+export type ContributionType = "volunteer_time" | "professional_skills" | "equipment" | "transportation" | "organization" | "other";
+export type MilestoneStatus = "pending" | "completed";
+export type ProgressImageStage = "before" | "progress" | "final";
 export type IdeaBadge = "new_idea" | "growing_support" | "popular" | "community_priority" | "top_priority";
+export type IdeaTrend = "rising" | "falling" | "stable";
 export type ReactionType = "like" | "love" | "support" | "celebrate" | "insightful" | "sad";
 export type MemoryReactionType = ReactionType;
 export type ReportTargetType = "post" | "comment" | "memory" | "idea";
@@ -266,6 +270,13 @@ export interface IdeaRow {
   shares_count: number;
   supporters_count: number;
   participants_count: number;
+  community_impact_score: number;
+  impact_score_updated_at: string | null;
+  rank_90_day: number | null;
+  trend: IdeaTrend | null;
+  tags: string[];
+  neighborhood: string | null;
+  comments_count: number;
   image_url: string | null;
   created_at: string;
   updated_at: string;
@@ -296,6 +307,8 @@ export interface IdeaParticipantRow {
   user_id: string;
   status: IdeaParticipantStatus;
   message: string | null;
+  contribution_type: ContributionType | null;
+  contribution_description: string | null;
   created_at: string;
 }
 
@@ -311,6 +324,46 @@ export interface IdeaSupporterRow {
   id: string;
   idea_id: string;
   user_id: string;
+  created_at: string;
+}
+
+export interface IdeaUpdateRow {
+  id: string;
+  idea_id: string;
+  author_id: string;
+  content: string;
+  created_at: string;
+}
+
+export interface IdeaUpdateWithAuthor extends IdeaUpdateRow {
+  author: Pick<ProfileRow, "id" | "username" | "full_name" | "avatar_url"> | null;
+}
+
+export interface IdeaBookmarkRow {
+  id: string;
+  idea_id: string;
+  user_id: string;
+  created_at: string;
+}
+
+export interface IdeaMilestoneRow {
+  id: string;
+  idea_id: string;
+  title: string;
+  description: string | null;
+  status: MilestoneStatus;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface IdeaProgressImageRow {
+  id: string;
+  idea_id: string;
+  stage: ProgressImageStage;
+  url: string;
+  storage_path: string;
+  caption: string | null;
   created_at: string;
 }
 

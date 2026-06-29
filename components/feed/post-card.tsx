@@ -1,15 +1,15 @@
 "use client";
 
-import {useEffect, useMemo, useRef, useState, useTransition} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {motion} from "framer-motion";
-import {Bookmark, Edit3, MessageCircle, Send, Share2, Trash2} from "lucide-react";
+import {Bookmark, Edit3, MessageCircle, Share2, Trash2} from "lucide-react";
 import {useRouter, useSearchParams} from "next/navigation";
 import {useLocale, useTranslations} from "next-intl";
 import {useContentScroll} from "@/hooks/use-content-scroll";
 import {useFormStatus} from "react-dom";
 import {toast} from "sonner";
 
-import {CommentCard} from "@/components/feed/comment-card";
+import {PostComments} from "@/components/feed/post-comments";
 import {ReactionButton, REACTIONS} from "@/components/feed/reaction-button";
 import {ReactionModal} from "@/components/feed/reaction-modal";
 import {ReactionSummary} from "@/components/shared/reaction-summary";
@@ -17,7 +17,6 @@ import {OnlineAvatar} from "@/components/presence";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {Input} from "@/components/ui/input";
 import {Link, usePathname} from "@/lib/i18n/routing";
 import {withLocale} from "@/lib/i18n/paths";
 import {createClient} from "@/lib/supabase/client";
@@ -28,7 +27,6 @@ import {translateContentAction} from "@/lib/i18n/translateContentAction";
 import {
   deletePostAction,
   sharePostAction,
-  submitCommentAction,
   toggleSaveAction,
 } from "@/app/[locale]/server-actions";
 
@@ -75,12 +73,12 @@ function DeletePostButton() {
 
 export function PostCard({
   post,
-  comments: postComments,
+  comments: _comments,
   currentUserId,
   autoOpenComments = false,
 }: {
   post: PostWithAuthor;
-  comments: CommentWithAuthor[];
+  comments?: CommentWithAuthor[];
   currentUserId?: string | null;
   autoOpenComments?: boolean;
 }) {
@@ -101,16 +99,13 @@ export function PostCard({
   const uiLanguage: ContentLanguage = LOCALE_TO_CONTENT_LANG[locale] ?? "en";
   const contentLanguage = useMemo(() => detectContentLanguage(post.content), [post.content]);
   const canTranslate = contentLanguage !== uiLanguage;
-  const commentInputRef = useRef<HTMLInputElement>(null);
   const articleRef = useRef<HTMLElement>(null);
-  const [commentPending, startCommentTransition] = useTransition();
 
   const [isTranslated, setIsTranslated] = useState(false);
   const [translatedText, setTranslatedText] = useState<string | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translationError, setTranslationError] = useState(false);
-  const [showComments, setShowComments] = useState(false);
-  const [localComments, setLocalComments] = useState<CommentWithAuthor[]>(postComments);
+  const [commentsOpen, setCommentsOpen] = useState(false);
   const [commentsCount, setCommentsCount] = useState(post.comments_count);
   const [isSaved, setIsSaved] = useState(post.user_saved ?? false);
   const [savesCount, setSavesCount] = useState(post.saves_count);
@@ -149,8 +144,7 @@ export function PostCard({
 
   useEffect(() => {
     if (autoOpenComments) {
-      setShowComments(true);
-      window.setTimeout(() => commentInputRef.current?.focus(), 150);
+      setCommentsOpen(true);
     }
   }, [autoOpenComments]);
 
@@ -166,7 +160,7 @@ export function PostCard({
       window.setTimeout(() => setReactionHighlight(false), 1500);
     },
     onFocusComments: () => {
-      setShowComments(true);
+      setCommentsOpen(true);
     },
   });
 
@@ -184,25 +178,6 @@ export function PostCard({
         next[newReaction] = (next[newReaction] ?? 0) + 1;
       }
       return next;
-    });
-  }
-
-  async function handleCommentSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-
-    startCommentTransition(async () => {
-      const result = await submitCommentAction(formData);
-      if (result.success) {
-        form.reset();
-        if (result.comment) {
-          setLocalComments((prev) => [result.comment!, ...prev]);
-          setCommentsCount((count) => count + 1);
-        }
-      } else {
-        toast.error(errors("commentFailed"));
-      }
     });
   }
 
@@ -256,10 +231,7 @@ export function PostCard({
       router.push(withLocale(`/login?next=${encodeURIComponent(returnPath)}`, locale));
       return;
     }
-    setShowComments((p) => !p);
-    if (!showComments) {
-      setTimeout(() => commentInputRef.current?.focus(), 100);
-    }
+    setCommentsOpen((prev) => !prev);
   }
 
   async function handleSave() {
@@ -290,17 +262,6 @@ export function PostCard({
       setSavesCount(prevCount);
       toast.error(errors("saveFailed"));
     }
-  }
-
-  function handleCommentUpdated(updatedComment: CommentWithAuthor) {
-    setLocalComments((previous) => previous.map((comment) => (
-      comment.id === updatedComment.id ? updatedComment : comment
-    )));
-  }
-
-  function handleCommentDeleted(commentId: string) {
-    setLocalComments((previous) => previous.filter((comment) => comment.id !== commentId));
-    setCommentsCount((count) => Math.max(0, count - 1));
   }
 
   async function onToggleTranslation() {
@@ -478,52 +439,15 @@ export function PostCard({
             </button>
           </div>
 
-          {showComments ? (
-            <>
-            <form onSubmit={handleCommentSubmit} className="flex items-center gap-2">
-              <input type="hidden" name="locale" value={locale} />
-              <input type="hidden" name="returnTo" value={returnPath} />
-              <input type="hidden" name="postId" value={post.id} />
-              <Input
-                ref={commentInputRef}
-                name="content"
-                placeholder={t("commentPlaceholder")}
-                required
-                className="min-h-11"
-              />
-                <Button type="submit" size="icon" className="shrink-0" disabled={commentPending}>
-                {commentPending ? <span className="text-xs">{t("sending")}</span> : <Send size={20} />}
-              </Button>
-            </form>
+          <PostComments
+            postId={post.id}
+            contentOwnerId={post.author_id}
+            open={commentsOpen}
+            onToggle={() => setCommentsOpen((prev) => !prev)}
+            commentCount={commentsCount}
+            onCommentCountChange={setCommentsCount}
+          />
 
-          {localComments.length > 0 ? (
-            <div id={`post-${post.id}-comments`} className="space-y-2 border-t border-border/60 pt-2 scroll-mt-24">
-              {localComments.map((comment) => {
-                const commentAuthor = comment.author?.full_name ?? comment.author?.username ?? t("unknownAuthor");
-                const isOwnComment = currentUserId != null && comment.author_id === currentUserId;
-                return (
-                   <CommentCard
-                     key={comment.id}
-                     commentId={comment.id}
-                     author={commentAuthor}
-                     authorId={comment.author?.id ?? comment.author_id}
-                     authorUsername={comment.author?.username}
-                     authorAvatarUrl={comment.author?.avatar_url}
-                     content={comment.content}
-                     timeAgo={timeAgo(comment.created_at, locale)}
-                     canEdit={isOwnComment}
-                     canDelete={isOwnComment || isOwnPost}
-                     onUpdated={handleCommentUpdated}
-                     onDeleted={handleCommentDeleted}
-                   />
-                );
-              })}
-            </div>
-          ) : (
-            <div id={`post-${post.id}-comments`} className="scroll-mt-24" />
-          )}
-            </>
-          ) : null}
         </CardContent>
       </Card>
 

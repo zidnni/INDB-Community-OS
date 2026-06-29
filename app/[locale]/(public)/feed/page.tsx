@@ -6,7 +6,6 @@ import {CreatePostCard} from "@/components/feed/create-post-card";
 import {PostCard} from "@/components/feed/post-card";
 import {EmptyState} from "@/components/shared/empty-state";
 import {PaginationControls} from "@/components/shared/pagination-controls";
-import {getCommentsForPosts} from "@/lib/data/comments";
 import {getPostsPage} from "@/lib/data/posts";
 import {getCurrentProfile} from "@/lib/data/profile";
 import {createClient} from "@/lib/supabase/server";
@@ -45,14 +44,13 @@ export default async function FeedPage({
 
   const postsPage = await getPostsPage({currentUserId, page});
   const posts = postsPage.items;
-  const commentsByPost = await getCommentsForPosts(posts.map((post) => post.id));
 
   const profileName = profile?.full_name ?? profile?.username ?? user?.email ?? "?";
 
   // Auto-open comments only when focus=comments or a specific comment is targeted
   const autoOpen = (pid: string) =>
     sp.focus === "comments" && sp.post === pid ||
-    !!commentsByPost[pid]?.some((comment) => comment.id === sp.comment);
+    !!sp.comment;
 
   return (
     <div className="space-y-3 sm:space-y-4">
@@ -64,7 +62,6 @@ export default async function FeedPage({
             <PostCard
               key={post.id}
               post={post}
-              comments={commentsByPost[post.id] ?? []}
               currentUserId={currentUserId}
               autoOpenComments={autoOpen(post.id)}
             />

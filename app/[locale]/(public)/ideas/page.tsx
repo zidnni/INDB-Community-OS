@@ -1,33 +1,13 @@
-import {Lightbulb, Plus, Trophy} from "lucide-react";
+import {Lightbulb, Plus} from "lucide-react";
 import type {Metadata} from "next";
 import {getTranslations} from "next-intl/server";
-import type {ReactNode} from "react";
 
 import {IdeasToastHandler} from "@/components/ideas/ideas-toast-handler";
-import {IdeaCard} from "@/components/ideas/idea-card";
-import {TopIdeaRow} from "@/components/ideas/top-idea-row";
 import {EmptyState} from "@/components/shared/empty-state";
 import {PaginationControls} from "@/components/shared/pagination-controls";
 import {Link} from "@/lib/i18n/routing";
-import {getIdeasPage} from "@/lib/data/ideas";
 import {createClient} from "@/lib/supabase/server";
-import type {IdeaBadge} from "@/types/database";
-
-const badgeStyles: Record<IdeaBadge, string> = {
-  new_idea: "bg-gray-50 text-gray-600 dark:bg-gray-800/30 dark:text-gray-400",
-  growing_support: "bg-gray-100 text-gray-700 dark:bg-gray-800/40 dark:text-gray-300",
-  popular: "bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400",
-  community_priority: "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400",
-  top_priority: "bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400",
-};
-
-const badgeTranslationKeys: Record<IdeaBadge, string> = {
-  new_idea: "badgeNewIdea",
-  growing_support: "badgeGrowingSupport",
-  popular: "badgePopular",
-  community_priority: "badgeCommunityPriority",
-  top_priority: "badgeTopPriority",
-};
+import {IdeasClientPage} from "./ideas-client";
 
 export async function generateMetadata({
   params,
@@ -58,6 +38,10 @@ export default async function IdeasPage({
     ideaUpdated?: string;
     ideaDeleted?: string;
     page?: string;
+    tab?: string;
+    query?: string;
+    status?: string;
+    sort?: string;
   }>;
 }) {
   const {locale} = await params;
@@ -66,37 +50,118 @@ export default async function IdeasPage({
   const t = await getTranslations({locale, namespace: "Ideas"});
   const empty = await getTranslations({locale, namespace: "EmptyStates.ideas"});
   const common = await getTranslations({locale, namespace: "Common"});
-  const ideasPage = await getIdeasPage({page});
-  const {ideas, totalUsers} = ideasPage;
 
   const supabase = await createClient();
   const {
     data: {user: currentUser},
   } = await supabase.auth.getUser();
-  const serverCurrentUserId = currentUser?.id ?? null;
+  const currentUserId = currentUser?.id ?? null;
 
-  const topIdeas = ideas.filter((i) => i.rank !== null).slice(0, 10);
+  // Fetch Top 10 ideas (from RPC)
+  const {data: top10Raw} = await supabase.rpc("get_top_10_ideas");
+  const top10 = (top10Raw ?? []) as any[];
 
-  function renderBadge(idea: (typeof ideas)[number]): ReactNode {
-    if (!idea.badge) return null;
-    const badgeKey = badgeTranslationKeys[idea.badge as IdeaBadge];
-    if (!badgeKey) return null;
-    return (
-      <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium hidden sm:inline ${badgeStyles[idea.badge as IdeaBadge]}`}>
-        {t(badgeKey)}
-      </span>
-    );
+  // Fetch categories for filter dropdown
+  const {data: categoriesRaw} = await supabase.from("categories").select("*").order("name_en");
+  const categories = (categoriesRaw ?? []).map((c: any) => ({
+    id: c.id,
+    name:
+      locale === "ar" ? c.name_ar :
+      locale === "fr" ? c.name_fr :
+      locale === "ff" ? c.name_ff :
+      locale === "snk" ? c.name_snk :
+      locale === "wo" ? c.name_wo :
+      c.name_en,
+  }));
+
+  // Fetch paginated ideas
+  const tab = sp.tab ?? "popular";
+  const searchQuery = sp.query ?? "";
+  const statusFilter = sp.status ?? null;
+  const sortBy = sp.sort ?? "impact";
+  const pageSize = 20;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+
+  // Build query based on tab
+  let query = supabase
+    .from("ideas")
+    .select(`
+      *,
+      author:profiles!ideas_author_id_fkey(id, username, full_name, avatar_url),
+      category:categories(id, slug, name_en, name_fr, name_ar, name_ff, name_snk, name_wo)
+    `, {count: "exact"})
+    .not("author_id", "is", null);
+
+  // Apply status filter
+  if (statusFilter) {
+    query = query.eq("status", statusFilter);
+  } else if (tab === "in_progress") {
+    query = query.eq("status", "in_progress");
+  } else if (tab === "completed") {
+    query = query.in("status", ["completed", "archived"]);
+  }
+
+  // Apply search query
+  if (searchQuery) {
+    query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
+  }
+
+  // Apply sorting
+  if (tab === "newest" || sortBy === "newest") {
+    query = query.order("created_at", {ascending: false});
+  } else if (tab === "active" || sortBy === "comments") {
+    query = query.order("comments_count", {ascending: false}).order("created_at", {ascending: false});
+  } else if (tab === "discussed" || sortBy === "comments") {
+    query = query.order("comments_count", {ascending: false}).order("created_at", {ascending: false});
+  } else if (sortBy === "votes") {
+    query = query.order("votes_count", {ascending: false}).order("created_at", {ascending: false});
+  } else if (sortBy === "participants") {
+    query = query.order("participants_count", {ascending: false}).order("created_at", {ascending: false});
+  } else {
+    // Default: most votes
+    query = query.order("votes_count", {ascending: false}).order("created_at", {ascending: false});
+  }
+
+  const {data: ideasRaw, count: totalCount} = await query.range(from, to);
+  const ideas = (ideasRaw ?? []) as any[];
+
+  // Attach media
+  if (ideas.length > 0) {
+    const ideaIds = ideas.map((i: any) => i.id);
+    const {data: mediaRows} = await supabase
+      .from("idea_media")
+      .select("*")
+      .in("idea_id", ideaIds)
+      .order("position", {ascending: true});
+
+    const mediaMap = new Map<string, any[]>();
+    for (const row of mediaRows ?? []) {
+      const list = mediaMap.get(row.idea_id) ?? [];
+      list.push(row);
+      mediaMap.set(row.idea_id, list);
+    }
+    for (const idea of ideas) {
+      idea.media = mediaMap.get(idea.id) ?? [];
+    }
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4">
-      <IdeasToastHandler ideaSubmitted={!!sp.ideaSubmitted} ideaUpdated={!!sp.ideaUpdated} ideaDeleted={!!sp.ideaDeleted} />
+    <div className="space-y-4 sm:space-y-5">
+      <IdeasToastHandler
+        ideaSubmitted={!!sp.ideaSubmitted}
+        ideaUpdated={!!sp.ideaUpdated}
+        ideaDeleted={!!sp.ideaDeleted}
+      />
 
-      <div className="rounded-2xl border border-border/70 bg-card p-3.5 sm:p-4">
+      {/* Header */}
+      <div className="rounded-2xl border border-border/70 bg-card p-4 sm:p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold sm:text-3xl">{t("title")}</h1>
-            <p className="text-base text-muted-foreground">{t("description")}</p>
+            <p className="mt-1 text-sm text-muted-foreground sm:text-base">
+              {t("description")}
+            </p>
           </div>
           <Link
             href="/ideas/submit"
@@ -108,37 +173,26 @@ export default async function IdeasPage({
         </div>
       </div>
 
-      {topIdeas.length > 0 ? (
-        <section className="rounded-2xl border border-border/70 bg-card p-3.5 sm:p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <Trophy size={18} className="text-amber-500 shrink-0" />
-            <h2 className="text-lg font-bold sm:text-xl">{t("top10PopularIdeas")}</h2>
-          </div>
-          <div className="flex gap-3 pb-2 sm:flex-col sm:gap-2 sm:pb-0 max-sm:overflow-x-auto max-sm:snap-x max-sm:snap-mandatory max-sm:scrollbar-none max-sm:px-4">
-            {topIdeas.map((idea) => {
-              const authorName = idea.author?.full_name ?? idea.author?.username ?? t("unknownAuthor");
-              return (
-                <TopIdeaRow key={idea.id} idea={idea} authorName={authorName} badgeEl={renderBadge(idea)} />
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
+      {/* Client-side interactive section */}
+      <IdeasClientPage
+        top10={top10}
+        ideas={ideas}
+        categories={categories}
+        currentUserId={currentUserId}
+        locale={locale}
+        page={page}
+        hasNextPage={(totalCount ?? 0) > from + pageSize}
+        hasPreviousPage={page > 1}
+        totalCount={totalCount ?? 0}
+        initialTab={tab}
+        initialQuery={searchQuery}
+        initialStatus={statusFilter}
+        initialSort={sortBy}
+        previousLabel={common("previous")}
+        nextLabel={common("next")}
+      />
 
-      {ideas.length > 0 ? (
-    <div className="min-w-0 space-y-3 sm:space-y-4">
-          <h2 className="text-lg font-bold sm:text-xl px-0.5">{t("allIdeas")}</h2>
-          {ideas.map((idea) => (
-            <IdeaCard
-              key={idea.id}
-              idea={idea}
-              totalUsers={totalUsers}
-              currentUserId={serverCurrentUserId}
-              autoOpenComments={(sp.focus === "comments" || sp.comments === "1") && sp.idea === idea.id}
-            />
-          ))}
-        </div>
-      ) : (
+      {ideas.length === 0 && !searchQuery && page === 1 ? (
         <EmptyState
           icon={Lightbulb}
           title={empty("title")}
@@ -146,11 +200,11 @@ export default async function IdeasPage({
           ctaLabel={empty("cta")}
           ctaHref="/ideas/submit"
         />
-      )}
+      ) : null}
 
       <PaginationControls
-        page={ideasPage.page}
-        hasNextPage={ideasPage.hasNextPage}
+        page={page}
+        hasNextPage={(totalCount ?? 0) > from + pageSize}
         previousLabel={common("previous")}
         nextLabel={common("next")}
       />
