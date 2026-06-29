@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Copy,
   Download,
+  Eye,
   Flag,
   ImagePlus,
   Loader2,
@@ -1846,14 +1847,17 @@ export function ConversationChat({
                           </button>
                         </div>
                       ) : null}
-                      {receiptForMessage && !isLocalMessage(msg.id) ? (
-                        <div className="mt-1 flex justify-end text-[11px] font-semibold text-emerald-600 dark:text-emerald-300">
+                    </div>
+                    {receiptForMessage && !isLocalMessage(msg.id) ? (
+                      <div className="mt-[3px] flex items-center justify-end gap-[3px] text-[11px] font-normal text-muted-foreground/70">
+                        <Eye size={11} />
+                        <span>
                           {isGroupReceiptMode
                             ? t("groupChat.seenBy", { count: receiptForMessage.seenByCount })
                             : t("groupChat.seen")}
-                        </div>
-                      ) : null}
-                    </div>
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </div>
