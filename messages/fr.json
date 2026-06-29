@@ -3047,6 +3047,7 @@
       "viewImage": "Voir l’image",
       "prevImage": "Image précédente",
       "nextImage": "Image suivante",
+      "downloadImage": "Télécharger l’image",
       "imageLoadFailed": "Impossible de charger l’image.",
       "messageActions": "Actions du message",
       "edit": "Modifier",

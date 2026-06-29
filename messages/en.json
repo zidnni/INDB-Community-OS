@@ -3131,6 +3131,7 @@
       "viewImage": "View image",
       "prevImage": "Previous image",
       "nextImage": "Next image",
+      "downloadImage": "Download image",
       "imageLoadFailed": "Image could not be loaded.",
       "messageActions": "Message actions",
       "edit": "Edit",

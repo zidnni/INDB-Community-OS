@@ -2023,7 +2023,8 @@
       "actionDone": "Done",
       "documentsFuture": "Documents, PDF, Word, Excel, and ZIP files will appear here.",
       "blockedSendNotice": "Unblock this user to send a message.",
-      "blockedSendPlaceholder": "Unblock to send..."
+      "blockedSendPlaceholder": "Unblock to send...",
+      "downloadImage": "Download image"
     }
   },
   "Support": {

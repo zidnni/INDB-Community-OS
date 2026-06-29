@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Copy,
+  Download,
   Flag,
   ImagePlus,
   Loader2,
@@ -628,6 +629,23 @@ export function ConversationChat({
       return next;
     });
   }, [viewerImages.length]);
+
+  const downloadViewerImage = useCallback(() => {
+    const url = viewerImages[viewerIndex];
+    if (!url) return;
+
+    try {
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `indb-message-image-${viewerIndex + 1}.jpg`;
+      link.rel = "noopener noreferrer";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+  }, [viewerImages, viewerIndex]);
 
   useEffect(() => {
     scrollToLatest("auto");
@@ -1454,7 +1472,7 @@ export function ConversationChat({
 
   async function handleDeleteConversation() {
     if (!window.confirm(t("groupChat.confirmDeleteConversation"))) return;
-    setDetailsSaving(true);
+    router.replace("/messages");
     setError(null);
     try {
       const { deleteConversationForMeAction } = await import("@/app/[locale]/server-actions");
@@ -1463,12 +1481,9 @@ export function ConversationChat({
         setError(res.error ?? "delete_failed");
         return;
       }
-      router.push("/messages");
     } catch (e) {
       console.error("delete conversation error:", e);
       setError("delete_failed");
-    } finally {
-      setDetailsSaving(false);
     }
   }
 
@@ -1484,13 +1499,14 @@ export function ConversationChat({
     <div ref={chatRootRef} className="relative flex h-full min-h-0 w-full max-w-full flex-col overflow-hidden bg-background overscroll-contain [touch-action:pan-y]">
       <div className="shrink-0 overflow-x-hidden border-b border-border/70 bg-card/95 px-2 py-1.5 pt-[max(0.375rem,var(--safe-top))] shadow-sm backdrop-blur md:px-2.5 md:py-2">
         <div className="flex min-h-[52px] min-w-0 items-center gap-2">
-          <Link
-            href="/messages"
+          <button
+            type="button"
+            onClick={() => router.replace("/messages")}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground transition active:bg-muted md:hidden"
             aria-label={t("groupChat.backToMessages")}
           >
             <ArrowLeft size={21} />
-          </Link>
+          </button>
           <button
             type="button"
             onClick={() => setShowGroupInfo(true)}
@@ -2190,8 +2206,21 @@ export function ConversationChat({
             >
               <X size={22} />
             </button>
-            <div className="pointer-events-auto rounded-full bg-white/12 px-3 py-1.5 text-sm font-semibold text-white backdrop-blur">
-              {viewerIndex + 1} / {viewerImages.length}
+            <div className="pointer-events-auto flex items-center gap-2">
+              <div className="rounded-full bg-white/12 px-3 py-1.5 text-sm font-semibold text-white backdrop-blur">
+                {viewerIndex + 1} / {viewerImages.length}
+              </div>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  downloadViewerImage();
+                }}
+                className="flex h-11 w-11 items-center justify-center rounded-full bg-white/12 text-white backdrop-blur transition active:scale-95 hover:bg-white/20"
+                aria-label={t("groupChat.downloadImage")}
+              >
+                <Download size={20} />
+              </button>
             </div>
           </div>
 
@@ -2203,7 +2232,7 @@ export function ConversationChat({
                   event.stopPropagation();
                   showPrevViewerImage();
                 }}
-                className="absolute left-3 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/12 text-white backdrop-blur transition hover:bg-white/20 md:flex"
+                className="absolute left-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/14 text-white backdrop-blur transition active:scale-95 hover:bg-white/20 md:h-12 md:w-12"
                 aria-label={t("groupChat.prevImage")}
               >
                 <ChevronLeft size={26} />
@@ -2216,7 +2245,7 @@ export function ConversationChat({
                   event.stopPropagation();
                   showNextViewerImage();
                 }}
-                className="absolute right-3 top-1/2 z-20 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/12 text-white backdrop-blur transition hover:bg-white/20 md:flex"
+                className="absolute right-3 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/14 text-white backdrop-blur transition active:scale-95 hover:bg-white/20 md:h-12 md:w-12"
                 aria-label={t("groupChat.nextImage")}
               >
                 <ChevronRight size={26} />

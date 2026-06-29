@@ -2023,7 +2023,8 @@
       "blockedSendPlaceholder": "Unblock to send...",
       "sendingStatus": "Sending...",
       "failedStatus": "Not sent",
-      "retry": "Retry"
+      "retry": "Retry",
+      "downloadImage": "Download image"
     }
   },
   "Support": {
