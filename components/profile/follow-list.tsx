@@ -190,11 +190,14 @@ export function FollowList({
     return tProfileAbout(`communityLevel.${level}`);
   }
 
-  function handleMessage(userId: string) {
-    const user = users.find((u) => u.id === userId);
-    if (!user?.can_message) {
-      toast.error(tProfile("cannotMessage"));
-      return;
+  function navigateToProfile(username: string) {
+    router.push(`/profile/${username}`);
+  }
+
+  function handleCardKeyDown(e: React.KeyboardEvent, username: string) {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      navigateToProfile(username);
     }
   }
 
@@ -266,7 +269,20 @@ export function FollowList({
           ) : (
             <div className="divide-y divide-border/50">
               {users.map((user) => (
-                <div key={user.id} className="flex items-center gap-3 px-4 py-3 transition hover:bg-muted/30">
+                <div
+                  key={user.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigateToProfile(user.username)}
+                  onKeyDown={(e) => handleCardKeyDown(e, user.username)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 transition",
+                    "cursor-pointer",
+                    "hover:bg-muted/30 hover:shadow-sm",
+                    "active:bg-muted/50",
+                    "focus-visible:outline-none focus-visible:bg-muted/40 focus-visible:ring-2 focus-visible:ring-primary/50",
+                  )}
+                >
                   {/* Avatar */}
                   <div className="relative shrink-0">
                     {user.avatar_url ? (
@@ -297,18 +313,26 @@ export function FollowList({
                   </div>
 
                   {/* Actions */}
-                  <div className="flex shrink-0 items-center gap-1.5">
+                  <div
+                    className="flex shrink-0 items-center gap-1.5"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     {currentUserId && user.id !== currentUserId ? (
                       <>
                         {user.can_message ? (
-                          <MessageButton targetUserId={user.id} />
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <MessageButton targetUserId={user.id} />
+                          </div>
                         ) : null}
                         {user.is_following ? (
                           <Button
                             type="button"
                             variant="outline"
                             size="sm"
-                            onClick={() => handleToggleFollow(user.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleFollow(user.id);
+                            }}
                             disabled={pendingFollows.has(user.id)}
                             className="rounded-full px-3 text-xs"
                           >
@@ -322,7 +346,10 @@ export function FollowList({
                           <Button
                             type="button"
                             size="sm"
-                            onClick={() => handleToggleFollow(user.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleFollow(user.id);
+                            }}
                             disabled={pendingFollows.has(user.id)}
                             className="rounded-full px-3 text-xs"
                           >
