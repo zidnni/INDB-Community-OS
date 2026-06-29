@@ -6,6 +6,7 @@ alter table public.user_settings
   add column if not exists show_following boolean not null default true;
 
 -- Update get_public_profile_privacy to expose the new fields
+drop function if exists public.get_public_profile_privacy(uuid);
 create or replace function public.get_public_profile_privacy(target_user_id uuid)
 returns table (
   message_permission text,
