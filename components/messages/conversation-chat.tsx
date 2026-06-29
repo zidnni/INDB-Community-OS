@@ -27,12 +27,14 @@ import { useTranslations } from "next-intl";
 import { flushSync } from "react-dom";
 
 import { OnlineAvatar, useIsOnline } from "@/components/presence";
+import { ConversationList } from "@/components/messages/conversation-list";
 import { uploadMediaItem } from "@/lib/images/client-upload";
 import { Link, useRouter } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils/cn";
 import type {
   ConversationBlockState,
+  ConversationListItem,
   ConversationMessageWithSender,
   ConversationParticipantInfo,
   ConversationUserProfile,
@@ -260,6 +262,7 @@ interface ConversationChatProps {
   memberCount?: number;
   participants: ConversationParticipantInfo[];
   initialBlockState?: ConversationBlockState;
+  initialConversations?: ConversationListItem[];
 }
 
 export function ConversationChat({
@@ -277,6 +280,7 @@ export function ConversationChat({
   memberCount,
   participants: initialParticipants,
   initialBlockState,
+  initialConversations = [],
 }: ConversationChatProps) {
   const t = useTranslations("Messages");
   const memberFallback = t("groupChat.memberFallback");
@@ -291,6 +295,7 @@ export function ConversationChat({
   const [isRenaming, setIsRenaming] = useState(false);
   const [viewerImages, setViewerImages] = useState<string[]>([]);
   const [viewerIndex, setViewerIndex] = useState(0);
+  const [viewerMessage, setViewerMessage] = useState<ConversationMessageWithSender | null>(null);
   const [groupTitle, setGroupTitle] = useState(conversationTitle);
   const [draftTitle, setDraftTitle] = useState(conversationTitle);
   const [groupImageUrl, setGroupImageUrl] = useState(conversationImageUrl);
@@ -315,6 +320,7 @@ export function ConversationChat({
   const [localBlockedByMe, setLocalBlockedByMe] = useState(Boolean(initialBlockState?.blockedByMe));
   const [localBlockedByOther, setLocalBlockedByOther] = useState(Boolean(initialBlockState?.blockedByOther));
   const [localBlockedByMeAt, setLocalBlockedByMeAt] = useState<string | null>(initialBlockState?.blockedByMeAt ?? null);
+  const [conversationDeleted, setConversationDeleted] = useState(false);
 
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const typingBroadcastRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -596,14 +602,16 @@ export function ConversationChat({
   const closeViewer = useCallback(() => {
     setViewerImages([]);
     setViewerIndex(0);
+    setViewerMessage(null);
     setViewerLoaded(false);
     setViewerError(false);
   }, []);
 
-  const openViewer = useCallback((images: string[], index: number) => {
+  const openViewer = useCallback((images: string[], index: number, message?: ConversationMessageWithSender | null) => {
     if (images.length === 0) return;
     setViewerImages(images);
     setViewerIndex(Math.max(0, Math.min(index, images.length - 1)));
+    setViewerMessage(message ?? null);
     setViewerLoaded(false);
     setViewerError(false);
   }, []);
@@ -630,20 +638,32 @@ export function ConversationChat({
     });
   }, [viewerImages.length]);
 
-  const downloadViewerImage = useCallback(() => {
+  const downloadViewerImage = useCallback(async () => {
     const url = viewerImages[viewerIndex];
     if (!url) return;
 
     try {
+      const response = await fetch(url, { mode: "cors" });
+      if (!response.ok) throw new Error("download_failed");
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.href = url;
-      link.download = `indb-message-image-${viewerIndex + 1}.jpg`;
+      link.href = blobUrl;
+      link.download = `indb-message-image-${viewerIndex + 1}.${blob.type.split("/")[1] || "jpg"}`;
       link.rel = "noopener noreferrer";
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
     } catch {
-      window.open(url, "_blank", "noopener,noreferrer");
+      const link = document.createElement("a");
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.download = `indb-message-image-${viewerIndex + 1}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     }
   }, [viewerImages, viewerIndex]);
 
@@ -1208,13 +1228,14 @@ export function ConversationChat({
     setEditingText("");
   }
 
-  async function deleteMessage(message: ConversationMessageWithSender) {
+  async function deleteMessage(message: ConversationMessageWithSender, options?: { skipConfirm?: boolean }) {
     if (message.sender_id !== currentUserId || message.is_deleted || isReadOnly || messageActionSaving) return;
-    if (!window.confirm(t("groupChat.confirmDelete"))) return;
+    if (!options?.skipConfirm && !window.confirm(t("groupChat.confirmDelete"))) return;
     setMessageActionSaving(true);
     setError(null);
     setActionMessage(null);
     setActionMenuId(null);
+    if (options?.skipConfirm) closeViewer();
     const deletedAt = new Date().toISOString();
     const previousMessages = messages;
     setMessages((prev) => prev.map((item) => item.id === message.id ? {
@@ -1472,17 +1493,20 @@ export function ConversationChat({
 
   async function handleDeleteConversation() {
     if (!window.confirm(t("groupChat.confirmDeleteConversation"))) return;
+    setConversationDeleted(true);
     router.replace("/messages");
     setError(null);
     try {
       const { deleteConversationForMeAction } = await import("@/app/[locale]/server-actions");
       const res = await deleteConversationForMeAction(conversationId);
       if (!res.success) {
+        setConversationDeleted(false);
         setError(res.error ?? "delete_failed");
         return;
       }
     } catch (e) {
       console.error("delete conversation error:", e);
+      setConversationDeleted(false);
       setError("delete_failed");
     }
   }
@@ -1494,6 +1518,30 @@ export function ConversationChat({
       : t("groupChat.memberCount", { count: effectiveMemberCount });
   const readOnlyMessage = isCompleted ? t("groupChat.closedAfterCompletion") : t("groupChat.readOnlyNotice");
   const composerBlocked = isDirectConversation && localBlockedByMe;
+  const conversationsAfterDelete = useMemo(
+    () => initialConversations.filter((conversation) => conversation.id !== conversationId),
+    [conversationId, initialConversations],
+  );
+  const canDeleteViewerImage = Boolean(
+    viewerMessage &&
+    viewerMessage.sender_id === currentUserId &&
+    !viewerMessage.is_deleted &&
+    !isReadOnly &&
+    !isLocalMessage(viewerMessage.id),
+  );
+
+  if (conversationDeleted) {
+    return (
+      <div className="flex h-full min-h-0 w-full flex-col bg-background">
+        <div className="flex min-h-0 flex-1 flex-col md:hidden">
+          <ConversationList initialConversations={conversationsAfterDelete} currentUserId={currentUserId} />
+        </div>
+        <div className="hidden min-h-0 flex-1 items-center justify-center px-6 text-center text-sm text-muted-foreground md:flex">
+          {t("selectConversationHint")}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div ref={chatRootRef} className="relative flex h-full min-h-0 w-full max-w-full flex-col overflow-hidden bg-background overscroll-contain [touch-action:pan-y]">
@@ -1718,7 +1766,7 @@ export function ConversationChat({
                               type="button"
                               onPointerDown={(event) => event.stopPropagation()}
                               onTouchStart={(event) => event.stopPropagation()}
-                              onClick={() => openViewer(msgImages, Math.min(i, msgImages.length - 1))}
+                              onClick={() => openViewer(msgImages, Math.min(i, msgImages.length - 1), canMutate ? msg : null)}
                               className={cn(
                                 "relative max-w-full overflow-hidden bg-black/5 text-start transition active:scale-[0.99]",
                                 imageTileClass(msgImages.length, i),
@@ -2221,6 +2269,19 @@ export function ConversationChat({
               >
                 <Download size={20} />
               </button>
+              {canDeleteViewerImage && viewerMessage ? (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    void deleteMessage(viewerMessage, { skipConfirm: true });
+                  }}
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-red-500/80 text-white backdrop-blur transition active:scale-95 hover:bg-red-500"
+                  aria-label={t("groupChat.delete")}
+                >
+                  <Trash2 size={20} />
+                </button>
+              ) : null}
             </div>
           </div>
 

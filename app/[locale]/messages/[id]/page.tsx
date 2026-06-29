@@ -53,6 +53,7 @@ export default async function ConversationPage({
           memberCount={conversation.member_count}
           participants={conversation.participants}
           initialBlockState={blockState}
+          initialConversations={conversations}
         />
       </div>
     </section>
