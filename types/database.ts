@@ -588,6 +588,10 @@ export interface SavedMemoryRow {
 export interface MemoryWithContributor extends MemoryRow {
   contributor: Pick<ProfileRow, "id" | "username" | "full_name" | "avatar_url"> | null;
   media?: MemoryMediaRow[];
+  reaction_counts?: Record<string, number>;
+  user_reaction?: MemoryReactionType | null;
+  user_saved?: boolean;
+  comments_count?: number;
 }
 
 export interface MemoryCommentWithAuthor extends MemoryCommentRow {

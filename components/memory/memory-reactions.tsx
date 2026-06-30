@@ -75,8 +75,11 @@ export function MemoryReactions({
     const prevCounts = {...counts};
 
     if (userReaction === type) {
+      const nextCounts = {...counts, [type]: Math.max((counts[type] ?? 0) - 1, 0)};
       setUserReaction(null);
-      setCounts((c) => ({...c, [type]: Math.max((c[type] ?? 0) - 1, 0)}));
+      setCounts(nextCounts);
+      onCountsChange?.(nextCounts);
+      onUserReactionChange?.(null);
     } else {
       const newCounts = {...counts};
       if (userReaction) {
@@ -85,6 +88,8 @@ export function MemoryReactions({
       newCounts[type] = (newCounts[type] ?? 0) + 1;
       setCounts(newCounts);
       setUserReaction(type);
+      onCountsChange?.(newCounts);
+      onUserReactionChange?.(type);
     }
 
     const result = await reactToMemoryAction(formData);

@@ -1,6 +1,6 @@
 "use client";
 
-import {Bookmark, Loader2, MessageCircle, Share2} from "lucide-react";
+import {Bookmark, MessageCircle, Share2} from "lucide-react";
 import {useTranslations} from "next-intl";
 import {useEffect, useState} from "react";
 import {toast} from "sonner";
@@ -10,15 +10,17 @@ import {MemoryReactions, REACTIONS} from "@/components/memory/memory-reactions";
 import {saveMemoryAction, shareMemoryAction, unsaveMemoryAction} from "@/app/[locale]/server-actions";
 import {ReactionSummary} from "@/components/shared/reaction-summary";
 import {MemoryReactionModal} from "@/components/memory/memory-reaction-modal";
-import {createClient} from "@/lib/supabase/client";
 import type {MemoryReactionType} from "@/types/database";
 
 export function MemoryActions({
   memoryId,
   locale,
   contentOwnerId,
+  currentUserId,
   reactionCounts,
   userReaction,
+  initialSaved = false,
+  initialCommentCount = 0,
   onReactionCountsChange,
   onUserReactionChange,
   defaultCommentsOpen = false,
@@ -27,8 +29,11 @@ export function MemoryActions({
   memoryId: string;
   locale: string;
   contentOwnerId?: string | null;
+  currentUserId?: string | null;
   reactionCounts: Record<string, number>;
   userReaction: MemoryReactionType | null;
+  initialSaved?: boolean;
+  initialCommentCount?: number;
   onReactionCountsChange: (counts: Record<string, number>) => void;
   onUserReactionChange: (reaction: MemoryReactionType | null) => void;
   defaultCommentsOpen?: boolean;
@@ -36,13 +41,12 @@ export function MemoryActions({
 }) {
   const memoryT = useTranslations("Memory");
   const feed = useTranslations("Feed");
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(initialSaved);
   const [savePending, setSavePending] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(defaultCommentsOpen);
-  const [commentCount, setCommentCount] = useState(0);
+  const [commentCount, setCommentCount] = useState(initialCommentCount);
   const [reactionModalOpen, setReactionModalOpen] = useState(false);
   const [sharesCount, setSharesCount] = useState(initialSharesCount);
-  const supabase = createClient();
 
   useEffect(() => {
     if (defaultCommentsOpen) {
@@ -50,29 +54,10 @@ export function MemoryActions({
     }
   }, [defaultCommentsOpen]);
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({data: {user}}) => {
-      if (!user) return;
-      supabase
-        .from("saved_memories")
-        .select("id")
-        .eq("memory_id", memoryId)
-        .eq("user_id", user.id)
-        .maybeSingle()
-        .then(({data}) => setSaved(!!data));
-    });
-    supabase
-      .from("memory_comments")
-      .select("*", {count: "exact", head: true})
-      .eq("memory_id", memoryId)
-      .then(({count}) => setCommentCount(count ?? 0));
-  }, [memoryId, supabase]);
-
   async function handleSave(e: React.MouseEvent) {
     e.stopPropagation();
     if (savePending) return;
-    const {data: {user}} = await supabase.auth.getUser();
-    if (!user) {
+    if (!currentUserId) {
       window.location.href = `/${locale}/login?next=/memory`;
       return;
     }
@@ -89,7 +74,6 @@ export function MemoryActions({
       setSaved(!newSaved);
       if (result.error === "unauthorized") {
         window.location.href = `/${locale}/login?next=/memory`;
-        setSavePending(false);
         return;
       }
       toast.error(feed("shareFailed") ?? "Failed");
@@ -189,11 +173,7 @@ export function MemoryActions({
               : "text-muted-foreground hover:bg-muted"
           }`}
         >
-          {savePending ? (
-            <Loader2 size={18} className="shrink-0 animate-spin" />
-          ) : (
-            <Bookmark size={18} className={`shrink-0 ${saved ? "fill-primary" : ""}`} />
-          )}
+          <Bookmark size={18} className={`shrink-0 ${saved ? "fill-primary" : ""}`} />
         </button>
         <button
           type="button"
@@ -209,6 +189,8 @@ export function MemoryActions({
       <MemoryComments
         memoryId={memoryId}
         contentOwnerId={contentOwnerId}
+        currentUserId={currentUserId}
+        initialCommentCount={commentCount}
         onCommentCountChange={setCommentCount}
         open={commentsOpen}
         onToggle={() => setCommentsOpen((p) => !p)}

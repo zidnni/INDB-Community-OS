@@ -2384,10 +2384,13 @@ export async function saveMemoryAction(
     return { success: false, error: 'invalid' };
   }
 
-  const { error } = await supabase.from('saved_memories').insert({
-    memory_id: memoryId,
-    user_id: user.id,
-  });
+  const { error } = await supabase.from('saved_memories').upsert(
+    {
+      memory_id: memoryId,
+      user_id: user.id,
+    },
+    { onConflict: 'memory_id,user_id', ignoreDuplicates: true },
+  );
 
   if (error) {
     return { success: false, error: 'save_failed' };

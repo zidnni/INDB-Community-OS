@@ -28,6 +28,68 @@ export async function attachMemoryMedia(memories: MemoryWithContributor[]): Prom
   return memories;
 }
 
+export async function attachMemoryInteractions(memories: MemoryWithContributor[]): Promise<MemoryWithContributor[]> {
+  if (memories.length === 0) return memories;
+
+  const supabase = await createClient();
+  const memoryIds = memories.map((m) => m.id);
+  const {
+    data: {user},
+  } = await supabase.auth.getUser();
+
+  const [reactionResult, commentResult, savedResult, userReactionResult] = await Promise.all([
+    supabase
+      .from("memory_reactions")
+      .select("memory_id, reaction_type")
+      .in("memory_id", memoryIds),
+    supabase
+      .from("memory_comments")
+      .select("memory_id")
+      .in("memory_id", memoryIds),
+    user
+      ? supabase
+          .from("saved_memories")
+          .select("memory_id")
+          .eq("user_id", user.id)
+          .in("memory_id", memoryIds)
+      : Promise.resolve({data: []}),
+    user
+      ? supabase
+          .from("memory_reactions")
+          .select("memory_id, reaction_type")
+          .eq("user_id", user.id)
+          .in("memory_id", memoryIds)
+      : Promise.resolve({data: []}),
+  ]);
+
+  const reactionCounts = new Map<string, Record<string, number>>();
+  for (const row of reactionResult.data ?? []) {
+    const counts = reactionCounts.get(row.memory_id) ?? {};
+    counts[row.reaction_type] = (counts[row.reaction_type] ?? 0) + 1;
+    reactionCounts.set(row.memory_id, counts);
+  }
+
+  const commentCounts = new Map<string, number>();
+  for (const row of commentResult.data ?? []) {
+    commentCounts.set(row.memory_id, (commentCounts.get(row.memory_id) ?? 0) + 1);
+  }
+
+  const savedMemoryIds = new Set((savedResult.data ?? []).map((row) => row.memory_id));
+  const userReactions = new Map<string, MemoryReactionType>();
+  for (const row of userReactionResult.data ?? []) {
+    userReactions.set(row.memory_id, row.reaction_type as MemoryReactionType);
+  }
+
+  for (const memory of memories) {
+    memory.reaction_counts = reactionCounts.get(memory.id) ?? {};
+    memory.comments_count = commentCounts.get(memory.id) ?? 0;
+    memory.user_saved = savedMemoryIds.has(memory.id);
+    memory.user_reaction = userReactions.get(memory.id) ?? null;
+  }
+
+  return memories;
+}
+
 export async function getVisibleMemories(limit = 10): Promise<MemoryWithContributor[]> {
   return getApprovedMemories(limit);
 }
@@ -78,7 +140,7 @@ export async function getApprovedMemoriesPage({
 
   const rows = (data ?? []) as unknown as MemoryWithContributor[];
   const memories = rows.slice(0, safePageSize);
-  const items = await attachMemoryMedia(memories);
+  const items = await attachMemoryInteractions(await attachMemoryMedia(memories));
   return {
     items,
     page: safePage,
@@ -104,6 +166,7 @@ export async function getMemoryById(id: string): Promise<MemoryWithContributor |
   if (!data) return null;
   const memories = [data] as unknown as MemoryWithContributor[];
   await attachMemoryMedia(memories);
+  await attachMemoryInteractions(memories);
   return memories[0] ?? null;
 }
 
@@ -181,7 +244,7 @@ export async function getUserMemories(
     .range((page - 1) * pageSize, page * pageSize);
 
   const memories = (data ?? []) as unknown as MemoryWithContributor[];
-  return attachMemoryMedia(memories);
+  return attachMemoryInteractions(await attachMemoryMedia(memories));
 }
 
 export async function getMemoryReactionDetails(memoryId: string, limit = 50, offset = 0) {

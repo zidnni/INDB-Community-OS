@@ -1,6 +1,6 @@
 "use client";
 
-import {Bookmark, Loader2} from "lucide-react";
+import {Bookmark} from "lucide-react";
 import {useTranslations} from "next-intl";
 import {useEffect, useRef, useState} from "react";
 import {toast} from "sonner";
@@ -41,23 +41,23 @@ export function MemorySaveButton({memoryId}: {memoryId: string}) {
 
   async function handleToggle() {
     if (pending || loading) return;
+    const nextSaved = !saved;
     setPending(true);
+    setSaved(nextSaved);
 
     const formData = new FormData();
     formData.set("memoryId", memoryId);
 
-    if (saved) {
+    if (!nextSaved) {
       const result = await unsaveMemoryAction(formData);
-      if (result.success) {
-        setSaved(false);
-      } else {
+      if (!result.success) {
+        setSaved(!nextSaved);
         toast.error(t("shareFailed") ?? "Failed to unsave");
       }
     } else {
       const result = await saveMemoryAction(formData);
-      if (result.success) {
-        setSaved(true);
-      } else {
+      if (!result.success) {
+        setSaved(!nextSaved);
         if (result.error === "unauthorized") {
           const locale = document.documentElement.lang || "en";
           window.location.href = `/${locale}/login`;
@@ -84,11 +84,7 @@ export function MemorySaveButton({memoryId}: {memoryId: string}) {
           : "border-border/60 text-muted-foreground hover:bg-muted hover:text-foreground",
       )}
     >
-      {pending ? (
-        <Loader2 size={16} className="animate-spin" />
-      ) : (
-        <Bookmark size={16} className={saved ? "fill-primary" : ""} />
-      )}
+      <Bookmark size={16} className={saved ? "fill-primary" : ""} />
       {saved ? t("saved") : t("save")}
     </button>
   );

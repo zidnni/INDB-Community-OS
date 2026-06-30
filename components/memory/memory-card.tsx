@@ -17,8 +17,7 @@ import {TranslateButton} from "@/components/shared/translate-button";
 import {detectContentLanguage, type ContentLanguage} from "@/lib/i18n/detectContentLanguage";
 import {deleteMemoryAction} from "@/app/[locale]/server-actions";
 import {useCurrentUser} from "@/hooks/use-current-user";
-import {Link, useRouter} from "@/lib/i18n/routing";
-import {createClient} from "@/lib/supabase/client";
+import {Link} from "@/lib/i18n/routing";
 import type {MemoryReactionType, MemoryWithContributor} from "@/types/database";
 import {MediaCarousel} from "@/components/media/media-carousel";
 
@@ -52,12 +51,11 @@ export function MemoryCard({
   const t = useTranslations("Memory");
   const feed = useTranslations("Feed");
   const locale = useLocale();
-  const router = useRouter();
   const {userId: clientUserId, loading: userLoading} = useCurrentUser();
-  const supabase = useRef(createClient()).current;
   const searchParams = useSearchParams();
-  const [reactionCounts, setReactionCounts] = useState<Record<string, number>>({});
-  const [userReaction, setUserReaction] = useState<MemoryReactionType | null>(null);
+  const [reactionCounts, setReactionCounts] = useState<Record<string, number>>(memory.reaction_counts ?? {});
+  const [userReaction, setUserReaction] = useState<MemoryReactionType | null>(memory.user_reaction ?? null);
+  const [deleted, setDeleted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -83,33 +81,6 @@ export function MemoryCard({
     commentDomIdPrefix: "memory",
   });
 
-  useEffect(() => {
-    async function load() {
-      const {data: {user}} = await supabase.auth.getUser();
-      if (user) {
-        const {data: myReaction} = await supabase
-          .from("memory_reactions")
-          .select("reaction_type")
-          .eq("memory_id", memory.id)
-          .eq("user_id", user.id)
-          .maybeSingle();
-        if (myReaction) {
-          setUserReaction(myReaction.reaction_type as MemoryReactionType);
-        }
-      }
-      const {data: allReactions} = await supabase
-        .from("memory_reactions")
-        .select("reaction_type")
-        .eq("memory_id", memory.id);
-      const counts: Record<string, number> = {};
-      for (const row of allReactions ?? []) {
-        counts[row.reaction_type] = (counts[row.reaction_type] ?? 0) + 1;
-      }
-      setReactionCounts(counts);
-    }
-    load();
-  }, [memory.id, supabase]);
-
   const defaultCommentsOpen = searchParams.get("focus") === "comments" && searchParams.get("memory") === memory.id
     || !!searchParams.get("comment");
   const contributorName = memory.contributor?.full_name ?? memory.contributor?.username ?? t("unknownContributor");
@@ -125,6 +96,8 @@ export function MemoryCard({
     : memory.media_url
       ? [{url: memory.media_url, type: "image" as const, alt: memory.title}]
       : [];
+
+  if (deleted) return null;
 
   return (
     <motion.article
@@ -252,8 +225,11 @@ export function MemoryCard({
               memoryId={memory.id}
               locale={locale}
               contentOwnerId={memory.contributor_id}
+              currentUserId={clientUserId}
               reactionCounts={reactionCounts}
               userReaction={userReaction}
+              initialSaved={memory.user_saved ?? false}
+              initialCommentCount={memory.comments_count ?? 0}
               onReactionCountsChange={setReactionCounts}
               onUserReactionChange={setUserReaction}
               defaultCommentsOpen={defaultCommentsOpen}
@@ -288,7 +264,7 @@ export function MemoryCard({
                   setDeleting(false);
                   if (result.success) {
                     toast.success(t("memoryDeleted"));
-                    router.refresh();
+                    setDeleted(true);
                   } else {
                     toast.error(result.error ?? t("deleteFailed"));
                   }

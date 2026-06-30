@@ -3,7 +3,7 @@
 import {motion, AnimatePresence} from "framer-motion";
 import {Edit3, Loader2, MessageSquare, MoreHorizontal, SendHorizonal, Trash2} from "lucide-react";
 import {useLocale, useTranslations} from "next-intl";
-import React, {useEffect, useRef, useState, useTransition} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {toast} from "sonner";
 
 import {addMemoryCommentAction, deleteMemoryCommentAction, updateMemoryCommentAction} from "@/app/[locale]/server-actions";
@@ -39,6 +39,8 @@ function timeAgo(dateStr: string, locale: string): string {
 export function MemoryComments({
   memoryId,
   contentOwnerId,
+  currentUserId: initialCurrentUserId,
+  initialCommentCount = 0,
   onCommentCountChange,
   children,
   open: controlledOpen,
@@ -46,6 +48,8 @@ export function MemoryComments({
 }: {
   memoryId: string;
   contentOwnerId?: string | null;
+  currentUserId?: string | null;
+  initialCommentCount?: number;
   onCommentCountChange?: (count: number) => void;
   children?: React.ReactNode;
   open?: boolean;
@@ -60,43 +64,54 @@ export function MemoryComments({
   const open = controlledOpen ?? internalOpen;
   const toggle = onToggle ?? (() => setInternalOpen((p) => !p));
   const [comments, setComments] = useState<MemoryCommentWithAuthor[]>([]);
-  const [commentCount, setCommentCount] = useState(0);
+  const [commentCount, setCommentCount] = useState(initialCommentCount);
   const [loading, setLoading] = useState(false);
   const [input, setInput] = useState("");
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(initialCurrentUserId ?? null);
+  const [currentUserProfile, setCurrentUserProfile] = useState<MemoryCommentWithAuthor["author"]>(null);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editInput, setEditInput] = useState("");
   const [openMenuCommentId, setOpenMenuCommentId] = useState<string | null>(null);
   const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
   const [updatingCommentId, setUpdatingCommentId] = useState<string | null>(null);
-  const [addPending, startAddTransition] = useTransition();
+  const [addPending, setAddPending] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const commentsLoadedRef = useRef(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({data}) => {
-      setCurrentUserId(data.user?.id ?? null);
+    if (initialCurrentUserId) {
+      setCurrentUserId(initialCurrentUserId);
+      supabase
+        .from("profiles")
+        .select("id, username, full_name, avatar_url")
+        .eq("id", initialCurrentUserId)
+        .maybeSingle()
+        .then(({data}) => {
+          setCurrentUserProfile(data as MemoryCommentWithAuthor["author"] | null);
+        });
+      return;
+    }
+
+    supabase.auth.getUser().then(async ({data}) => {
+      const userId = data.user?.id ?? null;
+      setCurrentUserId(userId);
+      if (!userId) return;
+      const {data: profile} = await supabase
+        .from("profiles")
+        .select("id, username, full_name, avatar_url")
+        .eq("id", userId)
+        .maybeSingle();
+      setCurrentUserProfile(profile as MemoryCommentWithAuthor["author"] | null);
     });
-  }, [supabase]);
+  }, [initialCurrentUserId, supabase]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    supabase
-      .from("memory_comments")
-      .select("*", {count: "exact", head: true})
-      .eq("memory_id", memoryId)
-      .then(({count}) => {
-        if (!cancelled) {
-          setCommentCount(count ?? 0);
-          onCommentCountChange?.(count ?? 0);
-        }
-      });
-
-    return () => { cancelled = true; };
-  }, [memoryId, onCommentCountChange, supabase]);
+    setCommentCount(initialCommentCount);
+    onCommentCountChange?.(initialCommentCount);
+  }, [initialCommentCount, onCommentCountChange]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || commentsLoadedRef.current) return;
     let cancelled = false;
 
     async function fetchComments() {
@@ -112,6 +127,7 @@ export function MemoryComments({
         setComments(nextComments);
         setCommentCount(nextComments.length);
         onCommentCountChange?.(nextComments.length);
+        commentsLoadedRef.current = true;
         setLoading(false);
       }
     }
@@ -139,28 +155,52 @@ export function MemoryComments({
     formData.set("memoryId", memoryId);
     formData.set("content", trimmed);
 
-    startAddTransition(async () => {
-      const result = await addMemoryCommentAction(formData);
+    const tempId = `temp-${Date.now()}`;
+    const optimisticComment: MemoryCommentWithAuthor = {
+      id: tempId,
+      memory_id: memoryId,
+      author_id: currentUserId,
+      content: trimmed,
+      content_language: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      author: currentUserProfile,
+    };
 
-      if (!result.success) {
-        if (result.error === "unauthorized") {
-          window.location.href = `/${locale}/login?next=/memory/${memoryId}`;
-          return;
-        }
-        toast.error(t("commentFailed") ?? "Failed to add comment");
+    setAddPending(true);
+    setInput("");
+    setComments((prev) => {
+      const nextComments = [...prev, optimisticComment];
+      setCommentCount(nextComments.length);
+      onCommentCountChange?.(nextComments.length);
+      commentsLoadedRef.current = true;
+      return nextComments;
+    });
+
+    const result = await addMemoryCommentAction(formData);
+    setAddPending(false);
+
+    if (!result.success) {
+      setComments((prev) => {
+        const nextComments = prev.filter((comment) => comment.id !== tempId);
+        setCommentCount(nextComments.length);
+        onCommentCountChange?.(nextComments.length);
+        return nextComments;
+      });
+      setInput(trimmed);
+      if (result.error === "unauthorized") {
+        window.location.href = `/${locale}/login?next=/memory/${memoryId}`;
         return;
       }
+      toast.error(t("commentFailed") ?? "Failed to add comment");
+      return;
+    }
 
-      if (result.comment) {
-        setComments((prev) => {
-          const nextComments = [...prev, result.comment!];
-          setCommentCount(nextComments.length);
-          onCommentCountChange?.(nextComments.length);
-          return nextComments;
-        });
-        setInput("");
-      }
-    });
+    if (result.comment) {
+      setComments((prev) => prev.map((comment) => (
+        comment.id === tempId ? result.comment! : comment
+      )));
+    }
   }
 
   async function handleDelete(commentId: string) {
@@ -168,23 +208,26 @@ export function MemoryComments({
 
     const formData = new FormData();
     formData.set("commentId", commentId);
+    const previousComments = comments;
     setDeletingCommentId(commentId);
+    setOpenMenuCommentId(null);
+    setComments((prev) => {
+      const nextComments = prev.filter((comment) => comment.id !== commentId);
+      setCommentCount(nextComments.length);
+      onCommentCountChange?.(nextComments.length);
+      return nextComments;
+    });
 
     try {
       const result = await deleteMemoryCommentAction(formData);
 
       if (!result.success) {
+        setComments(previousComments);
+        setCommentCount(previousComments.length);
+        onCommentCountChange?.(previousComments.length);
         toast.error(t("commentDeleteFailed") ?? "Failed to delete comment");
         return;
       }
-
-      setComments((prev) => {
-        const nextComments = prev.filter((comment) => comment.id !== commentId);
-        setCommentCount(nextComments.length);
-        onCommentCountChange?.(nextComments.length);
-        return nextComments;
-      });
-      toast.success(t("commentDeleted"));
     } finally {
       setDeletingCommentId(null);
     }
@@ -208,12 +251,23 @@ export function MemoryComments({
     const formData = new FormData();
     formData.set("commentId", commentId);
     formData.set("content", trimmed);
+    const previousComments = comments;
     setUpdatingCommentId(commentId);
+    setEditingCommentId(null);
+    setEditInput("");
+    setComments((prev) => prev.map((comment) => (
+      comment.id === commentId
+        ? {...comment, content: trimmed, updated_at: new Date().toISOString()}
+        : comment
+    )));
 
     try {
       const result = await updateMemoryCommentAction(formData);
 
       if (!result.success || !result.comment) {
+        setComments(previousComments);
+        setEditingCommentId(commentId);
+        setEditInput(trimmed);
         toast.error(t("commentUpdateFailed"));
         return;
       }
@@ -221,9 +275,6 @@ export function MemoryComments({
       setComments((prev) => prev.map((comment) => (
         comment.id === result.comment!.id ? result.comment! : comment
       )));
-      setEditingCommentId(null);
-      setEditInput("");
-      toast.success(t("commentUpdated"));
     } finally {
       setUpdatingCommentId(null);
     }
@@ -418,11 +469,7 @@ export function MemoryComments({
                     disabled={addPending || !input.trim()}
                     className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
                   >
-                    {addPending ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <SendHorizonal size={16} />
-                    )}
+                    <SendHorizonal size={16} />
                   </button>
                 </div>
               ) : (
