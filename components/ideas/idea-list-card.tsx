@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  CheckCircle2,
   Edit3,
   FolderOpen,
   Loader2,
@@ -184,7 +185,7 @@ export function IdeaListCard({
           disabled={votePending}
           className="inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl bg-primary px-3 text-sm font-semibold text-primary-foreground transition active:scale-[0.98] disabled:opacity-70"
         >
-          {votePending ? <Loader2 size={15} className="animate-spin" /> : <ThumbsUp size={15} />}
+          {votePending ? <Loader2 size={15} className="animate-spin" /> : voted ? <CheckCircle2 size={15} /> : <ThumbsUp size={15} />}
           {voted ? t("voteLabelVoted") : t("voteLabel")}
         </button>
         <Link

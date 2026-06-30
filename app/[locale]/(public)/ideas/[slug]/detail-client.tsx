@@ -4,6 +4,7 @@
 
 import {
   CalendarDays,
+  CheckCircle2,
   Loader2,
   MessageCircle,
   ThumbsUp,
@@ -338,7 +339,7 @@ export function IdeaDetailClient({
             disabled={votePending}
             className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground transition active:scale-[0.98] disabled:opacity-70"
           >
-            {votePending ? <Loader2 size={16} className="animate-spin" /> : <ThumbsUp size={16} />}
+            {votePending ? <Loader2 size={16} className="animate-spin" /> : userVoted ? <CheckCircle2 size={16} /> : <ThumbsUp size={16} />}
             {userVoted ? t("voteLabelVoted") : t("voteNow")}
           </button>
           <button
