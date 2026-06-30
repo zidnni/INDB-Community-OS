@@ -4117,13 +4117,6 @@ export async function updateIdeaOwnerProgressAction(
     if (value === 'discussion') return 'interested';
     return value;
   };
-  const isStatusConstraintError = (error: {code?: string; message?: string} | null): boolean =>
-    Boolean(
-      error &&
-      (error.code === '23514' ||
-        error.message?.includes('ideas_status_check') ||
-        error.message?.includes('violates check constraint')),
-    );
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -4147,51 +4140,45 @@ export async function updateIdeaOwnerProgressAction(
   const trimmedNotes = typeof projectNotes === 'string' ? projectNotes.trim().slice(0, 2000) : '';
   const trimmedUpdate = typeof latestUpdate === 'string' ? latestUpdate.trim().slice(0, 2000) : '';
 
-  let { error: updateError } = await supabase
-    .from('ideas')
-    .update({
+  const now = new Date().toISOString();
+  const safeStatus = legacySafeStatus(normalizedStatus);
+  const updateAttempts: Record<string, unknown>[] = [
+    {
       status: normalizedStatus,
       progress_percentage: progressPercentage,
       project_notes: trimmedNotes || null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', ideaId);
+      updated_at: now,
+    },
+    {
+      progress_percentage: progressPercentage,
+      project_notes: trimmedNotes || null,
+      updated_at: now,
+    },
+    {status: safeStatus, updated_at: now},
+    {updated_at: now},
+  ];
 
-  const optionalProgressColumnsMissing =
-    updateError &&
-    (updateError.code === 'PGRST204' ||
-      updateError.code === '42703' ||
-      updateError.message?.includes('progress_percentage') ||
-      updateError.message?.includes('project_notes'));
-  const requestedStatusUnsupported =
-    isStatusConstraintError(updateError);
-
-  if (optionalProgressColumnsMissing || requestedStatusUnsupported) {
-    const retry = await supabase
+  let savedCore = false;
+  let lastUpdateError: string | undefined;
+  for (const payload of updateAttempts) {
+    const {data, error} = await supabase
       .from('ideas')
-      .update({status: requestedStatusUnsupported ? legacySafeStatus(normalizedStatus) : normalizedStatus, updated_at: new Date().toISOString()})
-      .eq('id', ideaId);
-    updateError = retry.error;
+      .update(payload)
+      .eq('id', ideaId)
+      .select('id')
+      .maybeSingle();
+
+    if (!error && data?.id) {
+      savedCore = true;
+      break;
+    }
+
+    if (error) {
+      lastUpdateError = error.message;
+    }
   }
 
-  if (isStatusConstraintError(updateError)) {
-    const retry = await supabase
-      .from('ideas')
-      .update({status: legacySafeStatus(normalizedStatus), updated_at: new Date().toISOString()})
-      .eq('id', ideaId);
-    updateError = retry.error;
-  }
-
-  if (isStatusConstraintError(updateError)) {
-    const retry = await supabase
-      .from('ideas')
-      .update({updated_at: new Date().toISOString()})
-      .eq('id', ideaId);
-    updateError = retry.error;
-  }
-
-  if (updateError) return { success: false, error: updateError.message };
-
+  let savedUpdate = false;
   if (trimmedUpdate) {
     const { error: insertError } = await supabase
       .from('idea_updates')
@@ -4201,9 +4188,15 @@ export async function updateIdeaOwnerProgressAction(
         content: trimmedUpdate,
       });
 
-    if (insertError) {
+    if (!insertError) {
+      savedUpdate = true;
+    } else {
       console.error('updateIdeaOwnerProgressAction latest update insert error:', insertError.message);
     }
+  }
+
+  if (!savedCore && !savedUpdate) {
+    return { success: false, error: lastUpdateError ?? 'not_saved' };
   }
 
   if (normalizedStatus === 'completed') {
