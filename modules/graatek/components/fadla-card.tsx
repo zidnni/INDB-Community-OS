@@ -214,6 +214,11 @@ export function FadlaCard({
       if (request.status === 'accepted') {
         setAcceptedRequestId(request.id);
         setLiveStatus((status) => (status === 'completed' ? status : 'reserved'));
+      } else if (request.status === 'pending') {
+        // Mirror the server's published -> requested transition locally in case the
+        // separate community_shares realtime event is missed — the requester's own
+        // request row is guaranteed to arrive on this channel.
+        setLiveStatus((status) => (status === 'published' ? 'requested' : status));
       }
 
       if (request.requester_id === currentUserId) {

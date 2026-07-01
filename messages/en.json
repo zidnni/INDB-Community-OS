@@ -999,7 +999,49 @@
       "settings": "Settings",
       "impact": "Community Impact",
       "plugins": "Plugins",
-        "events": "Event Logs"
+      "events": "Event Logs"
+    },
+    "events": {
+      "subtitle": "Platform event audit trail — logged server-side with no private data.",
+      "columns": {
+        "event": "Event",
+        "actor": "Actor",
+        "type": "Entity",
+        "id": "ID",
+        "time": "Time"
+      },
+      "empty": "No events recorded yet",
+      "shown": "{count} events shown (most recent first)"
+    },
+    "plugins": {
+      "subtitle": "Manage platform plugins — enable, disable, and configure them.",
+      "columns": {
+        "plugin": "Plugin",
+        "version": "Version",
+        "routes": "Routes",
+        "state": "State",
+        "action": "Action"
+      },
+      "state": {
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+      },
+      "actions": {
+        "enable": "Enable",
+        "disable": "Disable"
+      },
+      "navLabel": "nav",
+      "empty": "No plugins registered.",
+      "items": {
+        "ideas": {"name": "Ideas", "description": "Community ideas and voting"},
+        "memories": {"name": "Memories", "description": "Community memories and timeline"},
+        "graatek": {"name": "Graatek", "description": "Community sharing, requests, messaging, and completion"},
+        "campaigns": {"name": "Campaigns", "description": "Donation campaigns and support"},
+        "volunteering": {"name": "Volunteering", "description": "Volunteer opportunities"},
+        "feed": {"name": "Feed", "description": "Community feed and posts"},
+        "recognition": {"name": "Recognition", "description": "Community recognition and impact"},
+        "settings": {"name": "Settings", "description": "User settings"}
+      }
     },
     "kpi": {
       "totalUsers": "Total Users",

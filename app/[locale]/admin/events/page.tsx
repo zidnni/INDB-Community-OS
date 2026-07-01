@@ -16,7 +16,7 @@ export default async function AdminEventsPage({
       <div className="mb-6">
         <h1 className="text-2xl font-bold">{t("nav.events")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Platform event audit trail — logged server-side with no private data.
+          {t("events.subtitle")}
         </p>
       </div>
       <AdminEventLogsClient logs={logs} />

@@ -965,7 +965,50 @@
       "payments": "المدفوعات",
       "settings": "الإعدادات",
       "impact": "الأثر المجتمعي",
-      "plugins": "الإضافات"
+      "plugins": "الإضافات",
+      "events": "سجل الأحداث"
+    },
+    "events": {
+      "subtitle": "أحداث المنصة — تُسجَّل من جانب الخادم دون أي بيانات خاصة.",
+      "columns": {
+        "event": "الحدث",
+        "actor": "الفاعل",
+        "type": "النوع",
+        "id": "المعرّف",
+        "time": "الوقت"
+      },
+      "empty": "لا توجد أحداث بعد",
+      "shown": "{count} حدث معروض (الأحدث أولًا)"
+    },
+    "plugins": {
+      "subtitle": "إدارة إضافات المنصة — التفعيل والتعطيل والإعداد.",
+      "columns": {
+        "plugin": "الإضافة",
+        "version": "الإصدار",
+        "routes": "المسارات",
+        "state": "الحالة",
+        "action": "الإجراء"
+      },
+      "state": {
+        "enabled": "مفعل",
+        "disabled": "معطل"
+      },
+      "actions": {
+        "enable": "تفعيل",
+        "disable": "تعطيل"
+      },
+      "navLabel": "التنقل",
+      "empty": "لا توجد إضافات مسجلة.",
+      "items": {
+        "ideas": {"name": "الأفكار", "description": "أفكار المجتمع والتصويت عليها"},
+        "memories": {"name": "الذكريات", "description": "ذكريات المجتمع وخطها الزمني"},
+        "graatek": {"name": "گرعتك", "description": "المشاركة المجتمعية والطلبات والمراسلة والإتمام"},
+        "campaigns": {"name": "حملات", "description": "حملات التبرع والدعم"},
+        "volunteering": {"name": "التطوع", "description": "فرص التطوع"},
+        "feed": {"name": "المنشورات", "description": "منشورات المجتمع وموجز الأخبار"},
+        "recognition": {"name": "الأثر المجتمعي", "description": "تقدير المجتمع وأثره"},
+        "settings": {"name": "الإعدادات", "description": "إعدادات المستخدم"}
+      }
     },
     "kpi": {
       "totalUsers": "إجمالي المستخدمين",

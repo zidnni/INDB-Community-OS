@@ -3,7 +3,7 @@
 import {revalidatePath} from "next/cache";
 import {getTranslations} from "next-intl/server";
 
-import {assertFeatureEnabled} from "@/core/features/server";
+import {assertFeatureEnabledForMutation} from "@/core/features/server";
 import {publishPlatformEvent} from "@/core/events/platform-events";
 import {withLocale} from "@/lib/i18n/paths";
 import {routing} from "@/lib/i18n/routing";
@@ -37,7 +37,7 @@ function toPath(locale: string, pathname: string) {
 
 async function guardMemoriesAction() {
   try {
-    await assertFeatureEnabled("memories");
+    await assertFeatureEnabledForMutation("memories");
     return null;
   } catch {
     return "module_disabled";

@@ -15,14 +15,15 @@ export default async function AdminPluginsPage({
   const plugins = getAllPlugins().map((entry) => {
     const dbState = dbStates[entry.manifest.id];
     const effectiveState = dbState === "disabled" ? "disabled" : entry.state;
+    const itemKey = `plugins.items.${entry.manifest.id}`;
     return {
       id: entry.manifest.id,
-      name: entry.manifest.name,
+      name: t.has(`${itemKey}.name`) ? t(`${itemKey}.name`) : entry.manifest.name,
       version: entry.manifest.version,
-      description: entry.manifest.description,
+      description: t.has(`${itemKey}.description`) ? t(`${itemKey}.description`) : entry.manifest.description,
       state: effectiveState,
       navKey: entry.manifest.nav?.key ?? null,
-      routePrefixes: entry.manifest.routePrefixes.join(", "),
+      routePrefixes: entry.manifest.routePrefixes,
     };
   });
 
@@ -31,7 +32,7 @@ export default async function AdminPluginsPage({
       <div className="mb-6">
         <h1 className="text-2xl font-bold">{t("nav.plugins")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Manage platform plugins — enable, disable, and configure them.
+          {t("plugins.subtitle")}
         </p>
       </div>
       <AdminPluginsClient plugins={plugins} />

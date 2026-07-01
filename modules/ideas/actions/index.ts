@@ -9,7 +9,7 @@ import { withLocale } from '@/lib/i18n/paths';
 import { checkRateLimit, type RateLimitKind } from '@/lib/security/rate-limit';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { assertFeatureEnabled } from '@/core/features/server';
+import { assertFeatureEnabledForMutation } from '@/core/features/server';
 import { publishPlatformEvent } from '@/core/events/platform-events';
 import {
   createFollowNotification,
@@ -38,9 +38,9 @@ function toPath(locale: string, pathname: string) {
   return withLocale(pathname, locale);
 }
 
-async function guardFeatureAction(featureId: Parameters<typeof assertFeatureEnabled>[0]) {
+async function guardFeatureAction(featureId: Parameters<typeof assertFeatureEnabledForMutation>[0]) {
   try {
-    await assertFeatureEnabled(featureId);
+    await assertFeatureEnabledForMutation(featureId);
     return null;
   } catch {
     return 'module_disabled';

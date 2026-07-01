@@ -830,7 +830,49 @@
       "support": "Campagnes",
       "impact": "Impact communautaire",
       "plugins": "Jokkorɗe",
-        "events": "Dogol Kewu"
+      "events": "Dogol Kewu"
+    },
+    "events": {
+      "subtitle": "Journal des événements de la plateforme — enregistré côté serveur sans donnée privée.",
+      "columns": {
+        "event": "Événement",
+        "actor": "Acteur",
+        "type": "Entité",
+        "id": "ID",
+        "time": "Heure"
+      },
+      "empty": "Aucun événement enregistré pour le moment",
+      "shown": "{count} événements affichés (les plus récents en premier)"
+    },
+    "plugins": {
+      "subtitle": "Gérer les plugins de la plateforme — activer, désactiver et configurer.",
+      "columns": {
+        "plugin": "Plugin",
+        "version": "Version",
+        "routes": "Routes",
+        "state": "État",
+        "action": "Action"
+      },
+      "state": {
+        "enabled": "Activé",
+        "disabled": "Désactivé"
+      },
+      "actions": {
+        "enable": "Activer",
+        "disable": "Désactiver"
+      },
+      "navLabel": "nav",
+      "empty": "Aucun plugin enregistré.",
+      "items": {
+        "ideas": {"name": "Miijooji", "description": "Idées communautaires et votes"},
+        "memories": {"name": "Mijooji", "description": "Souvenirs communautaires et chronologie"},
+        "graatek": {"name": "Graatek", "description": "Partage communautaire, demandes, messagerie et finalisation"},
+        "campaigns": {"name": "Campagnes", "description": "Campagnes de dons et de soutien"},
+        "volunteering": {"name": "Bénévolat", "description": "Opportunités de bénévolat"},
+        "feed": {"name": "Fil d'actualité", "description": "Fil communautaire et publications"},
+        "recognition": {"name": "Reconnaissance", "description": "Reconnaissance et impact communautaire"},
+        "settings": {"name": "Mbaydi", "description": "Paramètres utilisateur"}
+      }
     },
     "sections": {
       "overview": "Njiylawu",

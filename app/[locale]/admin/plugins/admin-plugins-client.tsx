@@ -1,6 +1,7 @@
 "use client";
 
 import {useTransition} from "react";
+import {useTranslations} from "next-intl";
 import {togglePlugin} from "./actions";
 
 interface PluginRow {
@@ -10,11 +11,12 @@ interface PluginRow {
   description: string;
   state: string;
   navKey: string | null;
-  routePrefixes: string;
+  routePrefixes: string[];
 }
 
 export function AdminPluginsClient({plugins}: {plugins: PluginRow[]}) {
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("Admin.plugins");
 
   function handleToggle(pluginId: string, currentState: string) {
     startTransition(async () => {
@@ -31,11 +33,11 @@ export function AdminPluginsClient({plugins}: {plugins: PluginRow[]}) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border bg-muted/50">
-            <th className="px-4 py-3 text-left font-medium">Plugin</th>
-            <th className="px-4 py-3 text-left font-medium">Version</th>
-            <th className="px-4 py-3 text-left font-medium">Routes</th>
-            <th className="px-4 py-3 text-left font-medium">State</th>
-            <th className="px-4 py-3 text-right font-medium">Action</th>
+            <th className="px-4 py-3 text-start font-medium">{t("columns.plugin")}</th>
+            <th className="px-4 py-3 text-start font-medium">{t("columns.version")}</th>
+            <th className="px-4 py-3 text-start font-medium">{t("columns.routes")}</th>
+            <th className="px-4 py-3 text-start font-medium">{t("columns.state")}</th>
+            <th className="px-4 py-3 text-end font-medium">{t("columns.action")}</th>
           </tr>
         </thead>
         <tbody>
@@ -45,11 +47,13 @@ export function AdminPluginsClient({plugins}: {plugins: PluginRow[]}) {
                 <div className="font-medium">{plugin.name}</div>
                 <div className="text-xs text-muted-foreground">{plugin.description}</div>
                 {plugin.navKey && (
-                  <div className="mt-0.5 text-xs text-muted-foreground/60">nav: {plugin.navKey}</div>
+                  <div className="mt-0.5 text-xs text-muted-foreground/60">{t("navLabel")}: {plugin.navKey}</div>
                 )}
               </td>
-              <td className="px-4 py-3 text-muted-foreground">{plugin.version}</td>
-              <td className="px-4 py-3 text-muted-foreground">{plugin.routePrefixes}</td>
+              <td className="px-4 py-3 text-muted-foreground" dir="ltr">{plugin.version}</td>
+              <td className="px-4 py-3 text-muted-foreground font-mono text-xs" dir="ltr">
+                {plugin.routePrefixes.join(", ")}
+              </td>
               <td className="px-4 py-3">
                 <span
                   className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -58,10 +62,10 @@ export function AdminPluginsClient({plugins}: {plugins: PluginRow[]}) {
                       : "bg-gray-100 text-gray-500"
                   }`}
                 >
-                  {plugin.state}
+                  {plugin.state === "enabled" ? t("state.enabled") : t("state.disabled")}
                 </span>
               </td>
-              <td className="px-4 py-3 text-right">
+              <td className="px-4 py-3 text-end">
                 <button
                   onClick={() => handleToggle(plugin.id, plugin.state)}
                   disabled={isPending}
@@ -71,7 +75,7 @@ export function AdminPluginsClient({plugins}: {plugins: PluginRow[]}) {
                       : "bg-green-50 text-green-600 hover:bg-green-100"
                   } disabled:opacity-50`}
                 >
-                  {plugin.state === "enabled" ? "Disable" : "Enable"}
+                  {plugin.state === "enabled" ? t("actions.disable") : t("actions.enable")}
                 </button>
               </td>
             </tr>
@@ -80,7 +84,7 @@ export function AdminPluginsClient({plugins}: {plugins: PluginRow[]}) {
       </table>
       {plugins.length === 0 && (
         <div className="py-12 text-center text-sm text-muted-foreground">
-          No plugins registered.
+          {t("empty")}
         </div>
       )}
     </div>
