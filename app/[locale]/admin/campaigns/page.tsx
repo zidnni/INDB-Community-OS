@@ -108,6 +108,7 @@ const campaignAdminLabelKeys = [
   "emoji",
   "create",
   "statusSaved",
+  "statusCreateFailed",
   "statusCreated",
   "statusInvalid",
   "statusUpdatePublished",

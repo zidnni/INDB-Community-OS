@@ -135,15 +135,16 @@ export async function adminCreateSupportCampaign(input: {
   longDescription: string;
   goalAmount: number;
   endsAt: string;
+  status?: SupportCampaignStatus;
 }) {
   const admin = createAdminClient();
-  if (!admin) return false;
+  if (!admin) return null;
 
   const {count} = await admin
     .from("support_campaigns")
     .select("*", {count: "exact", head: true});
 
-  const {error} = await admin.from("support_campaigns").insert({
+  const {data, error} = await admin.from("support_campaigns").insert({
     slug: input.slug,
     emoji: input.emoji,
     title: input.title,
@@ -153,7 +154,7 @@ export async function adminCreateSupportCampaign(input: {
     raised_amount: 0,
     contributors_count: 0,
     volunteers_count: 0,
-    status: "active",
+    status: input.status ?? "active",
     organizer: "I ❤️ NDB",
     verified: true,
     starts_at: new Date().toISOString(),
@@ -162,14 +163,14 @@ export async function adminCreateSupportCampaign(input: {
     material_needs: [],
     impact_points: [],
     sort_order: (count ?? 0) + 1,
-  });
+  }).select("id").single();
 
   if (error) {
     console.error("adminCreateSupportCampaign error:", error);
-    return false;
+    return null;
   }
 
-  return true;
+  return data.id;
 }
 
 export async function adminCreateSupportUpdate(input: {

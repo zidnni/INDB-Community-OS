@@ -2392,6 +2392,7 @@
       "endDate": "Date de fin",
       "emoji": "Icone",
       "statusSaved": "Campagne enregistree",
+      "statusCreateFailed": "Echec de la creation de la campagne",
       "statusCreated": "Campagne creee",
       "statusInvalid": "Details de campagne invalides",
       "statusUpdatePublished": "Mise a jour publiee",

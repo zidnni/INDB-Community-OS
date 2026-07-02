@@ -337,6 +337,7 @@ export async function adminCreateSupportCampaignAction(formData: FormData) {
   const longDescription = formData.get("longDescription");
   const goalAmount = Number(formData.get("goalAmount") ?? 0);
   const endsAt = formData.get("endsAt");
+  const campaignStatus = formData.get("campaignStatus");
 
   const {getCurrentAdminProfile} = await import("@/lib/data/admin");
   const adminProfile = await getCurrentAdminProfile();
@@ -357,8 +358,12 @@ export async function adminCreateSupportCampaignAction(formData: FormData) {
     redirect(withLocale("/admin/support?status=invalid", locale));
   }
 
+  const status = ["upcoming", "active", "paused", "completed", "archived"].includes(String(campaignStatus))
+    ? campaignStatus as "upcoming" | "active" | "paused" | "completed" | "archived"
+    : "active";
+
   const {adminCreateSupportCampaign} = await import("@/lib/data/support");
-  await adminCreateSupportCampaign({
+  const campaignId = await adminCreateSupportCampaign({
     slug: safeSlug,
     emoji: emoji.trim().slice(0, 8) || "🤝",
     title: title.trim().slice(0, 120),
@@ -366,7 +371,12 @@ export async function adminCreateSupportCampaignAction(formData: FormData) {
     longDescription: longDescription.trim().slice(0, 1000),
     goalAmount,
     endsAt,
+    status,
   });
+
+  if (!campaignId) {
+    redirect(withLocale("/admin/support?status=create-failed", locale));
+  }
 
   revalidatePath("/campaigns");
   revalidatePath("/admin/support");

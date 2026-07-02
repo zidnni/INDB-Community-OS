@@ -3592,6 +3592,7 @@
       "endDate": "End date",
       "emoji": "Icon",
       "statusSaved": "Campaign saved",
+      "statusCreateFailed": "Campaign creation failed",
       "statusCreated": "Campaign created",
       "statusInvalid": "Invalid campaign details",
       "statusUpdatePublished": "Update published",

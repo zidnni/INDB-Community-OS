@@ -3475,6 +3475,7 @@
       "endDate": "تاريخ النهاية",
       "emoji": "الأيقونة",
       "statusSaved": "تم حفظ الحملة",
+      "statusCreateFailed": "فشل إنشاء الحملة",
       "statusCreated": "تم إنشاء الحملة",
       "statusInvalid": "بيانات الحملة غير صالحة",
       "statusUpdatePublished": "تم نشر التحديث",

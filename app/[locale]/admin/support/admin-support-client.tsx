@@ -581,6 +581,13 @@ export function AdminSupportClient({
               <Input name="goalAmount" type="number" min="1" step="1" placeholder={labels.goalAmount} required />
               <Input name="endsAt" type="date" aria-label={labels.endDate} required />
             </div>
+            <select name="campaignStatus" defaultValue="active" className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm">
+              <option value="upcoming">{labels.statusUpcoming ?? "Upcoming"}</option>
+              <option value="active">{labels.statusActive}</option>
+              <option value="paused">{labels.statusPaused}</option>
+              <option value="completed">{labels.statusCompleted}</option>
+              <option value="archived">{labels.statusArchived}</option>
+            </select>
             <Button type="submit" className="gap-2">
               <FilePlus2 size={16} />
               {labels.create}
